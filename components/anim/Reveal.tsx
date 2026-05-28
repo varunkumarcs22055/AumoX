@@ -80,10 +80,10 @@ export default function Reveal({
     return () => ctx.revert();
   }, [kind, stagger, delay, duration, staggerGap, distance]);
 
-  // @ts-expect-error — dynamic tag prop
+  const Wrapper = Tag as any;
   return (
-    <Tag ref={ref} className={className}>
+    <Wrapper ref={ref} className={className}>
       {children}
-    </Tag>
+    </Wrapper>
   );
 }
