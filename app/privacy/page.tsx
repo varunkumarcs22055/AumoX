@@ -11,7 +11,7 @@ export default function PrivacyPage() {
         <div className="mt-12 space-y-10 text-ink-300 font-light leading-relaxed">
           <section>
             <h2 className="text-xl text-ink-100 font-light mb-3">1. Introduction</h2>
-            <p>AUMO.X Technologies ("AUMO.X", "we", "our", "us") respects your privacy. This Policy explains what personal information we collect when you interact with our website, products and services, and how we use, share and protect it.</p>
+            <p>AUMOXO Technologies ("AUMOXO", "we", "our", "us") respects your privacy. This Policy explains what personal information we collect when you interact with our website, products and services, and how we use, share and protect it.</p>
           </section>
           <section>
             <h2 className="text-xl text-ink-100 font-light mb-3">2. Information We Collect</h2>

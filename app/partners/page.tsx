@@ -140,7 +140,7 @@ export default function PartnersPage() {
       <section className="py-24 lg:py-32">
         <div className="container-x text-center">
           <h2 className="section-title mx-auto">
-            Become an AUMO.X partner.
+            Become an AUMOXO partner.
           </h2>
           <p className="section-sub mx-auto text-center">
             Tell us about your organization and the opportunity you see.

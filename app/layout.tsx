@@ -17,23 +17,23 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "AUMO.X — Think Infinite | Enterprise Technology Services & Products",
-    template: "%s | AUMO.X",
+    default: "AUMOXO — Think Infinite | Enterprise Technology Services & Products",
+    template: "%s | AUMOXO",
   },
   description:
-    "AUMO.X delivers next-generation technology services and products to global enterprises. Cloud, AI, digital engineering, and platform solutions built for scale.",
-  keywords: ["AUMO.X", "enterprise technology", "digital transformation", "AI solutions", "cloud services", "software products", "IT services"],
+    "AUMOXO delivers next-generation technology services and products to global enterprises. Cloud, AI, digital engineering, and platform solutions built for scale.",
+  keywords: ["AUMOXO", "enterprise technology", "digital transformation", "AI solutions", "cloud services", "software products", "IT services"],
   openGraph: {
-    title: "AUMO.X — Think Infinite",
+    title: "AUMOXO — Think Infinite",
     description: "Enterprise technology services and products engineered for the next decade.",
     url: siteUrl,
-    siteName: "AUMO.X",
+    siteName: "AUMOXO",
     images: ["/logo-full.jpeg"],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AUMO.X — Think Infinite",
+    title: "AUMOXO — Think Infinite",
     description: "Enterprise technology services and products built for scale.",
     images: ["/logo-full.jpeg"],
   },

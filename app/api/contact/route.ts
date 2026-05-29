@@ -68,7 +68,7 @@ export async function POST(req: Request) {
   // If no API key configured, log + accept (so the UI doesn't break in dev)
   if (!apiKey) {
     console.warn(
-      "[AUMO.X contact] RESEND_API_KEY not set. Submission logged but not emailed:",
+      "[AUMOXO contact] RESEND_API_KEY not set. Submission logged but not emailed:",
       data
     );
     return NextResponse.json({
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
 
     // 1) Notify the team
     await resend.emails.send({
-      from: `AUMO.X Website <${from}>`,
+      from: `AUMOXO Website <${from}>`,
       to,
       replyTo: data.email,
       subject: `New inquiry · ${data.service} · ${data.name}`,
@@ -91,15 +91,15 @@ export async function POST(req: Request) {
 
     // 2) Auto-reply to the visitor
     await resend.emails.send({
-      from: `AUMO.X <${from}>`,
+      from: `AUMOXO <${from}>`,
       to: data.email,
-      subject: "We've received your message — AUMO.X",
+      subject: "We've received your message — AUMOXO",
       html: autoReplyHtml(data),
     });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[AUMO.X contact] Resend error:", err);
+    console.error("[AUMOXO contact] Resend error:", err);
     return NextResponse.json(
       { error: "Email service unavailable. Please try again later." },
       { status: 502 }
@@ -116,7 +116,7 @@ function notifyHtml(d: z.infer<typeof schema>) {
   <div style="font-family:Inter,system-ui,sans-serif;background:#000;color:#fafafa;padding:32px">
     <div style="max-width:640px;margin:auto;background:#0a0a0a;border:1px solid rgba(212,175,55,.2);border-radius:16px;overflow:hidden">
       <div style="padding:24px;background:linear-gradient(135deg,#F0DDA0,#D4AF37,#B8941F);color:#000">
-        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase">AUMO.X · New Inquiry</div>
+        <div style="font-size:11px;letter-spacing:.3em;text-transform:uppercase">AUMOXO · New Inquiry</div>
         <div style="font-size:22px;margin-top:6px;font-weight:300">${escapeHtml(d.name)} from ${escapeHtml(d.company || "—")}</div>
       </div>
       <table style="width:100%;border-collapse:collapse;padding:16px">
@@ -143,13 +143,13 @@ function autoReplyHtml(d: z.infer<typeof schema>) {
   <div style="font-family:Inter,system-ui,sans-serif;background:#000;color:#fafafa;padding:32px">
     <div style="max-width:560px;margin:auto;background:#0a0a0a;border:1px solid rgba(212,175,55,.2);border-radius:16px;overflow:hidden">
       <div style="padding:32px;text-align:center;background:linear-gradient(135deg,#F0DDA0,#D4AF37,#B8941F);color:#000">
-        <div style="font-weight:300;font-size:28px;letter-spacing:.28em">AUMO<span style="font-weight:500">.X</span></div>
+        <div style="font-weight:300;font-size:28px;letter-spacing:.28em">AUMOX<span style="font-weight:500">O</span></div>
         <div style="font-size:10px;letter-spacing:.4em;text-transform:uppercase;margin-top:4px">Think Infinite</div>
       </div>
       <div style="padding:32px">
         <p style="font-size:16px;line-height:1.6;color:#fafafa;margin:0 0 16px">Hi ${escapeHtml(d.name.split(" ")[0] || d.name)},</p>
         <p style="font-size:15px;line-height:1.7;color:#a1a1aa;font-weight:300">
-          Thanks for reaching out to AUMO.X. We've received your message about
+          Thanks for reaching out to AUMOXO. We've received your message about
           <strong style="color:#fafafa;font-weight:500">${escapeHtml(d.service)}</strong>
           and a specialist will respond within one working day.
         </p>
@@ -158,7 +158,7 @@ function autoReplyHtml(d: z.infer<typeof schema>) {
         </p>
         <div style="margin-top:24px;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);font-size:13px;color:#71717a">
           Regards,<br>
-          <span style="color:#D4AF37">The AUMO.X team</span>
+          <span style="color:#D4AF37">The AUMOXO team</span>
         </div>
       </div>
     </div>

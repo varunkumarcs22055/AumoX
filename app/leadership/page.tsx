@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Linkedin, Twitter, ArrowUpRight } from "lucide-react";
 
-export const metadata = { title: "Leadership — The People Behind AUMO.X" };
+export const metadata = { title: "Leadership — The People Behind AUMOXO" };
 
 const leaders = [
   { name: "Harsh Chakravarti", role: "Founder & Chief Executive Officer", initials: "HC", bio: "Two decades architecting enterprise platforms for global Fortune 500 organizations. Previously led technology at three publicly listed firms." },

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Careers — Build the Future with AUMO.X",
+  title: "Careers — Build the Future with AUMOXO",
 };
 
 const openRoles = [
@@ -57,7 +57,7 @@ export default function CareersPage() {
           <div className="max-w-4xl">
             <div className="eyebrow">
               <span className="h-px w-8 bg-gold-400" />
-              Careers at AUMO.X
+              Careers at AUMOXO
             </div>
             <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[0.95] font-extralight tracking-tight text-ink-100">
               Do the best <span className="gold-text">work of your life</span>.
@@ -98,7 +98,7 @@ export default function CareersPage() {
         <div className="container-x">
           <div className="grid lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20 mb-16">
             <div>
-              <div className="eyebrow"><span className="h-px w-8 bg-gold-400" />Why AUMO.X</div>
+              <div className="eyebrow"><span className="h-px w-8 bg-gold-400" />Why AUMOXO</div>
               <h2 className="section-title mt-5">A place where craft and ambition compound.</h2>
             </div>
             <p className="text-lg text-ink-300 font-light leading-relaxed lg:pt-16">

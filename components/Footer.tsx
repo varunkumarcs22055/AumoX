@@ -30,9 +30,9 @@ const cols = [
   {
     title: "Products",
     links: [
-      { href: "/products", label: "AUMO Nexus" },
-      { href: "/products", label: "AUMO Atlas" },
-      { href: "/products", label: "AUMO Pulse" },
+      { href: "/products", label: "AUMOXO Nexus" },
+      { href: "/products", label: "AUMOXO Atlas" },
+      { href: "/products", label: "AUMOXO Pulse" },
       { href: "/products", label: "Platform APIs" },
       { href: "/products", label: "Documentation" },
     ],
@@ -40,7 +40,7 @@ const cols = [
   {
     title: "Company",
     links: [
-      { href: "/about", label: "About AUMO.X" },
+      { href: "/about", label: "About AUMOXO" },
       { href: "/leadership", label: "Leadership" },
       { href: "/partners", label: "Partners" },
       { href: "/careers", label: "Careers" },
@@ -74,8 +74,8 @@ export default function Footer() {
               <LogoMark size={44} />
               <div>
                 <div className="wordmark text-xl">
-                  <span className="text-ink-100">AUMO</span>
-                  <span className="gold-text">.X</span>
+                  <span className="text-ink-100">AUMOX</span>
+                  <span className="gold-text">O</span>
                 </div>
                 <div className="text-[10px] tracking-[0.35em] uppercase text-gold-400/80 mt-1">
                   Think Infinite
@@ -151,7 +151,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pt-10 border-t border-line">
           <div className="text-xs text-ink-400 font-light">
-            © {new Date().getFullYear()} AUMO.X Technologies. All rights reserved.
+            © {new Date().getFullYear()} AUMOXO Technologies. All rights reserved.
           </div>
           <div className="flex items-center gap-6 text-xs text-ink-400">
             <Link href="/privacy" className="hover:text-gold-300 transition-colors">Privacy Policy</Link>

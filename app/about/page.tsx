@@ -14,9 +14,9 @@ const values = [
 ];
 
 const milestones = [
-  { y: "2024", t: "Founded", d: "AUMO.X founded with a vision to redefine enterprise technology partnership." },
+  { y: "2024", t: "Founded", d: "AUMOXO founded with a vision to redefine enterprise technology partnership." },
   { y: "2025", t: "First 50 enterprises", d: "Scaled to serve 50+ global enterprise clients across 12 countries." },
-  { y: "2026", t: "Platform launch", d: "Released AUMO Nexus, Atlas and Pulse — our flagship enterprise platforms." },
+  { y: "2026", t: "Platform launch", d: "Released AUMOXO Nexus, Atlas and Pulse — our flagship enterprise platforms." },
   { y: "Today", t: "Global scale", d: "1.2K+ engineers across 60+ countries, serving 250+ enterprise customers." },
 ];
 
@@ -29,7 +29,7 @@ export default function AboutPage() {
           <div className="max-w-4xl">
             <div className="eyebrow">
               <span className="h-px w-8 bg-gold-400" />
-              About AUMO.X
+              About AUMOXO
             </div>
             <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[0.95] font-extralight tracking-tight text-ink-100">
               Built for the enterprises <span className="gold-text">shaping tomorrow</span>.
@@ -50,8 +50,8 @@ export default function AboutPage() {
             <div className="card p-12 gold-border text-center">
               <LogoMark size={120} className="mx-auto" />
               <div className="wordmark text-3xl mt-8">
-                <span className="text-ink-100">AUMO</span>
-                <span className="gold-text">.X</span>
+                <span className="text-ink-100">AUMOX</span>
+                <span className="gold-text">O</span>
               </div>
               <div className="text-xs tracking-[0.4em] uppercase text-gold-400 mt-3">
                 Think Infinite
@@ -66,7 +66,7 @@ export default function AboutPage() {
                 To unlock infinite potential within every enterprise we serve.
               </h2>
               <p className="section-sub">
-                AUMO.X exists at the intersection of strategy, engineering and
+                AUMOXO exists at the intersection of strategy, engineering and
                 operations. We combine deep technical capability with sector
                 expertise to help leaders move faster, build smarter and operate
                 with confidence at any scale.

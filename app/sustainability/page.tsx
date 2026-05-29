@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Leaf, Users, Shield, Heart, Globe, Sparkles } from "lucide-react";
 
-export const metadata = { title: "Sustainability — ESG at AUMO.X" };
+export const metadata = { title: "Sustainability — ESG at AUMOXO" };
 
 const pillars = [
   { i: Leaf, t: "Environment", d: "Net-zero across operations by 2032. 100% renewable electricity already achieved across our offices." },

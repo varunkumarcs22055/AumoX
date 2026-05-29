@@ -39,7 +39,7 @@ export default function ContactForm() {
   useEffect(() => {
     const chat = search.get("chat");
     if (chat) {
-      setValue("message", `--- From the AUMO.X assistant ---\n${decodeURIComponent(chat)}\n\n---\n\n`);
+      setValue("message", `--- From the AUMOXO assistant ---\n${decodeURIComponent(chat)}\n\n---\n\n`);
     }
   }, [search, setValue]);
 
@@ -112,7 +112,7 @@ export default function ContactForm() {
               <option>Business Consultancy</option>
             </optgroup>
             <optgroup label="Other">
-              <option>Products — AUMO Nexus / Atlas / Pulse</option>
+              <option>Products — AUMOXO Nexus / Atlas / Pulse</option>
               <option>Partnership inquiry</option>
               <option>Something else</option>
             </optgroup>

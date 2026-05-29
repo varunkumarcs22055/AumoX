@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, Clock, BookOpen } from "lucide-react";
 
 export const metadata = {
-  title: "Insights — Perspectives from AUMO.X Practitioners",
+  title: "Insights — Perspectives from AUMOXO Practitioners",
 };
 
 const featured = {

@@ -140,7 +140,7 @@ export default function Navbar() {
             <ArrowUpRight size={16} />
           </Link>
           <div className="mt-10 text-[11px] uppercase tracking-[0.25em] text-ink-400">
-            Think Infinite · AUMO.X
+            Think Infinite · AUMOXO
           </div>
         </div>
       </div>

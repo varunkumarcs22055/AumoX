@@ -1,12 +1,12 @@
-# AUMO.X — Enterprise Technology Website
+# AUMOXO — Enterprise Technology Website
 
-> **Think Infinite.** Production-grade Next.js 15 marketing site for AUMO.X.
+> **Think Infinite.** Production-grade Next.js 15 marketing site for AUMOXO.
 
 ## Stack
 
 - **Next.js 15** (App Router, React 19)
 - **TypeScript** (strict)
-- **Tailwind CSS v3** with custom AUMO.X gold/black design tokens
+- **Tailwind CSS v3** with custom AUMOXO gold/black design tokens
 - **react-hook-form + zod** for forms
 - **Resend** for transactional email
 - **Lucide React** for icons
@@ -19,7 +19,7 @@
 | `/` | Home — hero, stats, services preview, industries grid, products, case study, insights, CTA |
 | `/services` | Six capability practices, four-step delivery model |
 | `/industries` | Eight industry verticals with stat cards |
-| `/products` | AUMO Nexus · Atlas · Pulse — full product showcase |
+| `/products` | AUMOXO Nexus · Atlas · Pulse — full product showcase |
 | `/partners` | Logo wall, 4-tier partnership program, partner benefits |
 | `/about` | Mission, values, timeline, global footprint |
 | `/contact` | Working contact form (sends real email via Resend) |
@@ -134,5 +134,5 @@ Point your domain (e.g. `aumox.com`) to Vercel via DNS:
 
 ## License
 
-© AUMO.X Technologies. All rights reserved.
+© AUMOXO Technologies. All rights reserved.
 # AumoX

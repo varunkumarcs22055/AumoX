@@ -124,7 +124,7 @@ export default function Chatbot() {
             : "opacity-0 translate-y-4 pointer-events-none"
         } bottom-24 right-6 w-[380px] h-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-9rem)] sm:bottom-24 sm:right-6`}
         role="dialog"
-        aria-label="AUMO.X assistant"
+        aria-label="AUMOXO assistant"
       >
         {/* Header */}
         <div className="relative flex items-center gap-3 border-b border-line bg-gradient-to-r from-bg-elevated to-bg-surface px-5 py-4">
@@ -132,7 +132,7 @@ export default function Chatbot() {
             <LogoMark size={22} />
           </div>
           <div className="flex-1">
-            <div className="text-sm font-medium text-ink-100">AUMO.X Assistant</div>
+            <div className="text-sm font-medium text-ink-100">AUMOXO Assistant</div>
             <div className="text-[11px] text-gold-400/80 tracking-widest uppercase">
               Online · Guided
             </div>

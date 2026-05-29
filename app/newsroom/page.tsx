@@ -4,26 +4,26 @@ import { ArrowUpRight, Calendar, Newspaper, Mic, Download } from "lucide-react";
 export const metadata = { title: "Newsroom — Press & Media" };
 
 const releases = [
-  { date: "May 20, 2026", tag: "Product", title: "AUMO.X launches Atlas 2.0 with native GenAI fabric and federated query" },
-  { date: "May 6, 2026", tag: "Partnership", title: "AUMO.X named global system integration partner for hyperscaler X" },
-  { date: "Apr 22, 2026", tag: "Growth", title: "AUMO.X opens new delivery hub in Lisbon to serve EMEA enterprises" },
-  { date: "Apr 9, 2026", tag: "Recognition", title: "AUMO.X recognized as Leader in the 2026 Global Tech Services Quadrant" },
-  { date: "Mar 27, 2026", tag: "ESG", title: "AUMO.X publishes inaugural Sustainability Report, commits to net-zero by 2032" },
-  { date: "Mar 12, 2026", tag: "Financials", title: "AUMO.X reports record fiscal Q4 — 47% YoY revenue growth" },
+  { date: "May 20, 2026", tag: "Product", title: "AUMOXO launches Atlas 2.0 with native GenAI fabric and federated query" },
+  { date: "May 6, 2026", tag: "Partnership", title: "AUMOXO named global system integration partner for hyperscaler X" },
+  { date: "Apr 22, 2026", tag: "Growth", title: "AUMOXO opens new delivery hub in Lisbon to serve EMEA enterprises" },
+  { date: "Apr 9, 2026", tag: "Recognition", title: "AUMOXO recognized as Leader in the 2026 Global Tech Services Quadrant" },
+  { date: "Mar 27, 2026", tag: "ESG", title: "AUMOXO publishes inaugural Sustainability Report, commits to net-zero by 2032" },
+  { date: "Mar 12, 2026", tag: "Financials", title: "AUMOXO reports record fiscal Q4 — 47% YoY revenue growth" },
 ];
 
 const coverage = [
-  { outlet: "Forbes", title: "How AUMO.X Is Quietly Becoming the Default Enterprise Tech Partner", date: "May 2026" },
-  { outlet: "TechCrunch", title: "Inside AUMO.X's Platform Strategy for the Agentic AI Era", date: "Apr 2026" },
-  { outlet: "Financial Times", title: "AUMO.X: The Services Firm Built for the Post-Cloud Decade", date: "Mar 2026" },
-  { outlet: "Bloomberg", title: "AUMO.X CEO on Scaling Without Losing Engineering Culture", date: "Feb 2026" },
+  { outlet: "Forbes", title: "How AUMOXO Is Quietly Becoming the Default Enterprise Tech Partner", date: "May 2026" },
+  { outlet: "TechCrunch", title: "Inside AUMOXO's Platform Strategy for the Agentic AI Era", date: "Apr 2026" },
+  { outlet: "Financial Times", title: "AUMOXO: The Services Firm Built for the Post-Cloud Decade", date: "Mar 2026" },
+  { outlet: "Bloomberg", title: "AUMOXO CEO on Scaling Without Losing Engineering Culture", date: "Feb 2026" },
 ];
 
 const events = [
-  { date: "Jun 18, 2026", city: "Singapore", title: "AUMO.X APAC Customer Summit" },
+  { date: "Jun 18, 2026", city: "Singapore", title: "AUMOXO APAC Customer Summit" },
   { date: "Jul 09, 2026", city: "New York", title: "Financial Services Innovation Forum" },
   { date: "Sep 11, 2026", city: "London", title: "Enterprise AI Practitioners' Day" },
-  { date: "Nov 04, 2026", city: "Bengaluru", title: "AUMO.X Engineering Conf 2026" },
+  { date: "Nov 04, 2026", city: "Bengaluru", title: "AUMOXO Engineering Conf 2026" },
 ];
 
 export default function NewsroomPage() {
@@ -35,7 +35,7 @@ export default function NewsroomPage() {
           <div className="max-w-4xl">
             <div className="eyebrow"><span className="h-px w-8 bg-gold-400" />Newsroom</div>
             <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[0.95] font-extralight tracking-tight text-ink-100">
-              The latest from <span className="gold-text">AUMO.X</span>.
+              The latest from <span className="gold-text">AUMOXO</span>.
             </h1>
             <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">
               Press releases, media coverage, upcoming events and resources for journalists and analysts.

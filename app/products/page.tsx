@@ -7,7 +7,7 @@ export const metadata = {
 
 const products = [
   {
-    name: "AUMO Nexus",
+    name: "AUMOXO Nexus",
     tag: "Integration Platform",
     headline: "Connect every system. Orchestrate every workflow.",
     desc: "Enterprise integration with 200+ pre-built connectors, low-code workflow design and event-driven orchestration — deployable in the cloud or your VPC.",
@@ -21,7 +21,7 @@ const products = [
     ],
   },
   {
-    name: "AUMO Atlas",
+    name: "AUMOXO Atlas",
     tag: "Unified Data Platform",
     headline: "From raw data to GenAI-ready insight.",
     desc: "A unified data platform that handles ingestion, governance, the semantic layer and GenAI-ready APIs in one cohesive experience.",
@@ -35,7 +35,7 @@ const products = [
     ],
   },
   {
-    name: "AUMO Pulse",
+    name: "AUMOXO Pulse",
     tag: "Observability Suite",
     headline: "See everything. Miss nothing.",
     desc: "Full-stack observability built for regulated industries — traces, metrics, logs and SLO-aware alerting with retention up to 13 months.",

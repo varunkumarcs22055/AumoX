@@ -66,14 +66,14 @@ export default function Logo({ variant = "full", className = "" }: LogoProps) {
     <Link
       href="/"
       className={`inline-flex items-center gap-3 group ${className}`}
-      aria-label="AUMO.X home"
+      aria-label="AUMOXO home"
     >
       <LogoMark size={36} className="transition-transform duration-300 group-hover:rotate-[8deg]" />
       {variant === "full" && (
         <div className="flex flex-col leading-none">
           <span className="wordmark text-[17px] text-ink-100">
-            <span className="text-ink-100">AUMO</span>
-            <span className="gold-text">.X</span>
+            <span className="text-ink-100">AUMOX</span>
+            <span className="gold-text">O</span>
           </span>
           <span className="mt-[3px] text-[8px] tracking-[0.35em] uppercase text-gold-400/80">
             Think Infinite

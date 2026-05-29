@@ -15,7 +15,7 @@ export const flow: Record<string, FlowNode> = {
   greeting: {
     id: "greeting",
     message:
-      "Welcome to AUMO.X. I'm your virtual assistant — how can I help you today?",
+      "Welcome to AUMOXO. I'm your virtual assistant — how can I help you today?",
     options: [
       { label: "Explore our services", next: "services_menu" },
       { label: "View products", next: "products_menu" },
@@ -86,16 +86,16 @@ export const flow: Record<string, FlowNode> = {
     id: "products_menu",
     message: "We build three flagship platforms. Which would you like to see?",
     options: [
-      { label: "AUMO Nexus — Integration", next: "prod_nexus" },
-      { label: "AUMO Atlas — Data Platform", next: "prod_atlas" },
-      { label: "AUMO Pulse — Observability", next: "prod_pulse" },
+      { label: "AUMOXO Nexus — Integration", next: "prod_nexus" },
+      { label: "AUMOXO Atlas — Data Platform", next: "prod_atlas" },
+      { label: "AUMOXO Pulse — Observability", next: "prod_pulse" },
       { label: "← Back", next: "greeting" },
     ],
   },
   prod_nexus: {
     id: "prod_nexus",
     message:
-      "AUMO Nexus is our enterprise integration platform — 200+ connectors, low-code workflows and event-driven orchestration deployed in the cloud or your VPC.",
+      "AUMOXO Nexus is our enterprise integration platform — 200+ connectors, low-code workflows and event-driven orchestration deployed in the cloud or your VPC.",
     options: [
       { label: "Book a demo", action: "contact" },
       { label: "← Other products", next: "products_menu" },
@@ -104,7 +104,7 @@ export const flow: Record<string, FlowNode> = {
   prod_atlas: {
     id: "prod_atlas",
     message:
-      "AUMO Atlas is a unified data platform — ingestion, governance, semantic layer and GenAI-ready APIs in one cohesive experience.",
+      "AUMOXO Atlas is a unified data platform — ingestion, governance, semantic layer and GenAI-ready APIs in one cohesive experience.",
     options: [
       { label: "Book a demo", action: "contact" },
       { label: "← Other products", next: "products_menu" },
@@ -113,7 +113,7 @@ export const flow: Record<string, FlowNode> = {
   prod_pulse: {
     id: "prod_pulse",
     message:
-      "AUMO Pulse is full-stack observability built for regulated industries — traces, metrics, logs and SLO-aware alerting with retention up to 13 months.",
+      "AUMOXO Pulse is full-stack observability built for regulated industries — traces, metrics, logs and SLO-aware alerting with retention up to 13 months.",
     options: [
       { label: "Book a demo", action: "contact" },
       { label: "← Other products", next: "products_menu" },

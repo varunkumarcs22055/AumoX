@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, MapPin, Globe } from "lucide-react";
 
-export const metadata = { title: "Global Locations — AUMO.X Offices Worldwide" };
+export const metadata = { title: "Global Locations — AUMOXO Offices Worldwide" };
 
 const regions = [
   {

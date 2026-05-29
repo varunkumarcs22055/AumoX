@@ -49,7 +49,7 @@ export default function HomePage() {
               <SplitWords text="decade of" /> <span className="gold-text font-light"><SplitWords text="enterprise." /></span>
             </h1>
             <p data-anim="subtitle" className="mt-8 max-w-2xl text-lg md:text-xl text-ink-300 font-light leading-relaxed">
-              AUMO.X partners with global enterprises to design, build, and
+              AUMOXO partners with global enterprises to design, build, and
               operate the systems that move industries forward — from intelligent
               cloud to AI-native products.
             </p>
@@ -276,17 +276,17 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                name: "AUMO Nexus",
+                name: "AUMOXO Nexus",
                 tag: "Integration Platform",
                 desc: "200+ connectors, low-code workflows, and event-driven orchestration deployed in the cloud or your VPC.",
               },
               {
-                name: "AUMO Atlas",
+                name: "AUMOXO Atlas",
                 tag: "Unified Data Platform",
                 desc: "Ingestion, governance, semantic layer and GenAI-ready APIs in one cohesive experience.",
               },
               {
-                name: "AUMO Pulse",
+                name: "AUMOXO Pulse",
                 tag: "Observability Suite",
                 desc: "Traces, metrics, logs and SLO-aware alerting with 13-month retention for regulated industries.",
               },
@@ -356,7 +356,7 @@ export default function HomePage() {
             <div className="card p-10 gold-border relative">
               <Quote className="absolute top-6 right-6 text-gold-400/30" size={56} />
               <p className="text-xl lg:text-2xl font-light text-ink-100 leading-relaxed">
-                "AUMO.X didn't just deliver a migration — they re-architected
+                "AUMOXO didn't just deliver a migration — they re-architected
                 how our technology organization operates. The financial impact
                 was immediate. The cultural impact has been lasting."
               </p>

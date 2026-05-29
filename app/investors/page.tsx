@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, FileText, TrendingUp, Calendar, Shield } from "lucide-react";
 
-export const metadata = { title: "Investor Relations — AUMO.X" };
+export const metadata = { title: "Investor Relations — AUMOXO" };
 
 const highlights = [
   { v: "$2.1B", l: "FY26 revenue" },

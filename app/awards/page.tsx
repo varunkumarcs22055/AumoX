@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Award, Trophy, Star, Sparkles, ArrowUpRight } from "lucide-react";
 
-export const metadata = { title: "Awards & Recognition — AUMO.X" };
+export const metadata = { title: "Awards & Recognition — AUMOXO" };
 
 const awards = [
   { y: "2026", n: "Leader", o: "Global Tech Services Quadrant", c: "Industry Analysis" },
