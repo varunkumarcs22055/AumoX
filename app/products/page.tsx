@@ -61,7 +61,7 @@ export default function ProductsPage() {
               <span className="h-px w-8 bg-gold-400" />
               Products
             </div>
-            <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[0.95] font-extralight tracking-tight text-ink-100">
+            <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[1.05] font-extralight tracking-tight text-ink-100">
               Three platforms. <span className="gold-text">Infinite leverage.</span>
             </h1>
             <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">

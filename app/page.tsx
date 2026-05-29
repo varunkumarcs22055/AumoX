@@ -41,7 +41,7 @@ export default function HomePage() {
             </div>
             <h1
               data-anim="title"
-              className="mt-6 font-display text-5xl md:text-7xl lg:text-[88px] leading-[0.95] tracking-tight font-extralight text-ink-100"
+              className="mt-6 font-display text-5xl md:text-7xl lg:text-[88px] leading-[1.05] tracking-tight font-extralight text-ink-100"
               style={{ perspective: "800px" }}
             >
               <SplitWords text="Engineering the next" />
