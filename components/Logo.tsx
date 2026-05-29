@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoO from "./LogoO";
 
 type LogoProps = {
   variant?: "full" | "mark";
@@ -71,9 +72,11 @@ export default function Logo({ variant = "full", className = "" }: LogoProps) {
       <LogoMark size={36} className="transition-transform duration-300 group-hover:rotate-[8deg]" />
       {variant === "full" && (
         <div className="flex flex-col leading-none">
-          <span className="wordmark text-[17px] text-ink-100">
-            <span className="text-ink-100">AUMOX</span>
-            <span className="gold-text">O</span>
+          <span className="wordmark text-[17px] text-ink-100 inline-flex items-center">
+            <span>AUM</span>
+            <LogoO />
+            <span>X</span>
+            <LogoO />
           </span>
           <span className="mt-[3px] text-[8px] tracking-[0.35em] uppercase text-gold-400/80">
             Think Infinite
