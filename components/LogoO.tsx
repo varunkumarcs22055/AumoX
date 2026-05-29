@@ -1,6 +1,6 @@
 /**
- * Stylized "O" glyph — a miniature of the AUMOXO logo mark (gold ring + floating dot)
- * for use inline inside the wordmark. Each instance gets a unique gradient id.
+ * Stylized "O" glyph — a miniature of the AUMOXO logo mark (gold ring + floating dot),
+ * sized and positioned to sit on the baseline like a real letter.
  */
 
 let nextId = 0;
@@ -10,20 +10,16 @@ const getId = () => {
 };
 
 type LogoOProps = {
-  /** Width relative to surrounding text height (em). Default 0.78 */
+  /** Glyph width in em relative to surrounding text. Default 0.72 */
   size?: number;
-  /** Vertical offset (em) to align with cap line. Default -0.06 */
-  baseline?: number;
-  /** Force light/dark stroke color. Defaults to gold gradient. */
   className?: string;
 };
 
-export default function LogoO({
-  size = 0.78,
-  baseline = -0.06,
-  className = "",
-}: LogoOProps) {
+export default function LogoO({ size = 0.72, className = "" }: LogoOProps) {
   const id = getId();
+  // Total SVG height is taller than wide to leave room for the floating dot
+  // above the cap line. The ring is positioned in the lower portion of the
+  // viewBox so its visual center matches the x-height middle of nearby letters.
   return (
     <svg
       viewBox="0 0 100 130"
@@ -35,7 +31,8 @@ export default function LogoO({
         display: "inline-block",
         width: `${size}em`,
         height: `${size * 1.3}em`,
-        verticalAlign: `${baseline}em`,
+        // Aligns the ring's bottom with the surrounding text baseline.
+        verticalAlign: `-${size * 0.22}em`,
       }}
     >
       <defs>
@@ -46,19 +43,19 @@ export default function LogoO({
         </linearGradient>
       </defs>
 
-      {/* Top floating dot */}
-      <circle cx="50" cy="14" r="6.5" fill={`url(#${id})`} />
+      {/* Top floating dot — sits in the line-height area above the cap line */}
+      <circle cx="50" cy="18" r="7" fill={`url(#${id})`} />
 
-      {/* Broken ring (matches the logo mark) */}
+      {/* Ring — visually replaces the letter O, occupying baseline → cap height */}
       <circle
         cx="50"
-        cy="80"
-        r="42"
+        cy="82"
+        r="40"
         fill="none"
         stroke={`url(#${id})`}
-        strokeWidth="6"
-        strokeDasharray="240 18"
-        strokeDashoffset="-58"
+        strokeWidth="7"
+        strokeDasharray="232 18"
+        strokeDashoffset="-56"
         strokeLinecap="round"
       />
     </svg>

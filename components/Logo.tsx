@@ -72,11 +72,8 @@ export default function Logo({ variant = "full", className = "" }: LogoProps) {
       <LogoMark size={36} className="transition-transform duration-300 group-hover:rotate-[8deg]" />
       {variant === "full" && (
         <div className="flex flex-col leading-none">
-          <span className="wordmark text-[17px] text-ink-100 inline-flex items-center">
-            <span>AUM</span>
-            <LogoO />
-            <span>X</span>
-            <LogoO />
+          <span className="wordmark text-[17px] text-ink-100 whitespace-nowrap">
+            AUM<LogoO />X<LogoO />
           </span>
           <span className="mt-[3px] text-[8px] tracking-[0.35em] uppercase text-gold-400/80">
             Think Infinite

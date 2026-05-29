@@ -74,11 +74,8 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <LogoMark size={44} />
               <div>
-                <div className="wordmark text-xl inline-flex items-center">
-                  <span>AUM</span>
-                  <LogoO />
-                  <span>X</span>
-                  <LogoO />
+                <div className="wordmark text-xl whitespace-nowrap">
+                  AUM<LogoO />X<LogoO />
                 </div>
                 <div className="text-[10px] tracking-[0.35em] uppercase text-gold-400/80 mt-1">
                   Think Infinite

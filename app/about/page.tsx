@@ -50,11 +50,8 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="card p-12 gold-border text-center">
               <LogoMark size={120} className="mx-auto" />
-              <div className="wordmark text-3xl mt-8 inline-flex items-center">
-                <span>AUM</span>
-                <LogoO />
-                <span>X</span>
-                <LogoO />
+              <div className="wordmark text-3xl mt-8 whitespace-nowrap">
+                AUM<LogoO />X<LogoO />
               </div>
               <div className="text-xs tracking-[0.4em] uppercase text-gold-400 mt-3">
                 Think Infinite
