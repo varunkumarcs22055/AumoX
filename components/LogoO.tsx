@@ -1,14 +1,6 @@
 /**
- * Stylized "O" glyph — a miniature of the AUMOXO logo mark (gold ring + floating dot),
- * sized so the ring fills the cap-height of surrounding text and sits on the baseline.
- *
- * Geometry math (in viewBox units, width = `size` em, viewBox 100×130):
- *   - Ring  cx=50, cy=89, r=41  → ring bottom at y=130 (= baseline)
- *                                  ring top    at y=48  (≈ cap height)
- *   - Dot   cx=50, cy=18, r=8   → floats above the cap line into the line box
- *
- * The component also adds horizontal margin to play well with the .wordmark
- * letter-spacing (0.28em → 0.14em on each side of the glyph).
+ * Stylized "O" glyph — a miniature of the AUMOXO logo mark (gold ring + small floating dot),
+ * tuned to sit cleanly inline next to capital letters at the same visual cap-height.
  */
 
 let nextId = 0;
@@ -18,22 +10,22 @@ const getId = () => {
 };
 
 type LogoOProps = {
-  /** Glyph width in em. Default 0.85 matches uppercase cap height visual mass. */
+  /** Width and height in em. Default 0.9 matches uppercase cap height in Inter. */
   size?: number;
-  /** Letter-spacing compensation in em (each side). Default 0.14em matches wordmark. */
+  /** Letter-spacing compensation in em (each side). Default 0.12em. */
   spacing?: number;
   className?: string;
 };
 
 export default function LogoO({
-  size = 0.85,
-  spacing = 0.14,
+  size = 0.9,
+  spacing = 0.12,
   className = "",
 }: LogoOProps) {
   const id = getId();
   return (
     <svg
-      viewBox="0 0 100 130"
+      viewBox="0 0 100 100"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       focusable="false"
@@ -41,8 +33,8 @@ export default function LogoO({
       style={{
         display: "inline-block",
         width: `${size}em`,
-        height: `${size * 1.3}em`,
-        verticalAlign: "baseline",
+        height: `${size}em`,
+        verticalAlign: `-${size * 0.16}em`,
         margin: `0 ${spacing}em`,
       }}
     >
@@ -54,19 +46,19 @@ export default function LogoO({
         </linearGradient>
       </defs>
 
-      {/* Top floating dot — sits above cap height, inside the line box */}
-      <circle cx="50" cy="18" r="8" fill={`url(#${id})`} />
+      {/* Small dot — sits just above the ring (close, not floating high) */}
+      <circle cx="50" cy="12" r="5" fill={`url(#${id})`} />
 
-      {/* Ring — bottom touches baseline, top at cap height */}
+      {/* Ring — fills the cap-height area, slightly lower to sit on baseline */}
       <circle
         cx="50"
-        cy="89"
-        r="41"
+        cy="55"
+        r="40"
         fill="none"
         stroke={`url(#${id})`}
         strokeWidth="7"
-        strokeDasharray="232 18"
-        strokeDashoffset="-56"
+        strokeDasharray="228 22"
+        strokeDashoffset="-58"
         strokeLinecap="round"
       />
     </svg>

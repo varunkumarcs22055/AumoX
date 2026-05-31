@@ -88,9 +88,7 @@ export function SplitWords({
     <span className={className}>
       {words.map((w, i) => (
         <span key={i} className="inline-block">
-          <span className="inline-block overflow-hidden align-bottom">
-            <span className="anim-word inline-block">{w}</span>
-          </span>
+          <span className="anim-word inline-block">{w}</span>
           {i < words.length - 1 && <span>&nbsp;</span>}
         </span>
       ))}
