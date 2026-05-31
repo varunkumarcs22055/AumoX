@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
+import SiteParticles from "@/components/SiteParticles";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
@@ -69,6 +70,7 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <SiteParticles />
           <Chatbot />
         </ThemeProvider>
       </body>

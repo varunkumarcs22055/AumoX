@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Reveal from "@/components/anim/Reveal";
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -173,9 +174,9 @@ export default function ServicesPage() {
                 <p className="text-lg text-ink-300 font-light leading-relaxed lg:pt-16">{p.blurb}</p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <Reveal stagger=".svc-card" staggerGap={0.08} className="grid md:grid-cols-2 gap-6">
                 {p.services.map(({ i: Icon, name, desc, deliverables }) => (
-                  <div key={name} className="card p-10 gold-border group">
+                  <div key={name} className="svc-card card p-10 gold-border group">
                     <div className="flex items-start justify-between">
                       <div className="grid h-14 w-14 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-600 dark:text-gold-300">
                         <Icon size={22} />
@@ -200,7 +201,7 @@ export default function ServicesPage() {
                     </Link>
                   </div>
                 ))}
-              </div>
+              </Reveal>
             </div>
           </section>
         );

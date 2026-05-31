@@ -34,11 +34,17 @@ export default function ParticleField({
   cursorRadius = 130,
   /** Strength of repulsion. 0–1 */
   cursorStrength = 0.45,
+  /** Radius within which particles get connected to the cursor by a bright line (px). */
+  constellationRadius = 180,
+  /** Show a glowing wand at the cursor position. */
+  showWand = true,
   className = "",
 }: {
   count?: number;
   cursorRadius?: number;
   cursorStrength?: number;
+  constellationRadius?: number;
+  showWand?: boolean;
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -179,6 +185,45 @@ export default function ParticleField({
         ctx!.lineTo(p.length / 2, 0);
         ctx!.stroke();
         ctx!.restore();
+      }
+
+      // CONSTELLATION — bright gold lines from cursor to every nearby particle
+      if (mx > -1000 && constellationRadius > 0) {
+        const cr = constellationRadius;
+        const cr2 = cr * cr;
+        ctx!.save();
+        ctx!.lineCap = "round";
+        ctx!.shadowColor = "#D4AF37";
+        for (const p of particles) {
+          const dx = p.x - mx;
+          const dy = p.y - my;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < cr2) {
+            const d = Math.sqrt(d2);
+            const t = 1 - d / cr; // 1 at cursor, 0 at radius edge
+            ctx!.globalAlpha = t * 0.55;
+            ctx!.lineWidth = 0.6 + t * 1.2;
+            ctx!.shadowBlur = 6 + t * 8;
+            ctx!.strokeStyle = t > 0.6 ? "#FAF1D6" : "#E5C76B";
+            ctx!.beginPath();
+            ctx!.moveTo(mx, my);
+            ctx!.lineTo(p.x, p.y);
+            ctx!.stroke();
+          }
+        }
+        ctx!.restore();
+      }
+
+      // CURSOR WAND — a soft glowing dot at the cursor position
+      if (showWand && mx > -1000) {
+        const grad = ctx!.createRadialGradient(mx, my, 0, mx, my, 30);
+        grad.addColorStop(0, "rgba(250,241,214,0.85)");
+        grad.addColorStop(0.4, "rgba(212,175,55,0.35)");
+        grad.addColorStop(1, "rgba(212,175,55,0)");
+        ctx!.fillStyle = grad;
+        ctx!.beginPath();
+        ctx!.arc(mx, my, 30, 0, Math.PI * 2);
+        ctx!.fill();
       }
 
       raf = requestAnimationFrame(tick);

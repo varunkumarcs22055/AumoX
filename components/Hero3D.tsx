@@ -252,18 +252,32 @@ export default function Hero3D() {
             />
           ))}
 
-          {/* THE ORBITAL RING — single, elegant, circular */}
+          {/* MAIN ORBITAL RING — bright, with glow */}
           <circle
             className="orbit-ring"
             cx="400" cy="400" r="300"
             fill="none"
             stroke="url(#gold-stroke)"
-            strokeWidth="1.5"
-            opacity="0.65"
-            strokeDasharray="3 14"
+            strokeWidth="2.2"
+            opacity="0.95"
+            strokeDasharray="3 12"
+            filter="url(#dot-bloom)"
             style={{
               transformOrigin: "400px 400px",
-              animation: "spin-cw 60s linear infinite",
+              animation: "spin-cw 55s linear infinite",
+            }}
+          />
+          {/* Secondary inner ring */}
+          <circle
+            cx="400" cy="400" r="225"
+            fill="none"
+            stroke="url(#gold-stroke)"
+            strokeWidth="1.5"
+            opacity="0.6"
+            strokeDasharray="2 18"
+            style={{
+              transformOrigin: "400px 400px",
+              animation: "spin-cw 35s linear infinite reverse",
             }}
           />
 

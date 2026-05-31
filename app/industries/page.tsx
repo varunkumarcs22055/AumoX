@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Reveal from "@/components/anim/Reveal";
 import {
   ArrowUpRight,
   Banknote,
@@ -50,9 +51,9 @@ export default function IndustriesPage() {
 
       <section className="py-24 lg:py-32">
         <div className="container-x">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Reveal stagger=".industry-tile" staggerGap={0.06} className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {industries.map(({ i: Icon, t, d, stat, statL }) => (
-              <div key={t} className="card p-8 flex flex-col group">
+              <div key={t} className="industry-tile card p-8 flex flex-col group">
                 <div className="grid h-14 w-14 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 group-hover:bg-gold-400/10 transition-colors">
                   <Icon size={22} />
                 </div>
@@ -73,7 +74,7 @@ export default function IndustriesPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 

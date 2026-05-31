@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Reveal from "@/components/anim/Reveal";
 import {
   ArrowUpRight,
   MapPin,
@@ -135,12 +136,12 @@ export default function CareersPage() {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <Reveal stagger=".role-row" staggerGap={0.045} className="space-y-3">
             {openRoles.map((r) => (
               <Link
                 key={r.title}
                 href="/contact"
-                className="group grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] items-center gap-4 p-6 rounded-xl border border-line bg-bg-base hover:border-gold-400/50 hover:bg-bg-elevated transition-all"
+                className="role-row group grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] items-center gap-4 p-6 rounded-xl border border-line bg-bg-base hover:border-gold-400/50 hover:bg-bg-elevated transition-all"
               >
                 <div>
                   <div className="text-lg text-ink-100 font-light group-hover:text-gold-300 transition-colors">
@@ -160,7 +161,7 @@ export default function CareersPage() {
                 </div>
               </Link>
             ))}
-          </div>
+          </Reveal>
 
           <div className="text-center mt-12 text-sm text-ink-300 font-light">
             Don't see your role?{" "}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Reveal from "@/components/anim/Reveal";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 
 export const metadata = {
@@ -75,8 +76,9 @@ export default function ProductsPage() {
       <section className="py-24 lg:py-32">
         <div className="container-x space-y-24">
           {products.map((p, idx) => (
-            <div
+            <Reveal
               key={p.name}
+              kind="fade-up"
               className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
                 idx % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
               }`}
@@ -116,7 +118,7 @@ export default function ProductsPage() {
                   ))}
                 </ul>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
