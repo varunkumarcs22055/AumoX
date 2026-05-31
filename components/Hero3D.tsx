@@ -25,23 +25,31 @@ export default function Hero3D() {
     const el = wrapRef.current;
     if (!el) return;
 
-    // Subtle 3D-tilt on the logo as the cursor moves
+    // Smooth, frame-locked cursor follow. Target updates on mousemove,
+    // current values LERP toward target each frame — produces flowy motion
+    // instead of the jitter that comes from per-event transforms.
+    const target = { x: 0, y: 0 };
+    const current = { x: 0, y: 0 };
+
     const handler = (e: MouseEvent) => {
       const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.setProperty("--mx", `${x * 20}px`);
-      el.style.setProperty("--my", `${y * 20}px`);
-      if (logoRef.current) {
-        gsap.to(logoRef.current, {
-          rotateY: x * 14,
-          rotateX: -y * 14,
-          duration: 0.6,
-          ease: "power2.out",
-        });
-      }
+      const nx = (e.clientX - r.left) / r.width - 0.5;
+      const ny = (e.clientY - r.top) / r.height - 0.5;
+      target.x = nx * 18; // small max offset
+      target.y = ny * 18;
     };
     window.addEventListener("mousemove", handler);
+
+    // Continuous lerp loop — single rAF, applies smoothed value to a CSS var
+    let raf = 0;
+    function flow() {
+      current.x += (target.x - current.x) * 0.06; // ease constant
+      current.y += (target.y - current.y) * 0.06;
+      el!.style.setProperty("--mx", `${current.x.toFixed(2)}px`);
+      el!.style.setProperty("--my", `${current.y.toFixed(2)}px`);
+      raf = requestAnimationFrame(flow);
+    }
+    flow();
 
     // Entrance choreography
     const ctx = gsap.context(() => {
@@ -116,6 +124,7 @@ export default function Hero3D() {
     }, el);
 
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("mousemove", handler);
       ctx.revert();
     };
@@ -143,13 +152,14 @@ export default function Hero3D() {
       className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
       style={{ ["--mx" as any]: "0px", ["--my" as any]: "0px" } as React.CSSProperties}
     >
-      {/* Mouse-following soft glow */}
+      {/* Mouse-following soft glow (frame-locked via rAF, no CSS transition) */}
       <div
-        className="absolute inset-0 transition-transform duration-300 ease-out"
+        className="absolute inset-0"
         style={{
           transform: "translate3d(var(--mx), var(--my), 0)",
           background:
             "radial-gradient(900px circle at 78% 38%, rgba(212,175,55,0.22), transparent 60%), radial-gradient(700px circle at 22% 78%, rgba(245,158,11,0.10), transparent 65%)",
+          willChange: "transform",
         }}
       />
 
@@ -168,8 +178,7 @@ export default function Hero3D() {
         className="absolute top-1/2 right-[5%] lg:right-[8%] -translate-y-1/2 w-[640px] h-[640px] lg:w-[780px] lg:h-[780px]"
         style={{
           transform: "translate(var(--mx), calc(var(--my) - 50%))",
-          transition: "transform 300ms ease-out",
-          perspective: "1200px",
+          willChange: "transform",
         }}
       >
         {/* Slowly rotating conic halo behind logo */}
@@ -295,8 +304,8 @@ export default function Hero3D() {
         </div>
       </div>
 
-      {/* Premium canvas particle field — 280 gold sparks, cursor-reactive */}
-      <ParticleField count={280} cursorRadius={140} cursorStrength={0.5} />
+      {/* Premium canvas particle field — 280 gold sparks, gentle cursor influence */}
+      <ParticleField count={280} cursorRadius={110} cursorStrength={0.12} />
 
       {/* Left-side vignette so foreground copy stays legible */}
       <div
