@@ -1,6 +1,15 @@
 /**
- * Stylized "O" glyph — a miniature of the AUMOXO logo mark (gold ring + small floating dot),
- * tuned to sit cleanly inline next to capital letters at the same visual cap-height.
+ * Stylized "O" glyph — a miniature of the AUMOXO logo mark
+ * (gold ring + floating dot above) for inline use in the wordmark.
+ *
+ * Geometry (viewBox 100×130, taller than wide so the dot can float above):
+ *   Ring  cx=50 cy=80 r=42  → spans y=38–122 (≈ cap-height once scaled)
+ *   Dot   cx=50 cy=14 r=7   → floats above the ring like the real logo
+ *
+ * Alignment math (size=0.85em → SVG height 1.105em):
+ *   Ring bottom is at 122/130 of SVG height = 1.038em from SVG top.
+ *   We set vertical-align: -0.067em so SVG bottom sits 0.067em below baseline,
+ *   which puts ring bottom exactly on the text baseline.
  */
 
 let nextId = 0;
@@ -10,22 +19,22 @@ const getId = () => {
 };
 
 type LogoOProps = {
-  /** Width and height in em. Default 0.9 matches uppercase cap height in Inter. */
+  /** Width in em. Default 0.85 visually matches uppercase cap height. */
   size?: number;
-  /** Letter-spacing compensation in em (each side). Default 0.12em. */
+  /** Horizontal margin per side in em (compensates for wordmark letter-spacing). */
   spacing?: number;
   className?: string;
 };
 
 export default function LogoO({
-  size = 0.9,
-  spacing = 0.12,
+  size = 0.85,
+  spacing = 0.13,
   className = "",
 }: LogoOProps) {
   const id = getId();
   return (
     <svg
-      viewBox="0 0 100 100"
+      viewBox="0 0 100 130"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       focusable="false"
@@ -33,8 +42,8 @@ export default function LogoO({
       style={{
         display: "inline-block",
         width: `${size}em`,
-        height: `${size}em`,
-        verticalAlign: `-${size * 0.16}em`,
+        height: `${size * 1.3}em`,
+        verticalAlign: `-${(size * 1.3) - size * 1.22}em`, // = size * 0.08em — puts ring bottom on baseline
         margin: `0 ${spacing}em`,
       }}
     >
@@ -46,19 +55,19 @@ export default function LogoO({
         </linearGradient>
       </defs>
 
-      {/* Small dot — sits just above the ring (close, not floating high) */}
-      <circle cx="50" cy="12" r="5" fill={`url(#${id})`} />
+      {/* Floating dot — above the ring, like the original logo mark */}
+      <circle cx="50" cy="14" r="7" fill={`url(#${id})`} />
 
-      {/* Ring — fills the cap-height area, slightly lower to sit on baseline */}
+      {/* Broken ring — visually replaces the letter O */}
       <circle
         cx="50"
-        cy="55"
-        r="40"
+        cy="80"
+        r="42"
         fill="none"
         stroke={`url(#${id})`}
-        strokeWidth="7"
-        strokeDasharray="228 22"
-        strokeDashoffset="-58"
+        strokeWidth="6"
+        strokeDasharray="240 22"
+        strokeDashoffset="-60"
         strokeLinecap="round"
       />
     </svg>
