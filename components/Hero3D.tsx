@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { LogoMark } from "./Logo";
+import ParticleField from "./anim/ParticleField";
 
 /**
  * Hero background — refined for impact.
@@ -294,32 +295,8 @@ export default function Hero3D() {
         </div>
       </div>
 
-      {/* Drifting ambient particles */}
-      <div className="absolute inset-0">
-        {Array.from({ length: 24 }).map((_, i) => {
-          const top = (i * 37) % 100;
-          const left = (i * 53) % 100;
-          const size = 2 + (i % 4);
-          const delay = (i * 0.4) % 8;
-          const duration = 8 + (i % 6);
-          return (
-            <span
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                top: `${top}%`,
-                left: `${left}%`,
-                width: `${size}px`,
-                height: `${size}px`,
-                background: i % 3 === 0 ? "#F0DDA0" : "#D4AF37",
-                boxShadow: `0 0 ${size * 4}px rgba(212,175,55,0.7)`,
-                opacity: 0.5 + (i % 5) / 10,
-                animation: `particle-float ${duration}s ease-in-out ${delay}s infinite`,
-              }}
-            />
-          );
-        })}
-      </div>
+      {/* Premium canvas particle field — 280 gold sparks, cursor-reactive */}
+      <ParticleField count={280} cursorRadius={140} cursorStrength={0.5} />
 
       {/* Left-side vignette so foreground copy stays legible */}
       <div
@@ -335,10 +312,6 @@ export default function Hero3D() {
           0%, 100% { transform: translate(0, 0) scale(1); }
           33%      { transform: translate(40px, -30px) scale(1.05); }
           66%      { transform: translate(-30px, 40px) scale(0.95); }
-        }
-        @keyframes particle-float {
-          0%, 100% { transform: translate(0, 0); opacity: 0.4; }
-          50%      { transform: translate(20px, -30px); opacity: 1; }
         }
         @keyframes spin-cw {
           from { transform: rotate(0deg); }
