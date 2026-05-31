@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle } from "lucide-react";
+import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, type LucideIcon } from "lucide-react";
 import { jobsStore, insightsStore } from "@/lib/admin/store";
 
 export default function AdminDashboard() {
@@ -84,7 +84,7 @@ function DashCard({
   href, icon: Icon, title, stat, desc,
 }: {
   href: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   title: string;
   stat: string;
   desc: string;
