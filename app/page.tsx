@@ -46,7 +46,7 @@ export default function HomePage() {
             >
               <SplitWords text="Engineering the next" />
               <br />
-              <SplitWords text="decade of" /> <span className="gold-text font-light"><SplitWords text="enterprise." /></span>
+              <SplitWords text="decade of" /> <SplitWords text="enterprise." className="gold-text font-light" />
             </h1>
             <p data-anim="subtitle" className="mt-8 max-w-2xl text-lg md:text-xl text-ink-300 font-light leading-relaxed">
               AUMOXO partners with global enterprises to design, build, and

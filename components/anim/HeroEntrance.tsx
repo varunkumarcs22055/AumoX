@@ -74,7 +74,12 @@ export default function HeroEntrance({
 
 /**
  * Splits a heading into per-word spans for staggered animation by HeroEntrance.
- * Usage: <SplitWords text="Engineering the next decade" />
+ * `className` is applied to each word's text span so that text-effect classes
+ * (e.g. `gold-text` which uses `background-clip: text`) actually clip to the
+ * word's glyphs rather than an empty wrapper.
+ *
+ * Usage:
+ *   <SplitWords text="enterprise." className="gold-text" />
  */
 export function SplitWords({
   text,
@@ -85,13 +90,13 @@ export function SplitWords({
 }) {
   const words = text.split(" ");
   return (
-    <span className={className}>
+    <>
       {words.map((w, i) => (
         <span key={i} className="inline-block">
-          <span className="anim-word inline-block">{w}</span>
+          <span className={`anim-word inline-block ${className}`}>{w}</span>
           {i < words.length - 1 && <span>&nbsp;</span>}
         </span>
       ))}
-    </span>
+    </>
   );
 }
