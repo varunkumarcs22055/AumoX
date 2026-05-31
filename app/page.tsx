@@ -219,7 +219,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Reveal stagger=".industry-card" staggerGap={0.06} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
               { i: Banknote, t: "Banking & Financial" },
               { i: HeartPulse, t: "Healthcare & Life Sciences" },
@@ -231,7 +231,7 @@ export default function HomePage() {
               <Link
                 key={t}
                 href="/industries"
-                className="group card p-6 flex flex-col items-center text-center"
+                className="industry-card group card p-6 flex flex-col items-center text-center"
               >
                 <div className="grid h-14 w-14 place-items-center rounded-full border border-gold-400/30 bg-bg-base text-gold-300 group-hover:bg-gold-400/10 group-hover:border-gold-400/60 transition-all">
                   <Icon size={22} />
@@ -241,7 +241,7 @@ export default function HomePage() {
                 </div>
               </Link>
             ))}
-          </div>
+          </Reveal>
 
           <div className="text-center mt-12">
             <Link href="/industries" className="btn-ghost">
@@ -273,7 +273,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <Reveal stagger=".product-card" staggerGap={0.12} className="grid md:grid-cols-3 gap-6">
             {[
               {
                 name: "AUMOXO Nexus",
@@ -291,7 +291,7 @@ export default function HomePage() {
                 desc: "Traces, metrics, logs and SLO-aware alerting with 13-month retention for regulated industries.",
               },
             ].map((p) => (
-              <div key={p.name} className="card p-8 gold-border flex flex-col">
+              <div key={p.name} className="product-card card p-8 gold-border flex flex-col">
                 <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">
                   {p.tag}
                 </div>
@@ -309,14 +309,14 @@ export default function HomePage() {
                 </Link>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ========== CASE STUDY / TESTIMONIAL ========== */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
         <div className="container-x">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <Reveal kind="fade-up" className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <div className="eyebrow">
                 <span className="h-px w-8 bg-gold-400" />
@@ -372,7 +372,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -394,7 +394,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <Reveal stagger=".insight-card" staggerGap={0.12} className="grid md:grid-cols-3 gap-6">
             {[
               {
                 tag: "GenAI",
@@ -414,7 +414,7 @@ export default function HomePage() {
             ].map((a) => (
               <article
                 key={a.title}
-                className="card p-8 flex flex-col group cursor-pointer"
+                className="insight-card card p-8 flex flex-col group cursor-pointer"
               >
                 <div className="aspect-[16/10] -mx-8 -mt-8 mb-6 bg-gradient-to-br from-gold-400/20 via-bg-elevated to-bg-base relative overflow-hidden">
                   <div className="absolute inset-0 grid-overlay opacity-50" />
@@ -434,7 +434,7 @@ export default function HomePage() {
                 </div>
               </article>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -443,7 +443,7 @@ export default function HomePage() {
         <div className="absolute inset-0 hero-gradient" />
         <div className="absolute inset-0 grid-overlay opacity-50" />
         <div className="container-x relative">
-          <div className="text-center max-w-3xl mx-auto">
+          <Reveal kind="scale-in" className="text-center max-w-3xl mx-auto">
             <h2 className="font-display text-4xl md:text-6xl font-extralight text-ink-100 tracking-tight leading-[1.05]">
               Ready to build what's <span className="gold-text">next</span>?
             </h2>
@@ -459,7 +459,7 @@ export default function HomePage() {
                 See Services
               </Link>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
     </>
