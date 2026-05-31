@@ -3,6 +3,7 @@ import HeroBackground from "@/components/HeroBackground";
 import Reveal from "@/components/anim/Reveal";
 import Counter from "@/components/anim/Counter";
 import HeroEntrance, { SplitWords } from "@/components/anim/HeroEntrance";
+import MagneticLink from "@/components/anim/MagneticLink";
 import {
   ArrowUpRight,
   Globe,
@@ -54,13 +55,13 @@ export default function HomePage() {
               cloud to AI-native products.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <Link data-anim="cta" href="/contact" className="btn-gold">
+              <MagneticLink data-anim="cta" href="/contact" className="btn-gold">
                 Start a Conversation
                 <ArrowUpRight size={18} />
-              </Link>
-              <Link data-anim="cta" href="/services" className="btn-ghost">
+              </MagneticLink>
+              <MagneticLink data-anim="cta" href="/services" className="btn-ghost">
                 Explore Capabilities
-              </Link>
+              </MagneticLink>
             </div>
           </div>
 

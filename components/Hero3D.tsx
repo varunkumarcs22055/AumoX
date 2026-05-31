@@ -5,103 +5,107 @@ import { gsap } from "gsap";
 import { LogoMark } from "./Logo";
 
 /**
- * Animated hero background — gold logo at the center of an orbital system with:
- *   • Tight inner halo orbit (fast spin, very close to the logo)
- *   • Three concentric orbital rings (different tilts/speeds), each carrying
- *     multiple traveling gold dots
- *   • Three expanding pulse rings emanating from the logo (shockwave effect)
- *   • Random twinkling background stars + drifting particles + mesh blobs
- *   • GSAP entrance: logo zoom-in, rings draw on via stroke-dashoffset, dots fade
- *   • CSS keyframes drive the continuous loops (cheap on GPU)
+ * Hero background — refined for impact.
+ * Composition (centered on the logo):
+ *   1. Soft conic halo slowly rotating behind the logo
+ *   2. Radial glow + gold pulse shockwaves emanating from center
+ *   3. ONE elegant orbital ring with 5 large gold dots
+ *   4. Subtle starfield + drifting particles + mesh blobs
+ * Choreography: on mount, halo + glow fade in, logo zooms in, ring strokes
+ * draw on, dots fly out from center to ring positions, then the loops start.
  */
-
-// Helper: place N evenly spaced dots around an ellipse (rx, ry, cx, cy).
-function dotsOnEllipse(count: number, rx: number, ry: number, cx = 400, cy = 400, r = 5) {
-  return Array.from({ length: count }, (_, i) => {
-    const t = (i / count) * Math.PI * 2;
-    return { x: cx + rx * Math.cos(t), y: cy + ry * Math.sin(t), r };
-  });
-}
-
 export default function Hero3D() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
+  const haloRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
 
-    // Mouse parallax
+    // Subtle 3D-tilt on the logo as the cursor moves
     const handler = (e: MouseEvent) => {
       const r = el.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.setProperty("--mx", `${x * 22}px`);
-      el.style.setProperty("--my", `${y * 22}px`);
+      el.style.setProperty("--mx", `${x * 20}px`);
+      el.style.setProperty("--my", `${y * 20}px`);
+      if (logoRef.current) {
+        gsap.to(logoRef.current, {
+          rotateY: x * 14,
+          rotateX: -y * 14,
+          duration: 0.6,
+          ease: "power2.out",
+        });
+      }
     };
     window.addEventListener("mousemove", handler);
 
-    // Entrance timeline
+    // Entrance choreography
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-      // Logo entrance
+      // Halo rotates in
+      if (haloRef.current) {
+        tl.fromTo(haloRef.current, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 1.4 }, 0);
+      }
+
+      // Logo zoom
       if (logoRef.current) {
         tl.fromTo(
           logoRef.current,
-          { scale: 0.25, opacity: 0, rotate: -45 },
+          { scale: 0.25, opacity: 0, rotate: -50 },
           { scale: 1, opacity: 1, rotate: 0, duration: 1.7, ease: "power4.out" },
-          0
+          0.1
         );
       }
 
       const svg = svgRef.current;
       if (!svg) return;
 
-      const glow = svg.querySelectorAll(".core-glow");
-      const orbits = svg.querySelectorAll(".orbit");
-      const drawables = svg.querySelectorAll<SVGEllipseElement | SVGCircleElement>(".draw-stroke");
-      const dots = svg.querySelectorAll(".orbit-dot");
+      const orbitRing = svg.querySelector(".orbit-ring");
+      const dots = svg.querySelectorAll<SVGCircleElement>(".orbit-dot");
       const stars = svg.querySelectorAll(".twinkle-star");
 
-      // Halo glow fades in
-      if (glow.length) tl.fromTo(glow, { opacity: 0 }, { opacity: 1, duration: 1.3 }, 0.2);
-
-      // Orbits scale up while their strokes "draw" via dashoffset
-      drawables.forEach((d) => {
-        try {
-          const len = (d as any).getTotalLength?.() ?? 1500;
-          gsap.set(d, { strokeDasharray: len, strokeDashoffset: len });
-        } catch {
-          /* SVG ellipses may not have getTotalLength in some browsers — fall through */
-        }
-      });
-      if (orbits.length) {
-        tl.fromTo(
-          orbits,
-          { opacity: 0, scale: 0.6, transformOrigin: "50% 50%" },
-          { opacity: 1, scale: 1, duration: 1.3, stagger: 0.18 },
-          0.4
-        );
+      // Ring stroke draw-on
+      if (orbitRing) {
+        const len = (orbitRing as any).getTotalLength?.() ?? 2000;
+        gsap.set(orbitRing, { strokeDasharray: len, strokeDashoffset: len, opacity: 1 });
+        tl.to(orbitRing, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, 0.5);
       }
-      tl.to(
-        drawables,
-        { strokeDashoffset: 0, duration: 1.6, stagger: 0.12, ease: "power2.out" },
-        0.5
-      );
 
-      // Orbital dots fade in
-      if (dots.length) tl.fromTo(dots, { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.6, stagger: 0.05 }, 1.3);
+      // Dots fly out from logo to their orbit positions
+      dots.forEach((d, i) => {
+        const cx = parseFloat(d.getAttribute("cx") || "400");
+        const cy = parseFloat(d.getAttribute("cy") || "400");
+        gsap.set(d, {
+          attr: { cx: 400, cy: 400 },
+          opacity: 0,
+          scale: 0,
+          transformOrigin: "400px 400px",
+        });
+        tl.to(
+          d,
+          {
+            attr: { cx, cy },
+            opacity: 1,
+            scale: 1,
+            duration: 1.2,
+            ease: "power3.out",
+          },
+          1.0 + i * 0.08
+        );
+      });
 
       // Stars fade in
-      if (stars.length) tl.fromTo(stars, { opacity: 0 }, { opacity: 1, duration: 1.5, stagger: 0.04 }, 0.6);
+      if (stars.length) tl.fromTo(stars, { opacity: 0 }, { opacity: 1, duration: 1.4, stagger: 0.04 }, 0.6);
 
-      // Continuous gentle breathing on logo
+      // Continuous: gentle breathing on logo
       if (logoRef.current) {
         gsap.to(logoRef.current, {
-          scale: 1.04,
-          duration: 3.5,
+          scale: 1.05,
+          duration: 4,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
@@ -116,18 +120,18 @@ export default function Hero3D() {
     };
   }, []);
 
-  // Pre-compute dot positions for each orbit
-  const dotsOrbit1 = dotsOnEllipse(3, 240, 80);
-  const dotsOrbit2 = dotsOnEllipse(4, 300, 110);
-  const dotsOrbit3 = dotsOnEllipse(3, 360, 140);
-  const dotsHalo = dotsOnEllipse(6, 165, 165);
+  // 5 dots evenly spaced on the orbital ellipse (rx=300, ry=300 → circle)
+  const dots = Array.from({ length: 5 }, (_, i) => {
+    const t = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    return { cx: 400 + 300 * Math.cos(t), cy: 400 + 300 * Math.sin(t), r: 7 };
+  });
 
-  // 22 random-but-deterministic stars
-  const stars = Array.from({ length: 22 }, (_, i) => {
-    const x = ((i * 91) % 780) + 10;
-    const y = ((i * 137) % 780) + 10;
-    const r = 0.8 + ((i * 7) % 6) / 4;
-    const delay = (i * 0.31) % 4;
+  // 28 deterministic stars across the SVG
+  const stars = Array.from({ length: 28 }, (_, i) => {
+    const x = ((i * 91 + 17) % 780) + 10;
+    const y = ((i * 137 + 53) % 780) + 10;
+    const r = 0.7 + ((i * 7) % 6) / 4;
+    const delay = (i * 0.27) % 4;
     return { x, y, r, delay };
   });
 
@@ -144,7 +148,7 @@ export default function Hero3D() {
         style={{
           transform: "translate3d(var(--mx), var(--my), 0)",
           background:
-            "radial-gradient(820px circle at 75% 35%, rgba(212,175,55,0.20), transparent 60%), radial-gradient(700px circle at 25% 80%, rgba(245,158,11,0.10), transparent 65%)",
+            "radial-gradient(900px circle at 78% 38%, rgba(212,175,55,0.22), transparent 60%), radial-gradient(700px circle at 22% 78%, rgba(245,158,11,0.10), transparent 65%)",
         }}
       />
 
@@ -158,14 +162,26 @@ export default function Hero3D() {
         style={{ background: "radial-gradient(circle, rgba(184,148,31,0.5), transparent 60%)" }}
       />
 
-      {/* ORBIT SYSTEM — centered on the logo */}
+      {/* ORBIT SYSTEM */}
       <div
-        className="absolute top-1/2 right-[-12%] lg:right-[-2%] -translate-y-1/2 w-[700px] h-[700px] lg:w-[860px] lg:h-[860px]"
+        className="absolute top-1/2 right-[5%] lg:right-[8%] -translate-y-1/2 w-[640px] h-[640px] lg:w-[780px] lg:h-[780px]"
         style={{
           transform: "translate(var(--mx), calc(var(--my) - 50%))",
           transition: "transform 300ms ease-out",
+          perspective: "1200px",
         }}
       >
+        {/* Slowly rotating conic halo behind logo */}
+        <div
+          ref={haloRef}
+          className="absolute inset-0 rounded-full opacity-90 animate-[halo-spin_36s_linear_infinite]"
+          style={{
+            background:
+              "conic-gradient(from 0deg, rgba(212,175,55,0) 0%, rgba(212,175,55,0.35) 25%, rgba(212,175,55,0) 50%, rgba(240,221,160,0.28) 75%, rgba(212,175,55,0) 100%)",
+            filter: "blur(40px)",
+          }}
+        />
+
         <svg ref={svgRef} viewBox="0 0 800 800" className="absolute inset-0 w-full h-full">
           <defs>
             <linearGradient id="gold-stroke" x1="0" y1="0" x2="1" y2="1">
@@ -175,143 +191,112 @@ export default function Hero3D() {
             </linearGradient>
             <radialGradient id="core-glow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#F0DDA0" stopOpacity="0.55" />
-              <stop offset="60%" stopColor="#D4AF37" stopOpacity="0.15" />
+              <stop offset="55%" stopColor="#D4AF37" stopOpacity="0.18" />
               <stop offset="100%" stopColor="transparent" />
             </radialGradient>
             <radialGradient id="star-glow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#FFFFFF" stopOpacity="1" />
               <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
             </radialGradient>
+            <radialGradient id="dot-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#F0DDA0" />
+              <stop offset="60%" stopColor="#D4AF37" />
+              <stop offset="100%" stopColor="#B8941F" />
+            </radialGradient>
+            <filter id="dot-bloom" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {/* Background twinkling stars */}
+          {/* Twinkling stars */}
           {stars.map((s, i) => (
             <circle
               key={i}
               className="twinkle-star"
-              cx={s.x}
-              cy={s.y}
-              r={s.r}
+              cx={s.x} cy={s.y} r={s.r}
               fill="url(#star-glow)"
               style={{ animation: `twinkle 3.5s ease-in-out ${s.delay}s infinite` }}
             />
           ))}
 
-          {/* Halo glow behind the logo */}
-          <circle className="core-glow" cx="400" cy="400" r="220" fill="url(#core-glow)" />
+          {/* Halo radial glow */}
+          <circle cx="400" cy="400" r="260" fill="url(#core-glow)" />
 
-          {/* PULSE RINGS — expanding shockwave from the logo */}
-          {[0, 1.5, 3].map((delay, i) => (
+          {/* PULSE SHOCKWAVES — much more visible */}
+          {[0, 1.4, 2.8].map((delay, i) => (
             <circle
               key={i}
-              cx="400"
-              cy="400"
-              r="140"
+              cx="400" cy="400" r="170"
               fill="none"
               stroke="url(#gold-stroke)"
-              strokeWidth="1.5"
+              strokeWidth="2"
               opacity="0"
               style={{
                 transformOrigin: "400px 400px",
-                animation: `pulse-ring 4.5s ease-out ${delay}s infinite`,
+                animation: `pulse-ring 4.2s ease-out ${delay}s infinite`,
               }}
             />
           ))}
 
-          {/* TIGHT INNER HALO ORBIT — fast spin, very close to the logo */}
-          <g className="orbit">
-            <g style={{ transformOrigin: "400px 400px", animation: "spin-cw 16s linear infinite" }}>
-              <circle
-                className="draw-stroke"
-                cx="400"
-                cy="400"
-                r="165"
-                fill="none"
-                stroke="url(#gold-stroke)"
-                strokeWidth="0.8"
-                opacity="0.45"
-                strokeDasharray="2 6"
-              />
-              {dotsHalo.map((d, i) => (
-                <circle key={i} className="orbit-dot" cx={d.x} cy={d.y} r={2.5} fill="url(#gold-stroke)" />
-              ))}
-            </g>
-          </g>
-
-          {/* Orbit 1 — innermost ellipse, reverse */}
-          <g className="orbit">
-            <g style={{ transformOrigin: "400px 400px", animation: "spin-cw 28s linear infinite reverse" }}>
-              <ellipse
-                className="draw-stroke"
-                cx="400" cy="400" rx="240" ry="80"
-                fill="none" stroke="url(#gold-stroke)" strokeWidth="1.2" opacity="0.55"
-              />
-              <ellipse
-                cx="400" cy="400" rx="240" ry="80"
-                fill="none" stroke="url(#gold-stroke)" strokeWidth="2"
-                strokeDasharray="4 90" opacity="0.9"
-              />
-              {dotsOrbit1.map((d, i) => (
-                <circle key={i} className="orbit-dot" cx={d.x} cy={d.y} r={d.r} fill="url(#gold-stroke)" />
-              ))}
-            </g>
-          </g>
-
-          {/* Orbit 2 — tilted 35° */}
-          <g className="orbit" style={{ transformOrigin: "400px 400px", transform: "rotate(35deg)" }}>
-            <g style={{ transformOrigin: "400px 400px", animation: "spin-cw 48s linear infinite" }}>
-              <ellipse
-                className="draw-stroke"
-                cx="400" cy="400" rx="300" ry="110"
-                fill="none" stroke="url(#gold-stroke)" strokeWidth="1.2" opacity="0.5"
-              />
-              <ellipse
-                cx="400" cy="400" rx="300" ry="110"
-                fill="none" stroke="url(#gold-stroke)" strokeWidth="2"
-                strokeDasharray="3 120" opacity="0.85"
-              />
-              {dotsOrbit2.map((d, i) => (
-                <circle key={i} className="orbit-dot" cx={d.x} cy={d.y} r={d.r} fill="url(#gold-stroke)" />
-              ))}
-            </g>
-          </g>
-
-          {/* Orbit 3 — outermost, tilted -25° */}
-          <g className="orbit" style={{ transformOrigin: "400px 400px", transform: "rotate(-25deg)" }}>
-            <g style={{ transformOrigin: "400px 400px", animation: "spin-cw 80s linear infinite reverse" }}>
-              <ellipse
-                className="draw-stroke"
-                cx="400" cy="400" rx="360" ry="140"
-                fill="none" stroke="url(#gold-stroke)" strokeWidth="1" opacity="0.4"
-              />
-              {dotsOrbit3.map((d, i) => (
-                <circle key={i} className="orbit-dot" cx={d.x} cy={d.y} r={d.r} fill="url(#gold-stroke)" />
-              ))}
-            </g>
-          </g>
-
-          {/* Faint outer ring */}
+          {/* THE ORBITAL RING — single, elegant, circular */}
           <circle
-            cx="400" cy="400" r="380"
-            fill="none" stroke="url(#gold-stroke)" strokeWidth="0.5"
-            opacity="0.25" strokeDasharray="2 8"
+            className="orbit-ring"
+            cx="400" cy="400" r="300"
+            fill="none"
+            stroke="url(#gold-stroke)"
+            strokeWidth="1.5"
+            opacity="0.65"
+            strokeDasharray="3 14"
+            style={{
+              transformOrigin: "400px 400px",
+              animation: "spin-cw 60s linear infinite",
+            }}
+          />
+
+          {/* Glowing dots travelling on the ring (rotation via parent <g>) */}
+          <g style={{ transformOrigin: "400px 400px", animation: "spin-cw 30s linear infinite" }}>
+            {dots.map((d, i) => (
+              <circle
+                key={i}
+                className="orbit-dot"
+                cx={d.cx} cy={d.cy} r={d.r}
+                fill="url(#dot-glow)"
+                filter="url(#dot-bloom)"
+              />
+            ))}
+          </g>
+
+          {/* Faint outer guide ring */}
+          <circle
+            cx="400" cy="400" r="370"
+            fill="none" stroke="url(#gold-stroke)"
+            strokeWidth="0.5" opacity="0.2"
+            strokeDasharray="1 12"
           />
         </svg>
 
-        {/* The LOGO sits at the center of the orbit system */}
-        <div ref={logoRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        {/* LOGO at the center */}
+        <div
+          ref={logoRef}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ transformStyle: "preserve-3d" }}
+        >
           <div
-            className="drop-shadow-[0_0_50px_rgba(212,175,55,0.5)]"
-            style={{ width: "min(34vw, 230px)", height: "min(34vw, 230px)" }}
+            className="drop-shadow-[0_0_70px_rgba(212,175,55,0.55)]"
+            style={{ width: "min(38vw, 260px)", height: "min(38vw, 260px)" }}
           >
-            <LogoMark size={230} className="w-full h-full" />
+            <LogoMark size={260} className="w-full h-full" />
           </div>
         </div>
       </div>
 
-      {/* Floating ambient particles */}
+      {/* Drifting ambient particles */}
       <div className="absolute inset-0">
-        {Array.from({ length: 28 }).map((_, i) => {
+        {Array.from({ length: 24 }).map((_, i) => {
           const top = (i * 37) % 100;
           const left = (i * 53) % 100;
           const size = 2 + (i % 4);
@@ -336,12 +321,12 @@ export default function Hero3D() {
         })}
       </div>
 
-      {/* Vignette */}
+      {/* Left-side vignette so foreground copy stays legible */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at left center, transparent 25%, rgb(var(--bg-base) / 0.55) 75%)",
+            "radial-gradient(ellipse at left center, transparent 25%, rgb(var(--bg-base) / 0.6) 80%)",
         }}
       />
 
@@ -359,14 +344,18 @@ export default function Hero3D() {
           from { transform: rotate(0deg); }
           to   { transform: rotate(360deg); }
         }
+        @keyframes halo-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
         @keyframes pulse-ring {
-          0%   { transform: scale(1);   opacity: 0.6; }
-          80%  { transform: scale(2.4); opacity: 0; }
-          100% { transform: scale(2.4); opacity: 0; }
+          0%   { transform: scale(0.9); opacity: 0.85; }
+          75%  { transform: scale(2.6); opacity: 0; }
+          100% { transform: scale(2.6); opacity: 0; }
         }
         @keyframes twinkle {
-          0%, 100% { opacity: 0.2; transform: scale(0.8); }
-          50%      { opacity: 1;   transform: scale(1.4); }
+          0%, 100% { opacity: 0.2; transform: scale(0.7); }
+          50%      { opacity: 1;   transform: scale(1.5); }
         }
       `}</style>
     </div>
