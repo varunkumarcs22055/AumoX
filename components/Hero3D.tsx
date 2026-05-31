@@ -173,16 +173,16 @@ export default function Hero3D() {
         style={{ background: "radial-gradient(circle, rgba(184,148,31,0.5), transparent 60%)" }}
       />
 
-      {/* ORBIT SYSTEM — desktop-only, sized to fit inside the hero
-          (never overlaps text, never clips at top/bottom of section).
-          Equal top/bottom space via top:50% + -50% transform. */}
+      {/* ORBIT SYSTEM — only shown on xl+ screens where there's true right-side
+          space next to the (narrowed) text column. Vertically centered with
+          equal top/bottom space, never overlaps text. */}
       <div
-        className="absolute hidden lg:block"
+        className="absolute hidden xl:block"
         style={{
           top: "50%",
-          right: "-3%",
-          width: "min(38vw, 58vh, 480px)",
-          height: "min(38vw, 58vh, 480px)",
+          right: "2%",
+          width: "min(30vw, 56vh, 400px)",
+          height: "min(30vw, 56vh, 400px)",
           transform: "translate3d(var(--mx), calc(var(--my) - 50%), 0)",
           willChange: "transform",
         }}

@@ -35,7 +35,7 @@ export default function HomePage() {
         <div className="absolute inset-0 grid-overlay opacity-40" />
         <HeroBackground />
         <HeroEntrance className="container-x relative z-10">
-          <div className="max-w-4xl">
+          <div className="max-w-4xl xl:max-w-3xl">
             <div data-anim="eyebrow" className="eyebrow">
               <span className="h-px w-8 bg-gold-400" />
               Think Infinite · Enterprise Technology

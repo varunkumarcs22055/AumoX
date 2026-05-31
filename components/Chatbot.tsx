@@ -102,13 +102,13 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Floating toggle */}
+      {/* Floating toggle — bottom-right on mobile, middle-right on desktop */}
       <button
         onClick={() => {
           setOpen((v) => !v);
           setHasGreeting(false);
         }}
-        className={`fixed bottom-6 right-6 z-[70] grid h-14 w-14 place-items-center rounded-full text-black shadow-[0_12px_32px_rgba(212,175,55,0.5)] transition-transform hover:scale-110 ${
+        className={`fixed right-6 bottom-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 z-[70] grid h-14 w-14 place-items-center rounded-full text-black shadow-[0_12px_32px_rgba(212,175,55,0.5)] transition-transform hover:scale-110 ${
           hasGreeting && !open ? "animate-pulse-glow" : ""
         }`}
         style={{
@@ -120,15 +120,21 @@ export default function Chatbot() {
       </button>
 
       {/* Panel */}
+      {/* Positioning wrapper — mobile bottom-right, desktop middle-right (centered) */}
       <div
-        className={`fixed z-[69] flex flex-col overflow-hidden rounded-2xl border border-line bg-bg-surface shadow-2xl transition-all duration-300 ${
-          open
-            ? "opacity-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 translate-y-4 pointer-events-none"
-        } bottom-24 right-6 w-[380px] h-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-9rem)] sm:bottom-24 sm:right-6`}
-        role="dialog"
-        aria-label="AUMOXO assistant"
+        className="fixed z-[69] bottom-24 right-6 lg:bottom-auto lg:top-1/2 lg:right-24 lg:-translate-y-1/2"
+        style={{ pointerEvents: open ? "auto" : "none" }}
       >
+        {/* Scaling/opacity wrapper — handles open/close animation independently */}
+        <div
+          className="flex flex-col overflow-hidden rounded-2xl border border-line bg-bg-surface shadow-2xl transition-[opacity,transform] duration-300 ease-out w-[380px] h-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-9rem)] lg:max-h-[calc(100vh-3rem)] origin-bottom-right lg:origin-right"
+          style={{
+            transform: open ? "scale(1)" : "scale(0.92)",
+            opacity: open ? 1 : 0,
+          }}
+          role="dialog"
+          aria-label="AUMOXO assistant"
+        >
         {/* Header */}
         <div className="relative flex items-center gap-3 border-b border-line bg-gradient-to-r from-bg-elevated to-bg-surface px-5 py-4">
           <div className="grid h-9 w-9 place-items-center rounded-full bg-bg-base/40 border border-gold-400/30">
@@ -202,6 +208,7 @@ export default function Chatbot() {
             <Send size={16} />
           </button>
         </form>
+        </div>
       </div>
     </>
   );
