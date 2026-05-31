@@ -16,9 +16,9 @@ export default function SiteParticles() {
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none z-30"
+      className="site-particles-overlay fixed inset-0 pointer-events-none z-30"
       aria-hidden="true"
-      style={{ mixBlendMode: "screen", contain: "strict" }}
+      style={{ contain: "strict" }}
     >
       <ParticleField
         count={140}

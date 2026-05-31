@@ -154,7 +154,7 @@ export default function Hero3D() {
     >
       {/* Mouse-following soft glow (frame-locked via rAF, no CSS transition) */}
       <div
-        className="absolute inset-0"
+        className="hero-deco-soft absolute inset-0"
         style={{
           transform: "translate3d(var(--mx), var(--my), 0)",
           background:
@@ -165,11 +165,11 @@ export default function Hero3D() {
 
       {/* Mesh blobs */}
       <div
-        className="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-3xl opacity-40 animate-[float-blob_18s_ease-in-out_infinite]"
+        className="hero-deco-soft absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-3xl opacity-40 animate-[float-blob_18s_ease-in-out_infinite]"
         style={{ background: "radial-gradient(circle, rgba(212,175,55,0.55), transparent 60%)" }}
       />
       <div
-        className="absolute -bottom-40 -left-32 w-[600px] h-[600px] rounded-full blur-3xl opacity-30 animate-[float-blob_22s_ease-in-out_infinite_reverse]"
+        className="hero-deco-soft absolute -bottom-40 -left-32 w-[600px] h-[600px] rounded-full blur-3xl opacity-30 animate-[float-blob_22s_ease-in-out_infinite_reverse]"
         style={{ background: "radial-gradient(circle, rgba(184,148,31,0.5), transparent 60%)" }}
       />
 
@@ -177,7 +177,7 @@ export default function Hero3D() {
           space next to the (narrowed) text column. Vertically centered with
           equal top/bottom space, never overlaps text. */}
       <div
-        className="absolute hidden xl:block"
+        className="hero-orbit-soft absolute hidden xl:block"
         style={{
           top: "50%",
           right: "2%",
@@ -322,7 +322,9 @@ export default function Hero3D() {
       </div>
 
       {/* Premium canvas particle field — 280 gold sparks, gentle cursor influence */}
-      <ParticleField count={280} cursorRadius={110} cursorStrength={0.12} />
+      <div className="hero-deco-soft is-particles absolute inset-0">
+        <ParticleField count={280} cursorRadius={110} cursorStrength={0.12} />
+      </div>
 
       {/* Left-side vignette so foreground copy stays legible */}
       <div
