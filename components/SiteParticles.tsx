@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import ParticleField from "./anim/ParticleField";
 
 /**
@@ -7,10 +8,12 @@ import ParticleField from "./anim/ParticleField";
  * Visible through transparent / semi-transparent section backgrounds — gives
  * the entire site the antigravity-style spark layer.
  *
- * Densities are tuned lower than the hero's own field so it never overpowers
- * text. Cursor still pulls glowing "constellation" lines toward nearby sparks.
+ * Hidden on /admin routes for a clean admin shell.
  */
 export default function SiteParticles() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <div
       className="fixed inset-0 pointer-events-none z-30"

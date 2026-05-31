@@ -173,11 +173,17 @@ export default function Hero3D() {
         style={{ background: "radial-gradient(circle, rgba(184,148,31,0.5), transparent 60%)" }}
       />
 
-      {/* ORBIT SYSTEM */}
+      {/* ORBIT SYSTEM — desktop-only, sized to fit inside the hero
+          (never overlaps text, never clips at top/bottom of section).
+          Equal top/bottom space via top:50% + -50% transform. */}
       <div
-        className="absolute top-1/2 right-[5%] lg:right-[8%] -translate-y-1/2 w-[640px] h-[640px] lg:w-[780px] lg:h-[780px]"
+        className="absolute hidden lg:block"
         style={{
-          transform: "translate(var(--mx), calc(var(--my) - 50%))",
+          top: "50%",
+          right: "-3%",
+          width: "min(38vw, 58vh, 480px)",
+          height: "min(38vw, 58vh, 480px)",
+          transform: "translate3d(var(--mx), calc(var(--my) - 50%), 0)",
           willChange: "transform",
         }}
       >
@@ -303,17 +309,14 @@ export default function Hero3D() {
           />
         </svg>
 
-        {/* LOGO at the center */}
+        {/* LOGO at the center — scales with the orbit container */}
         <div
           ref={logoRef}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ transformStyle: "preserve-3d" }}
+          style={{ transformStyle: "preserve-3d", width: "40%", height: "40%" }}
         >
-          <div
-            className="drop-shadow-[0_0_70px_rgba(212,175,55,0.55)]"
-            style={{ width: "min(38vw, 260px)", height: "min(38vw, 260px)" }}
-          >
-            <LogoMark size={260} className="w-full h-full" />
+          <div className="w-full h-full drop-shadow-[0_0_60px_rgba(212,175,55,0.55)]">
+            <LogoMark size={200} className="w-full h-full" />
           </div>
         </div>
       </div>

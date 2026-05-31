@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
@@ -17,6 +18,7 @@ const links = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -33,6 +35,8 @@ export default function Navbar() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>

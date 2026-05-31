@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { MessageCircle, X, Send, ArrowRight } from "lucide-react";
 import { flow, matchIntent, type FlowOption } from "@/lib/chatbot-flow";
 import { LogoMark } from "./Logo";
@@ -17,6 +17,7 @@ const STORAGE_KEY = "aumox_chat_v1";
 
 export default function Chatbot() {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [hasGreeting, setHasGreeting] = useState(true);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -96,6 +97,8 @@ export default function Chatbot() {
     localStorage.removeItem(STORAGE_KEY);
     seedGreeting();
   }
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Linkedin, Twitter, Github, Youtube, Mail, MapPin } from "lucide-react";
 import { LogoMark } from "./Logo";
 import LogoO from "./LogoO";
@@ -63,6 +66,9 @@ const cols = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <footer className="relative border-t border-line bg-bg-base">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/50 to-transparent" />
