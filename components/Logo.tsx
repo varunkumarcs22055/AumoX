@@ -32,7 +32,7 @@ export default function Logo({ className = "" }: LogoProps) {
   return (
     <Link
       href="/"
-      className={`group inline-flex items-center gap-3 ${className}`}
+      className={`group inline-flex items-center gap-1 ${className}`}
       aria-label="AUMOXO home"
     >
       <span
