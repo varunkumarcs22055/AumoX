@@ -2,21 +2,39 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, type LucideIcon } from "lucide-react";
+import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, Inbox, type LucideIcon } from "lucide-react";
 import { jobsStore, insightsStore } from "@/lib/admin/store";
 
 export default function AdminDashboard() {
-  const [counts, setCounts] = useState({ jobsActive: 0, jobsTotal: 0, insightsPublished: 0, insightsTotal: 0 });
+  const [counts, setCounts] = useState({
+    jobsActive: 0, jobsTotal: 0,
+    insightsPublished: 0, insightsTotal: 0,
+    queriesTotal: 0, queriesUnread: 0,
+  });
 
   useEffect(() => {
     const jobs = jobsStore.list();
     const insights = insightsStore.list();
-    setCounts({
+    setCounts((c) => ({
+      ...c,
       jobsActive: jobs.filter((j) => j.active).length,
       jobsTotal: jobs.length,
       insightsPublished: insights.filter((i) => i.published).length,
       insightsTotal: insights.length,
-    });
+    }));
+
+    // Fetch live query counts from the DB
+    fetch("/api/admin/queries", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        const all = (data.queries ?? []) as { read: boolean }[];
+        setCounts((c) => ({
+          ...c,
+          queriesTotal: all.length,
+          queriesUnread: all.filter((q) => !q.read).length,
+        }));
+      })
+      .catch(() => { /* DB may not be wired yet */ });
   }, []);
 
   return (
@@ -41,6 +59,14 @@ export default function AdminDashboard() {
 
       {/* Tiles */}
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <DashCard
+          href="/admin/queries"
+          icon={Inbox}
+          title="Inbox · Customer Queries"
+          stat={`${counts.queriesUnread} unread · ${counts.queriesTotal} total`}
+          desc="Read, reply to and manage every contact form submission your site receives."
+          highlight={counts.queriesUnread > 0}
+        />
         <DashCard
           href="/admin/careers"
           icon={Briefcase}
@@ -81,18 +107,19 @@ export default function AdminDashboard() {
 }
 
 function DashCard({
-  href, icon: Icon, title, stat, desc,
+  href, icon: Icon, title, stat, desc, highlight = false,
 }: {
   href: string;
   icon: LucideIcon;
   title: string;
   stat: string;
   desc: string;
+  highlight?: boolean;
 }) {
   return (
-    <Link href={href} className="card p-7 gold-border group block">
+    <Link href={href} className={`card p-7 gold-border group block ${highlight ? "ring-2 ring-gold-400/40" : ""}`}>
       <div className="flex items-start justify-between">
-        <div className="grid h-11 w-11 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300">
+        <div className={`grid h-11 w-11 place-items-center rounded-lg border ${highlight ? "border-gold-400 bg-gold-400/15" : "border-gold-400/30 bg-gold-400/5"} text-gold-300`}>
           <Icon size={18} />
         </div>
         <ArrowUpRight size={18} className="text-gold-400 group-hover:translate-x-1 transition-transform" />

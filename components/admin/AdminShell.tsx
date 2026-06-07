@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
+  Inbox,
   Briefcase,
   BookOpen,
   Settings,
@@ -17,6 +18,7 @@ import { LogoMark } from "@/components/Logo";
 
 const links = [
   { href: "/admin",           label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/queries",   label: "Inbox",     icon: Inbox },
   { href: "/admin/careers",   label: "Careers",   icon: Briefcase },
   { href: "/admin/insights",  label: "Insights",  icon: BookOpen },
   { href: "/admin/settings",  label: "Settings",  icon: Settings },

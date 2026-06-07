@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
+import { queriesDb } from "@/lib/admin/db";
 
 const schema = z.object({
   name: z.string().min(2).max(120),
@@ -57,9 +58,26 @@ export async function POST(req: Request) {
   }
   const data = parsed.data;
 
-  // Honeypot — silently accept but don't send
+  // Honeypot — silently accept but don't send / don't save
   if (data.hp && data.hp.length > 0) {
     return NextResponse.json({ ok: true });
+  }
+
+  // 1) Persist to admin DB (visible in /admin/queries)
+  try {
+    await queriesDb.add({
+      name: data.name,
+      email: data.email,
+      company: data.company,
+      phone: data.phone,
+      service: data.service,
+      timeline: data.timeline,
+      budget: data.budget,
+      message: data.message,
+    });
+  } catch (err) {
+    console.error("[AUMOXO contact] DB save failed:", err);
+    // Continue anyway — email is still useful
   }
 
   const to = process.env.CONTACT_EMAIL_TO ?? "harshchakravarti77@gmail.com";
