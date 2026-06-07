@@ -1,7 +1,7 @@
 /**
  * "O" glyph styled after the AUMOXO logo mark — a clean closed gold ring
- * with the signature floating dot above. Sits inline as a letter inside
- * the AUMOXO wordmark.
+ * with the signature floating dot above. Sized to match the cap height of
+ * neighbouring letters so it reads as a proper O in the wordmark.
  */
 
 let nextId = 0;
@@ -11,7 +11,7 @@ const getId = () => {
 };
 
 type LogoOProps = {
-  /** Glyph width in em. Default 0.9 to match cap height. */
+  /** Glyph width in em. Default 1.05 = slightly wider than a letter O for visual parity. */
   size?: number;
   /** Horizontal margin per side in em. */
   spacing?: number;
@@ -19,8 +19,8 @@ type LogoOProps = {
 };
 
 export default function LogoO({
-  size = 0.9,
-  spacing = 0.04,
+  size = 1.05,
+  spacing = 0.06,
   className = "",
 }: LogoOProps) {
   const id = getId();
@@ -35,7 +35,7 @@ export default function LogoO({
         display: "inline-block",
         width: `${size}em`,
         height: `${size}em`,
-        verticalAlign: `-${size * 0.16}em`,
+        verticalAlign: `-${size * 0.2}em`,
         margin: `0 ${spacing}em`,
       }}
     >
@@ -48,16 +48,16 @@ export default function LogoO({
       </defs>
 
       {/* Floating dot above — logo signature */}
-      <circle cx="50" cy="14" r="5" fill={`url(#${id})`} />
+      <circle cx="50" cy="10" r="6" fill={`url(#${id})`} />
 
-      {/* Clean closed ring — reads as a proper "O" letter */}
+      {/* Closed gold ring sized to fill viewBox so the O reads cap-high */}
       <circle
         cx="50"
-        cy="56"
-        r="38"
+        cy="58"
+        r="40"
         fill="none"
         stroke={`url(#${id})`}
-        strokeWidth="7"
+        strokeWidth="8"
       />
     </svg>
   );

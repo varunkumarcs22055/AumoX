@@ -11,7 +11,18 @@ import {
 import Reveal from "@/components/anim/Reveal";
 
 export const metadata = {
-  title: "Industries — Technology Built Around Your Industry",
+  title: "Industries — Startups, SMEs, Education, Healthcare, E-Commerce",
+  description:
+    "AUMOXO builds software, AI and automation for startups, small & medium businesses, professional services, education, healthcare and e-commerce.",
+  keywords: [
+    "software for startups", "MVP development", "build my SaaS",
+    "software for SMEs", "CRM for small business",
+    "education software development", "LMS development",
+    "healthcare software development", "patient management software",
+    "e-commerce platform development", "AI for e-commerce",
+    "professional services software",
+  ],
+  alternates: { canonical: "/industries" },
 };
 
 const industries = [

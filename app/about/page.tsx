@@ -3,7 +3,13 @@ import { ArrowUpRight, Target, Eye, Shield, Sparkles, Users, Compass } from "luc
 import { LogoMark } from "@/components/Logo";
 import LogoO from "@/components/LogoO";
 
-export const metadata = { title: "About — AUMOXO" };
+export const metadata = {
+  title: "About AUMOXO — Helping Businesses Innovate Through Technology",
+  description:
+    "AUMOXO helps businesses automate, grow and innovate through AI, software engineering and product thinking. Learn our story, mission and core values.",
+  keywords: ["about AUMOXO", "AUMOXO story", "AUMOXO mission", "AUMOXO team"],
+  alternates: { canonical: "/about" },
+};
 
 const values = [
   { i: Target,   t: "Outcomes over output",   d: "We measure ourselves by the business impact we create — not effort spent." },
@@ -44,8 +50,8 @@ export default function AboutPage() {
               <div className="mx-auto block">
                 <LogoMark size={140} className="mx-auto" />
               </div>
-              <div className="text-3xl mt-8 font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center justify-center">
-                AUM<LogoO size={0.9} spacing={0.04} />X<LogoO size={0.9} spacing={0.04} />
+              <div className="text-3xl mt-8 font-semibold tracking-[0.15em] text-ink-100 whitespace-nowrap inline-flex items-center justify-center">
+                AUM<LogoO />X<LogoO />
               </div>
               <div className="text-xs tracking-[0.4em] uppercase text-gold-400 mt-3">
                 Think Infinite

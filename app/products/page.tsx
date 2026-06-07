@@ -3,7 +3,16 @@ import Reveal from "@/components/anim/Reveal";
 import { ArrowUpRight, CheckCircle2, Sparkles, Briefcase, Workflow } from "lucide-react";
 
 export const metadata = {
-  title: "Solutions — Ready-to-Deploy Software & AI",
+  title: "Solutions — AI Customer Support, CRM & Operations Automation",
+  description:
+    "Ready-to-deploy AUMOXO solutions: AI Customer Support Suite (website + WhatsApp chatbot), CRM & Sales Automation, Operations Automation. Plus AUMOXO CRM, AI Assistant and Operations Hub coming soon.",
+  keywords: [
+    "AI customer support", "WhatsApp chatbot for business",
+    "lead automation", "sales pipeline software",
+    "operations automation software", "workflow software for SMEs",
+    "AUMOXO CRM", "AUMOXO AI Assistant", "AUMOXO Operations Hub",
+  ],
+  alternates: { canonical: "/products" },
 };
 
 const solutions = [

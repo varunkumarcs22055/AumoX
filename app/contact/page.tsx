@@ -3,7 +3,14 @@ import ContactForm from "./ContactForm";
 import { Mail, MapPin, Phone, Clock, ArrowUpRight } from "lucide-react";
 
 export const metadata = {
-  title: "Contact — Start a Conversation",
+  title: "Contact AUMOXO — Discuss Your Project",
+  description:
+    "Get in touch with AUMOXO to discuss custom software, AI solutions, CRM development, automation systems or any tech project. We respond within one working day.",
+  keywords: [
+    "contact AUMOXO", "hire AUMOXO", "software development quote",
+    "AI development consultation", "CRM development quote",
+  ],
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {

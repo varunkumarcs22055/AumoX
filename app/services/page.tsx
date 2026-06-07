@@ -16,7 +16,20 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Services — Technology That Moves Businesses Forward",
+  title: "Services — AI, CRM, Automation, Web & Mobile Development",
+  description:
+    "AUMOXO services: AI solutions, custom CRM platforms, business automation systems, enterprise software, web applications, SaaS platforms, mobile apps, UI/UX design and technology consulting.",
+  keywords: [
+    "AI solutions", "AI agents", "AI chatbot development",
+    "custom CRM development", "CRM platform", "sales automation",
+    "business automation", "workflow automation",
+    "enterprise software development", "internal business software",
+    "web application development", "Next.js development",
+    "SaaS development", "multi-tenant SaaS",
+    "Android app development", "Flutter app development",
+    "UI/UX design services", "technology consulting",
+  ],
+  alternates: { canonical: "/services" },
 };
 
 const pillars = [

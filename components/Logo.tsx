@@ -32,28 +32,28 @@ export default function Logo({ className = "" }: LogoProps) {
   return (
     <Link
       href="/"
-      className={`group inline-flex items-center gap-3 ${className}`}
+      className={`group inline-flex items-center gap-4 ${className}`}
       aria-label="AUMOXO home"
     >
       <span
         className="relative inline-block shrink-0 transition-transform duration-300 group-hover:scale-[1.05]"
-        style={{ filter: "drop-shadow(0 0 12px rgba(212,175,55,0.35))" }}
+        style={{ filter: "drop-shadow(0 0 14px rgba(212,175,55,0.4))" }}
       >
         <Image
           src="/logo-mark.png"
           alt=""
-          width={80}
-          height={80}
+          width={88}
+          height={88}
           priority
-          className="block object-contain h-16 w-16 lg:h-20 lg:w-20"
+          className="block object-contain h-[60px] w-[60px] lg:h-[72px] lg:w-[72px]"
         />
       </span>
 
-      <span className="flex flex-col leading-none">
-        <span className="text-[22px] lg:text-[26px] font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
-          AUM<LogoO size={0.9} spacing={0.04} />X<LogoO size={0.9} spacing={0.04} />
+      <span className="flex flex-col leading-tight">
+        <span className="text-[22px] lg:text-[28px] font-semibold tracking-[0.15em] text-ink-100 whitespace-nowrap inline-flex items-center">
+          AUM<LogoO />X<LogoO />
         </span>
-        <span className="mt-[3px] text-[10px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
+        <span className="mt-1 text-[10px] lg:text-[11px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
           Think Infinite
         </span>
       </span>
