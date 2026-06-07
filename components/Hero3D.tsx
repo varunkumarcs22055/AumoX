@@ -336,18 +336,21 @@ export default function Hero3D() {
           />
         </svg>
 
-        {/* LOGO at the center — SVG mark, transparent (no black square),
-            sized to ~44% of the orbital container, with a soft gold halo. */}
+        {/* LOGO at the center — SVG mark with strong gold glow so it pops
+            clearly against the orbital backdrop. */}
         <div
           ref={logoRef}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ transformStyle: "preserve-3d", width: "44%", height: "44%" }}
+          style={{ transformStyle: "preserve-3d", width: "46%", height: "46%" }}
         >
           <div
             className="relative w-full h-full"
-            style={{ filter: "drop-shadow(0 0 40px rgba(212,175,55,0.55))" }}
+            style={{
+              filter:
+                "drop-shadow(0 0 24px rgba(240,221,160,0.65)) drop-shadow(0 0 48px rgba(212,175,55,0.45))",
+            }}
           >
-            <LogoMark size={220} className="w-full h-full" />
+            <LogoMark size={240} className="w-full h-full" />
           </div>
         </div>
       </div>

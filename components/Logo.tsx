@@ -1,5 +1,4 @@
 import Link from "next/link";
-import LogoO from "./LogoO";
 
 type LogoProps = {
   variant?: "full" | "mark";
@@ -64,8 +63,8 @@ export default function Logo({ className = "" }: LogoProps) {
       </span>
 
       <span className="flex flex-col leading-none">
-        <span className="text-[20px] lg:text-[24px] font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
-          AUM<LogoO size={0.85} spacing={0.04} />X<LogoO size={0.85} spacing={0.04} />
+        <span className="text-[22px] lg:text-[26px] font-semibold tracking-[0.18em] text-ink-100 whitespace-nowrap">
+          AUMOXO
         </span>
         <span className="mt-1 text-[10px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
           Think Infinite
