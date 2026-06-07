@@ -73,7 +73,7 @@ export default function SettingsAdmin() {
             <Row k="Admin password" v="••••••••" hint="ADMIN_PASSWORD" />
           </dl>
           <p className="mt-5 text-xs text-ink-400 font-light">
-            Update via <span className="text-gold-300">vercel.com/furnotechs-projects/aumox/settings/environment-variables</span> then redeploy.
+            Update via your Vercel dashboard → Project → Settings → Environment Variables, then redeploy.
           </p>
         </div>
       </div>
