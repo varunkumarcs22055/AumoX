@@ -51,7 +51,7 @@ export default function Navbar() {
             and don't fit a service-led startup positioning. */}
 
         {/* Main nav */}
-        <div className="container-x flex items-center justify-between h-[68px]">
+        <div className="container-x flex items-center justify-between h-[80px] lg:h-[88px]">
           <Logo />
 
           <nav className="hidden lg:flex items-center gap-9">

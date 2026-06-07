@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import LogoO from "./LogoO";
 
 type LogoProps = {
   variant?: "full" | "mark";
@@ -57,13 +58,13 @@ export default function Logo({ className = "" }: LogoProps) {
       className={`inline-flex items-center gap-3 group ${className}`}
       aria-label="AUMOXO home"
     >
-      <span className="relative block h-11 w-11 lg:h-12 lg:w-12 overflow-hidden rounded-md">
+      <span className="relative block h-14 w-14 lg:h-16 lg:w-16 overflow-hidden rounded-md shrink-0">
         {/* Dark mode — let the JPEG's black bg blend into the page */}
         <Image
           src="/logo.jpeg"
           alt=""
-          width={120}
-          height={120}
+          width={160}
+          height={160}
           priority
           className="hidden dark:block h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
           style={{ objectPosition: "center 22%", mixBlendMode: "lighten" }}
@@ -72,19 +73,19 @@ export default function Logo({ className = "" }: LogoProps) {
         <Image
           src="/logo.jpeg"
           alt=""
-          width={120}
-          height={120}
+          width={160}
+          height={160}
           priority
-          className="dark:hidden h-full w-full object-cover shadow-[0_2px_6px_rgba(0,0,0,0.15)] transition-transform duration-300 group-hover:scale-[1.05]"
+          className="dark:hidden h-full w-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:scale-[1.05]"
           style={{ objectPosition: "center 22%" }}
         />
       </span>
 
       <span className="flex flex-col leading-none">
-        <span className="text-[19px] font-semibold tracking-[0.18em] text-ink-100 whitespace-nowrap">
-          AUMOXO
+        <span className="text-[20px] lg:text-[22px] font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
+          AUM<LogoO size={0.85} spacing={0.04} />X<LogoO size={0.85} spacing={0.04} />
         </span>
-        <span className="mt-1 text-[9px] tracking-[0.35em] uppercase text-gold-600 dark:text-gold-400/85">
+        <span className="mt-1 text-[10px] tracking-[0.35em] uppercase text-gold-600 dark:text-gold-400/85">
           Think Infinite
         </span>
       </span>
