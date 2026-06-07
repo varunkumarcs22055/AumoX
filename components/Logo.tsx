@@ -42,18 +42,18 @@ export default function Logo({ className = "" }: LogoProps) {
         <Image
           src="/logo-mark.png"
           alt=""
-          width={88}
-          height={88}
+          width={96}
+          height={96}
           priority
-          className="block object-contain h-[60px] w-[60px] lg:h-[72px] lg:w-[72px]"
+          className="block object-contain h-[72px] w-[72px] lg:h-[84px] lg:w-[84px]"
         />
       </span>
 
       <span className="flex flex-col leading-tight">
-        <span className="text-[22px] lg:text-[28px] font-semibold tracking-[0.15em] text-ink-100 whitespace-nowrap inline-flex items-center">
+        <span className="text-[18px] lg:text-[20px] font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
           AUM<LogoO />X<LogoO />
         </span>
-        <span className="mt-1 text-[10px] lg:text-[11px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
+        <span className="mt-1 text-[9px] lg:text-[10px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
           Think Infinite
         </span>
       </span>
