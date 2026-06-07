@@ -40,11 +40,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/logo.jpeg", type: "image/jpeg" },
+      { url: "/logo-mark.png", type: "image/png" },
       { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    apple: "/logo.jpeg",
-    shortcut: "/logo.jpeg",
+    apple: "/logo-mark.png",
+    shortcut: "/logo-mark.png",
   },
 };
 

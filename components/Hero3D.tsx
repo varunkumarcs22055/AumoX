@@ -335,31 +335,26 @@ export default function Hero3D() {
           />
         </svg>
 
-        {/* LOGO at the center — the actual brand image (logo.jpeg).
-            mix-blend-mode requires NO `filter` on the same/parent element
-            (filters create a new stacking context that breaks blending), so
-            the gold glow is rendered as a separate soft radial layer BEHIND
-            the image instead. */}
+        {/* LOGO at the center — transparent PNG, sits cleanly on any background. */}
         <div
           ref={logoRef}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: "52%", height: "52%" }}
+          style={{ width: "55%", height: "55%" }}
         >
-          {/* Soft gold halo glow behind the image (separate layer) */}
+          {/* Soft gold halo glow behind the image */}
           <div
-            className="absolute inset-[-20%] rounded-full pointer-events-none"
+            className="absolute inset-[-25%] rounded-full pointer-events-none"
             style={{
               background:
-                "radial-gradient(circle, rgba(240,221,160,0.45) 0%, rgba(212,175,55,0.25) 35%, transparent 70%)",
-              filter: "blur(20px)",
+                "radial-gradient(circle, rgba(240,221,160,0.4) 0%, rgba(212,175,55,0.22) 35%, transparent 70%)",
+              filter: "blur(24px)",
             }}
           />
-          {/* The real logo image — no filter on parent so blend mode works */}
           <img
-            src="/logo.jpeg"
+            src="/logo-mark.png"
             alt=""
             className="relative block w-full h-full object-contain"
-            style={{ mixBlendMode: "lighten" }}
+            style={{ filter: "drop-shadow(0 0 18px rgba(240,221,160,0.45))" }}
           />
         </div>
       </div>

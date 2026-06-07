@@ -8,42 +8,24 @@ type LogoProps = {
 };
 
 /**
- * SVG fallback recreation of the mark — kept only for places where a clean
- * transparent vector is preferable (the favicon path, for example).
- * The visible site logo uses the REAL `logo.jpeg` image (see Logo below).
+ * Brand mark — the user-supplied transparent PNG. No blend tricks, no
+ * black background, scales to any size cleanly on light or dark themes.
  */
 export function LogoMark({ size = 36, className = "" }: { size?: number; className?: string }) {
   return (
-    <span
-      className={`relative inline-block overflow-hidden rounded-md ${className}`}
+    <Image
+      src="/logo-mark.png"
+      alt=""
+      width={size}
+      height={size}
+      className={`block object-contain ${className}`}
       style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
-      {/* Dark mode — black bg blends invisibly with dark page via `lighten` */}
-      <Image
-        src="/logo.jpeg"
-        alt=""
-        width={size * 2}
-        height={size * 2}
-        className="hidden dark:block h-full w-full object-cover"
-        style={{ objectPosition: "center 22%", mixBlendMode: "lighten" }}
-      />
-      {/* Light mode — show as a small branded card */}
-      <Image
-        src="/logo.jpeg"
-        alt=""
-        width={size * 2}
-        height={size * 2}
-        className="dark:hidden h-full w-full object-cover"
-        style={{ objectPosition: "center 22%" }}
-      />
-    </span>
+    />
   );
 }
 
 /**
- * Navbar / site logo — the actual brand image (cropped to the mark) +
- * "AUMOXO" wordmark + "Think Infinite" tagline beside it.
+ * Navbar / site logo — transparent mark beside the AUMOXO wordmark.
  */
 export default function Logo({ className = "" }: LogoProps) {
   return (
@@ -52,26 +34,17 @@ export default function Logo({ className = "" }: LogoProps) {
       className={`group inline-flex items-center gap-3 ${className}`}
       aria-label="AUMOXO home"
     >
-      <span className="relative block h-12 w-12 lg:h-14 lg:w-14 overflow-hidden rounded-md shrink-0 transition-transform duration-300 group-hover:scale-[1.05]">
-        {/* Dark mode — black bleeds via mix-blend-mode */}
+      <span
+        className="relative inline-block shrink-0 transition-transform duration-300 group-hover:scale-[1.05]"
+        style={{ filter: "drop-shadow(0 0 12px rgba(212,175,55,0.35))" }}
+      >
         <Image
-          src="/logo.jpeg"
+          src="/logo-mark.png"
           alt=""
-          width={160}
-          height={160}
+          width={56}
+          height={56}
           priority
-          className="hidden dark:block h-full w-full object-cover"
-          style={{ objectPosition: "center 22%", mixBlendMode: "lighten" }}
-        />
-        {/* Light mode — shown as a branded card */}
-        <Image
-          src="/logo.jpeg"
-          alt=""
-          width={160}
-          height={160}
-          priority
-          className="dark:hidden h-full w-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.18)]"
-          style={{ objectPosition: "center 22%" }}
+          className="block object-contain h-12 w-12 lg:h-14 lg:w-14"
         />
       </span>
 
