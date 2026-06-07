@@ -11,10 +11,8 @@ const links = [
   { href: "/services", label: "Services" },
   { href: "/industries", label: "Industries" },
   { href: "/products", label: "Solutions" },
-  // { href: "/work", label: "Work" },        // disabled — folder renamed to _disabled_work
-  // { href: "/insights", label: "Insights" }, // disabled — folder renamed to _disabled_insights
-  // { href: "/careers", label: "Careers" },   // disabled — folder renamed to _disabled_careers
   { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function Navbar() {
@@ -63,9 +61,6 @@ export default function Navbar() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-4">
-            <Link href="/contact" className="nav-link">
-              Contact
-            </Link>
             <ThemeToggle />
             <Link href="/contact" className="btn-gold !py-2 !px-5 text-sm">
               Get in Touch
@@ -112,7 +107,7 @@ export default function Navbar() {
             </button>
           </div>
           <nav className="mt-10 flex flex-col">
-            {links.concat({ href: "/contact", label: "Contact" }).map((l) => (
+            {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
