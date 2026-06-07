@@ -40,7 +40,9 @@ export default function AboutPage() {
         <div className="container-x">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="card p-12 gold-border text-center">
-              <LogoMark size={120} className="mx-auto" />
+              <div className="mx-auto block">
+                <LogoMark size={140} className="mx-auto" />
+              </div>
               <div className="text-3xl mt-8 font-semibold tracking-[0.18em] text-ink-100 whitespace-nowrap">
                 AUMOXO
               </div>

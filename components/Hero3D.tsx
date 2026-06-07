@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { LogoMark } from "./Logo";
 import ParticleField from "./anim/ParticleField";
 
 /**
@@ -336,21 +335,27 @@ export default function Hero3D() {
           />
         </svg>
 
-        {/* LOGO at the center — SVG mark with strong gold glow so it pops
-            clearly against the orbital backdrop. */}
+        {/* LOGO at the center — the actual brand image (logo.jpeg), with
+            mix-blend-mode: lighten so the JPEG's black background blends
+            with the dark hero, leaving only the gold mark + wordmark visible. */}
         <div
           ref={logoRef}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ transformStyle: "preserve-3d", width: "46%", height: "46%" }}
+          style={{ transformStyle: "preserve-3d", width: "48%", height: "48%" }}
         >
           <div
             className="relative w-full h-full"
             style={{
               filter:
-                "drop-shadow(0 0 24px rgba(240,221,160,0.65)) drop-shadow(0 0 48px rgba(212,175,55,0.45))",
+                "drop-shadow(0 0 24px rgba(240,221,160,0.55)) drop-shadow(0 0 48px rgba(212,175,55,0.4))",
             }}
           >
-            <LogoMark size={240} className="w-full h-full" />
+            <img
+              src="/logo.jpeg"
+              alt=""
+              className="block w-full h-full object-contain"
+              style={{ mixBlendMode: "lighten" }}
+            />
           </div>
         </div>
       </div>

@@ -56,7 +56,7 @@ export default function Footer() {
         <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 pb-16 border-b border-line">
           <div>
             <div className="flex items-center gap-4">
-              <LogoMark size={52} />
+              <LogoMark size={56} />
               <div>
                 <div className="text-2xl font-semibold tracking-[0.18em] text-ink-100 whitespace-nowrap">
                   AUMOXO
