@@ -91,24 +91,34 @@ export default function HomePage() {
         </HeroEntrance>
       </section>
 
-      {/* ========== BOTTOM STRIP — capability list ========== */}
+      {/* ========== BOTTOM STRIP — moving marquee of capabilities ========== */}
       <section className="border-y border-line bg-bg-surface">
-        <div className="container-x py-7">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium">
-            {[
-              "AI Solutions",
-              "Enterprise Software",
-              "CRM Platforms",
-              "Business Automation",
-              "Web & Mobile Development",
-            ].map((label, i, arr) => (
-              <span key={label} className="flex items-center gap-8">
-                <span>{label}</span>
-                {i < arr.length - 1 && (
-                  <span className="hidden md:inline text-gold-400/60">•</span>
-                )}
-              </span>
-            ))}
+        <div className="py-6">
+          <div className="marquee">
+            <div className="marquee-track text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium">
+              {Array.from({ length: 3 }).flatMap((_, loop) =>
+                [
+                  "AI Solutions",
+                  "Enterprise Software",
+                  "CRM Platforms",
+                  "Business Automation",
+                  "Web & Mobile Development",
+                  "Custom Software",
+                  "SaaS Engineering",
+                  "AI Agents & Chatbots",
+                  "Mobile Apps",
+                  "UI / UX Design",
+                ].map((label) => (
+                  <span
+                    key={`${loop}-${label}`}
+                    className="flex items-center gap-10 whitespace-nowrap"
+                  >
+                    <span>{label}</span>
+                    <span className="text-gold-400/60">•</span>
+                  </span>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </section>
