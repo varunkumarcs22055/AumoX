@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Linkedin, Twitter, Github, Youtube, Mail, MapPin } from "lucide-react";
-import { LogoMark } from "./Logo";
-import LogoO from "./LogoO";
+import Logo from "./Logo";
 
 const cols = [
   {
@@ -56,17 +55,7 @@ export default function Footer() {
         {/* Top — brand + newsletter */}
         <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 pb-16 border-b border-line">
           <div>
-            <div className="flex items-center gap-4">
-              <LogoMark size={56} />
-              <div>
-                <div className="text-2xl font-semibold tracking-[0.15em] text-ink-100 whitespace-nowrap inline-flex items-center">
-                  AUM<LogoO />X<LogoO />
-                </div>
-                <div className="text-[10px] tracking-[0.35em] uppercase text-gold-600 dark:text-gold-400/80 mt-1">
-                  Think Infinite
-                </div>
-              </div>
-            </div>
+            <Logo />
             <p className="mt-6 text-ink-300 font-light max-w-md leading-relaxed">
               Enterprise technology services and products engineered for the
               next decade. We help global organizations build, modernize, and
