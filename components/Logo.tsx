@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import LogoO from "./LogoO";
 
 type LogoProps = {
@@ -9,9 +8,9 @@ type LogoProps = {
 };
 
 /**
- * The actual AUMOXO brand mark — kept as an SVG recreation for places that
- * need a transparent / scalable icon (favicon overlays, hero center, About).
- * For the live navbar we use the real provided logo image (see Logo below).
+ * The AUMOXO brand mark — inline SVG version. Transparent background so it
+ * sits cleanly inside the navbar, on the orbital ring, or anywhere else
+ * without the "black square" problem the JPEG creates.
  */
 export function LogoMark({ size = 36, className = "" }: { size?: number; className?: string }) {
   return (
@@ -32,60 +31,43 @@ export function LogoMark({ size = 36, className = "" }: { size?: number; classNa
           <stop offset="100%" stopColor="#B8941F" />
         </linearGradient>
       </defs>
+      {/* Floating dot above the ring */}
       <circle cx="100" cy="34" r="7" fill="url(#aumox-gold)" />
+      {/* Main ring with a graceful break at the top-right */}
       <path d="M 100 48 A 56 56 0 1 1 148 132" stroke="url(#aumox-gold)" strokeWidth="5.5" fill="none" strokeLinecap="round" />
+      {/* The signature curling sweep tail */}
       <path d="M 148 132 Q 162 124 156 104" stroke="url(#aumox-gold)" strokeWidth="5.5" fill="none" strokeLinecap="round" />
+      {/* The A — two diagonals meeting at apex (no crossbar) */}
       <path d="M 73 143 L 100 72 L 127 143" stroke="url(#aumox-gold)" strokeWidth="5.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Solid center dot inside the A */}
       <circle cx="100" cy="127" r="5" fill="url(#aumox-gold)" />
     </svg>
   );
 }
 
 /**
- * The navbar / site logo — uses the actual brand image the user supplied.
- * Black background of the JPEG sits on top of any page background, but
- * `mix-blend-mode: lighten` makes the black bleed into dark pages and
- * preserves gold visibility. On light pages the image renders as a
- * "branded card" with its natural black backdrop.
+ * Navbar / site logo — SVG mark sized to match the wordmark text height,
+ * with a gentle glowing aura on hover for a futuristic touch.
  */
 export default function Logo({ className = "" }: LogoProps) {
-  // Crop the supplied 1024×1024 LOGO.jpeg to show just the gold mark
-  // (top ~45% of the image — where the circle + A glyph sits) and pair
-  // it with a clean "AUMOXO" wordmark + "THINK INFINITE" tagline beside.
   return (
     <Link
       href="/"
-      className={`inline-flex items-center gap-3 group ${className}`}
+      className={`group inline-flex items-center gap-3 ${className}`}
       aria-label="AUMOXO home"
     >
-      <span className="relative block h-14 w-14 lg:h-16 lg:w-16 overflow-hidden rounded-md shrink-0">
-        {/* Dark mode — let the JPEG's black bg blend into the page */}
-        <Image
-          src="/logo.jpeg"
-          alt=""
-          width={160}
-          height={160}
-          priority
-          className="hidden dark:block h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
-          style={{ objectPosition: "center 22%", mixBlendMode: "lighten" }}
-        />
-        {/* Light mode — show as a branded mini card with subtle shadow */}
-        <Image
-          src="/logo.jpeg"
-          alt=""
-          width={160}
-          height={160}
-          priority
-          className="dark:hidden h-full w-full object-cover shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:scale-[1.05]"
-          style={{ objectPosition: "center 22%" }}
-        />
+      <span
+        className="relative inline-block transition-transform duration-300 group-hover:rotate-[10deg]"
+        style={{ filter: "drop-shadow(0 0 14px rgba(212,175,55,0.35))" }}
+      >
+        <LogoMark size={52} className="h-12 w-12 lg:h-14 lg:w-14" />
       </span>
 
       <span className="flex flex-col leading-none">
-        <span className="text-[20px] lg:text-[22px] font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
+        <span className="text-[20px] lg:text-[24px] font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
           AUM<LogoO size={0.85} spacing={0.04} />X<LogoO size={0.85} spacing={0.04} />
         </span>
-        <span className="mt-1 text-[10px] tracking-[0.35em] uppercase text-gold-600 dark:text-gold-400/85">
+        <span className="mt-1 text-[10px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
           Think Infinite
         </span>
       </span>

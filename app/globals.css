@@ -168,10 +168,24 @@
   }
 
   .nav-link {
-    @apply text-sm font-medium text-ink-200 transition-colors;
+    @apply relative text-sm font-medium text-ink-200 transition-colors;
   }
   .nav-link:hover { color: rgb(var(--line-strong)); }
   .dark .nav-link:hover { color: #E5C76B; }
+  /* Futuristic animated underline — slides in from the left on hover */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    height: 1px;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: linear-gradient(90deg, #F0DDA0, #D4AF37, transparent);
+    transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .nav-link:hover::after { transform: scaleX(1); }
 
   .input {
     @apply w-full bg-bg-surface rounded-lg px-4 py-3 text-ink-100 placeholder:text-ink-400 outline-none transition-colors;

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { LogoMark } from "./Logo";
 import ParticleField from "./anim/ParticleField";
 
 /**
@@ -335,20 +336,18 @@ export default function Hero3D() {
           />
         </svg>
 
-        {/* LOGO at the center — uses the actual brand image (cropped to the mark)
-            so the orbital centerpiece matches the real logo exactly. */}
+        {/* LOGO at the center — SVG mark, transparent (no black square),
+            sized to ~44% of the orbital container, with a soft gold halo. */}
         <div
           ref={logoRef}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{ transformStyle: "preserve-3d", width: "44%", height: "44%" }}
         >
-          <div className="relative w-full h-full drop-shadow-[0_0_60px_rgba(212,175,55,0.55)]">
-            <img
-              src="/logo.jpeg"
-              alt=""
-              className="block w-full h-full object-cover"
-              style={{ objectPosition: "center 22%", mixBlendMode: "lighten" }}
-            />
+          <div
+            className="relative w-full h-full"
+            style={{ filter: "drop-shadow(0 0 40px rgba(212,175,55,0.55))" }}
+          >
+            <LogoMark size={220} className="w-full h-full" />
           </div>
         </div>
       </div>
