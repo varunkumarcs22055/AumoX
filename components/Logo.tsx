@@ -52,7 +52,7 @@ export default function Logo({ className = "" }: LogoProps) {
       className={`group inline-flex items-center gap-3 ${className}`}
       aria-label="AUMOXO home"
     >
-      <span className="relative block h-14 w-14 lg:h-16 lg:w-16 overflow-hidden rounded-md shrink-0 transition-transform duration-300 group-hover:scale-[1.05]">
+      <span className="relative block h-16 w-16 lg:h-20 lg:w-20 overflow-hidden rounded-md shrink-0 transition-transform duration-300 group-hover:scale-[1.05]">
         {/* Dark mode — black bleeds via mix-blend-mode */}
         <Image
           src="/logo.jpeg"

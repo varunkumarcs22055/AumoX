@@ -335,28 +335,32 @@ export default function Hero3D() {
           />
         </svg>
 
-        {/* LOGO at the center — the actual brand image (logo.jpeg), with
-            mix-blend-mode: lighten so the JPEG's black background blends
-            with the dark hero, leaving only the gold mark + wordmark visible. */}
+        {/* LOGO at the center — the actual brand image (logo.jpeg).
+            mix-blend-mode requires NO `filter` on the same/parent element
+            (filters create a new stacking context that breaks blending), so
+            the gold glow is rendered as a separate soft radial layer BEHIND
+            the image instead. */}
         <div
           ref={logoRef}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ transformStyle: "preserve-3d", width: "48%", height: "48%" }}
+          style={{ width: "52%", height: "52%" }}
         >
+          {/* Soft gold halo glow behind the image (separate layer) */}
           <div
-            className="relative w-full h-full"
+            className="absolute inset-[-20%] rounded-full pointer-events-none"
             style={{
-              filter:
-                "drop-shadow(0 0 24px rgba(240,221,160,0.55)) drop-shadow(0 0 48px rgba(212,175,55,0.4))",
+              background:
+                "radial-gradient(circle, rgba(240,221,160,0.45) 0%, rgba(212,175,55,0.25) 35%, transparent 70%)",
+              filter: "blur(20px)",
             }}
-          >
-            <img
-              src="/logo.jpeg"
-              alt=""
-              className="block w-full h-full object-contain"
-              style={{ mixBlendMode: "lighten" }}
-            />
-          </div>
+          />
+          {/* The real logo image — no filter on parent so blend mode works */}
+          <img
+            src="/logo.jpeg"
+            alt=""
+            className="relative block w-full h-full object-contain"
+            style={{ mixBlendMode: "lighten" }}
+          />
         </div>
       </div>
 
