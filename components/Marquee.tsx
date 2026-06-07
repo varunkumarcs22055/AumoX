@@ -1,67 +1,69 @@
 "use client";
 
+import React from "react";
+
 /**
- * Self-contained horizontal marquee. Keyframes are scoped inline via styled-jsx,
- * the animation is set both via class AND inline style, and content is rendered
- * twice so the loop is seamless. Bypasses any global CSS precedence problems.
+ * Horizontal infinite marquee. Uses the GLOBAL `marquee` keyframes defined
+ * in app/globals.css (translateX 0 → -50%). Content is rendered twice with
+ * `aria-hidden` on the duplicate so the loop is seamless.
+ *
+ * styled-jsx and @layer caused class-purge and scoping issues — this
+ * version uses only inline styles + the globally-known keyframe name,
+ * so it works regardless of Tailwind layer/purge behaviour.
  */
 export default function Marquee({
   items,
-  speedSeconds = 30,
+  speedSeconds = 28,
+  gapRem = 3,
   className = "",
 }: {
   items: React.ReactNode[];
   speedSeconds?: number;
+  gapRem?: number;
   className?: string;
 }) {
-  return (
-    <div className={`marquee-root relative overflow-hidden ${className}`}>
-      <div className="marquee-row">
-        {[0, 1].map((copy) => (
-          <div className="marquee-copy" key={copy} aria-hidden={copy === 1 ? true : undefined}>
-            {items.map((it, i) => (
-              <span key={`${copy}-${i}`} className="marquee-item">
-                {it}
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
+  const Row = ({ ariaHidden = false }: { ariaHidden?: boolean }) => (
+    <div
+      aria-hidden={ariaHidden}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: `${gapRem}rem`,
+        paddingRight: `${gapRem}rem`,
+        flexShrink: 0,
+      }}
+    >
+      {items.map((it, i) => (
+        <span key={i} style={{ display: "inline-flex", whiteSpace: "nowrap" }}>
+          {it}
+        </span>
+      ))}
+    </div>
+  );
 
-      <style jsx>{`
-        .marquee-root {
-          -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
-                  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
-        }
-        .marquee-row {
-          display: flex;
-          width: max-content;
-          animation: aumoxo-marquee ${speedSeconds}s linear infinite;
-          will-change: transform;
-        }
-        .marquee-row:hover {
-          animation-play-state: paused;
-        }
-        .marquee-copy {
-          display: flex;
-          align-items: center;
-          gap: 3rem;
-          padding-right: 3rem;
-          flex-shrink: 0;
-        }
-        .marquee-item {
-          display: inline-flex;
-          align-items: center;
-          white-space: nowrap;
-        }
-        @keyframes aumoxo-marquee {
-          from { transform: translate3d(0, 0, 0); }
-          to   { transform: translate3d(-50%, 0, 0); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .marquee-row { animation: none; }
-        }
-      `}</style>
+  return (
+    <div
+      className={className}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        WebkitMaskImage:
+          "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)",
+        maskImage:
+          "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          width: "max-content",
+          animation: `marquee ${speedSeconds}s linear infinite`,
+          willChange: "transform",
+        }}
+      >
+        <Row />
+        <Row ariaHidden />
+      </div>
     </div>
   );
 }
