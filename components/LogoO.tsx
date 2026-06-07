@@ -1,7 +1,7 @@
 /**
  * "O" glyph styled after the AUMOXO logo mark — a clean closed gold ring
- * with the signature floating dot above. Sized to match the cap height of
- * neighbouring letters so it reads as a proper O in the wordmark.
+ * with the signature floating dot above. Geometry is tuned so the ring
+ * bottom sits exactly on the text baseline, matching neighbouring letters.
  */
 
 let nextId = 0;
@@ -11,7 +11,7 @@ const getId = () => {
 };
 
 type LogoOProps = {
-  /** Glyph width in em. Default 1.05 = slightly wider than a letter O for visual parity. */
+  /** Glyph width in em. Default 0.95 ≈ cap height of surrounding letters. */
   size?: number;
   /** Horizontal margin per side in em. */
   spacing?: number;
@@ -19,11 +19,16 @@ type LogoOProps = {
 };
 
 export default function LogoO({
-  size = 1.05,
-  spacing = 0.06,
+  size = 0.95,
+  spacing = 0.05,
   className = "",
 }: LogoOProps) {
   const id = getId();
+  // viewBox is built so that:
+  //   • the ring's bottom edge touches y=100 (the SVG bottom)
+  //   • with vertical-align: baseline (default for inline replaced elements),
+  //     the SVG bottom sits ON the text baseline → ring bottom = baseline,
+  //     matching letters like A, U, M, X.
   return (
     <svg
       viewBox="0 0 100 100"
@@ -35,7 +40,7 @@ export default function LogoO({
         display: "inline-block",
         width: `${size}em`,
         height: `${size}em`,
-        verticalAlign: `-${size * 0.2}em`,
+        verticalAlign: "baseline",
         margin: `0 ${spacing}em`,
       }}
     >
@@ -47,17 +52,17 @@ export default function LogoO({
         </linearGradient>
       </defs>
 
-      {/* Floating dot above — logo signature */}
-      <circle cx="50" cy="10" r="6" fill={`url(#${id})`} />
+      {/* Floating dot above */}
+      <circle cx="50" cy="12" r="6" fill={`url(#${id})`} />
 
-      {/* Closed gold ring sized to fill viewBox so the O reads cap-high */}
+      {/* Ring — bottom at y=98 so it sits on baseline */}
       <circle
         cx="50"
-        cy="58"
-        r="40"
+        cy="60"
+        r="38"
         fill="none"
         stroke={`url(#${id})`}
-        strokeWidth="8"
+        strokeWidth="7.5"
       />
     </svg>
   );
