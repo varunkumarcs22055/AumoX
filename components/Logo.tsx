@@ -19,45 +19,47 @@ export function LogoMark({ size = 36, className = "" }: { size?: number; classNa
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id="aumox-gold" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="aumox-gold" x1="0.1" y1="0" x2="0.9" y2="1">
           <stop offset="0%" stopColor="#F0DDA0" />
-          <stop offset="50%" stopColor="#D4AF37" />
-          <stop offset="100%" stopColor="#B8941F" />
-        </linearGradient>
-        <linearGradient id="aumox-gold-soft" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#E5C76B" />
+          <stop offset="35%" stopColor="#E5C76B" />
+          <stop offset="70%" stopColor="#D4AF37" />
           <stop offset="100%" stopColor="#B8941F" />
         </linearGradient>
       </defs>
 
-      {/* Outer ring with stylized break */}
-      <circle
-        cx="100"
-        cy="108"
-        r="56"
-        fill="none"
+      {/* Floating top dot */}
+      <circle cx="100" cy="34" r="7" fill="url(#aumox-gold)" />
+
+      {/* Main ring — open at the top-right with a graceful break */}
+      <path
+        d="M 100 48 A 56 56 0 1 1 148 132"
         stroke="url(#aumox-gold)"
-        strokeWidth="3.5"
-        strokeDasharray="330 22"
-        strokeDashoffset="-90"
+        strokeWidth="5.5"
+        fill="none"
         strokeLinecap="round"
       />
 
-      {/* Floating top dot */}
-      <circle cx="100" cy="38" r="5.5" fill="url(#aumox-gold)" />
-
-      {/* Stylized A — two strokes meeting at apex */}
+      {/* The signature sweep — curling tail extending from the right break */}
       <path
-        d="M 74 138 L 100 76 L 126 138"
+        d="M 148 132 Q 162 124 156 104"
         stroke="url(#aumox-gold)"
-        strokeWidth="4.5"
+        strokeWidth="5.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+
+      {/* The A — two diagonal strokes meeting at apex (no crossbar) */}
+      <path
+        d="M 73 143 L 100 72 L 127 143"
+        stroke="url(#aumox-gold)"
+        strokeWidth="5.2"
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
 
-      {/* Center dot inside A */}
-      <circle cx="100" cy="120" r="4" fill="url(#aumox-gold-soft)" />
+      {/* Solid center dot inside the A — replaces the crossbar */}
+      <circle cx="100" cy="127" r="5" fill="url(#aumox-gold)" />
     </svg>
   );
 }

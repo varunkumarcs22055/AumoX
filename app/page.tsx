@@ -1,7 +1,6 @@
 import Link from "next/link";
 import HeroBackground from "@/components/HeroBackground";
 import Reveal from "@/components/anim/Reveal";
-import Counter from "@/components/anim/Counter";
 import HeroEntrance, { SplitWords } from "@/components/anim/HeroEntrance";
 import MagneticLink from "@/components/anim/MagneticLink";
 import {
@@ -10,21 +9,20 @@ import {
   LayoutDashboard,
   Workflow,
   Bot,
-  MessageCircle,
-  Palette,
-  Box,
-  Video,
-  Share2,
   Smartphone,
-  Briefcase,
+  Palette,
+  Building2,
+  Database,
   Sparkles,
-  Banknote,
+  Cpu,
+  Rocket,
+  Briefcase,
+  GraduationCap,
   HeartPulse,
-  Factory,
   ShoppingBag,
-  Radio,
+  ShieldCheck,
   Zap,
-  Quote,
+  Target,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -38,21 +36,21 @@ export default function HomePage() {
           <div className="max-w-4xl xl:max-w-3xl">
             <div data-anim="eyebrow" className="eyebrow">
               <span className="h-px w-8 bg-gold-400" />
-              Think Infinite · Enterprise Technology
+              Think Infinite · AUMOXO
             </div>
             <h1
               data-anim="title"
               className="mt-6 font-display text-5xl md:text-7xl lg:text-[88px] leading-[1.05] tracking-tight font-extralight text-ink-100"
               style={{ perspective: "800px" }}
             >
-              <SplitWords text="Engineering the next" />
+              <SplitWords text="Engineering the Next" />
               <br />
-              <SplitWords text="decade of" /> <SplitWords text="enterprise." className="gold-text font-light" />
+              <SplitWords text="Decade of" /> <SplitWords text="Enterprise." className="gold-text font-light" />
             </h1>
             <p data-anim="subtitle" className="mt-8 max-w-2xl text-lg md:text-xl text-ink-300 font-light leading-relaxed">
-              AUMOXO partners with global enterprises to design, build, and
-              operate the systems that move industries forward — from intelligent
-              cloud to AI-native products.
+              AUMOXO develops enterprise-grade software, AI solutions, automation
+              systems, and digital products that help organizations innovate faster,
+              operate smarter, and scale confidently.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <MagneticLink data-anim="cta" href="/contact" className="btn-gold">
@@ -65,25 +63,26 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Stats bar (animated count-up on view) */}
+          {/* Value pillars — replaces fake enterprise stats */}
           <div className="relative mt-24">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
               {[
-                { v: 60, suf: "+", l: "Countries served" },
-                { v: 250, suf: "+", l: "Enterprise clients" },
-                { v: 1200, suf: "+", l: "Engineers worldwide" },
-                { v: 99.99, suf: "%", dec: 2, l: "Platform availability" },
+                { i: Sparkles,  t: "AI-First Solutions",        s: "Intelligence in every workflow." },
+                { i: Cpu,       t: "Enterprise-Grade Development", s: "Production code, built to last." },
+                { i: LayoutDashboard, t: "Custom Software & SaaS",  s: "Made for how you actually work." },
+                { i: Rocket,    t: "Built For Scale",            s: "Architected from day one." },
               ].map((s) => (
                 <div
-                  key={s.l}
+                  key={s.t}
                   data-anim="stat"
-                  className="bg-bg-surface p-8 lg:p-10 flex flex-col gap-2"
+                  className="bg-bg-surface p-7 lg:p-8 flex flex-col gap-2"
                 >
-                  <div className="font-display text-4xl lg:text-5xl font-extralight gold-text">
-                    <Counter to={s.v} suffix={s.suf} decimals={s.dec ?? 0} />
+                  <s.i size={20} className="text-gold-400" />
+                  <div className="mt-2 font-display text-xl lg:text-2xl font-light text-ink-100">
+                    {s.t}
                   </div>
-                  <div className="text-xs uppercase tracking-[0.25em] text-ink-400">
-                    {s.l}
+                  <div className="text-sm text-ink-300 font-light leading-relaxed">
+                    {s.s}
                   </div>
                 </div>
               ))}
@@ -92,57 +91,29 @@ export default function HomePage() {
         </HeroEntrance>
       </section>
 
-      {/* ========== TRUSTED BY ========== */}
+      {/* ========== BOTTOM STRIP — capability list ========== */}
       <section className="border-y border-line bg-bg-surface">
-        <div className="container-x py-16">
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <span className="h-px w-12 bg-gradient-to-r from-transparent to-gold-400/60" />
-            <span className="text-[11px] uppercase tracking-[0.35em] text-ink-300 font-medium">
-              Trusted by leaders across 60+ countries
-            </span>
-            <span className="h-px w-12 bg-gradient-to-l from-transparent to-gold-400/60" />
-          </div>
-
-          <div className="marquee">
-            <div className="marquee-track">
-              {[
-                "ASTRION", "QUANTIVA", "NORDWELL", "MERIDIAN", "VERTEX LABS",
-                "HELION", "PARAGON", "STELLAR", "OBSIDIAN", "EVERMORE",
-                "ARGENTUM", "LUMEN COR",
-                "ASTRION", "QUANTIVA", "NORDWELL", "MERIDIAN", "VERTEX LABS",
-                "HELION", "PARAGON", "STELLAR", "OBSIDIAN", "EVERMORE",
-                "ARGENTUM", "LUMEN COR",
-              ].map((name, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 px-2 whitespace-nowrap text-ink-400 hover:text-gold-600 dark:hover:text-gold-300 transition-colors"
-                >
-                  <span className="h-2 w-2 rounded-full bg-gold-400/40" />
-                  <span className="font-display text-2xl font-extralight tracking-[0.28em]">
-                    {name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-xl border border-line bg-line">
+        <div className="container-x py-7">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium">
             {[
-              { v: "250+", l: "Enterprise clients" },
-              { v: "92%",  l: "Client retention" },
-              { v: "4.9★", l: "Avg engagement rating" },
-              { v: "15+",  l: "Decade-long partnerships" },
-            ].map((s) => (
-              <div key={s.l} className="bg-bg-base px-6 py-7 text-center">
-                <div className="font-display text-2xl lg:text-3xl font-extralight gold-text">{s.v}</div>
-                <div className="mt-1 text-[11px] uppercase tracking-[0.25em] text-ink-400">{s.l}</div>
-              </div>
+              "AI Solutions",
+              "Enterprise Software",
+              "CRM Platforms",
+              "Business Automation",
+              "Web & Mobile Development",
+            ].map((label, i, arr) => (
+              <span key={label} className="flex items-center gap-8">
+                <span>{label}</span>
+                {i < arr.length - 1 && (
+                  <span className="hidden md:inline text-gold-400/60">•</span>
+                )}
+              </span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ========== WHAT WE DO ========== */}
+      {/* ========== WHAT WE DO — reorganized into 3 pillars ========== */}
       <section className="py-24 lg:py-32">
         <div className="container-x">
           <div className="grid lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20 mb-16">
@@ -152,14 +123,13 @@ export default function HomePage() {
                 What We Do
               </div>
               <h2 className="section-title mt-5">
-                A complete capability stack for the modern enterprise.
+                A focused capability stack — engineering, AI, and design.
               </h2>
             </div>
             <div className="lg:pt-16">
               <p className="text-lg text-ink-300 font-light leading-relaxed">
-                We bring together strategy, engineering, and operations to
-                deliver outcomes that compound — across every layer of your
-                technology landscape.
+                We combine strategy, software engineering, and AI to ship outcomes —
+                not just code. Three practices, one team, owned end to end.
               </p>
               <Link
                 href="/services"
@@ -170,64 +140,86 @@ export default function HomePage() {
             </div>
           </div>
 
-          <Reveal stagger=".reveal-card" staggerGap={0.07} className="grid md:grid-cols-2 lg:grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+          <div className="space-y-12">
             {[
-              { i: Globe, t: "Web Applications", d: "Modern web apps built on Next.js + React — fast, accessible, SEO-ready and engineered to scale." },
-              { i: LayoutDashboard, t: "SaaS Dashboards", d: "End-to-end SaaS product engineering — multi-tenant, billing, auth, analytics and admin tools." },
-              { i: Bot, t: "AI Agents & Chatbots", d: "Production-grade agents and conversational AI — built on Claude, GPT or open models with guardrails." },
-              { i: Smartphone, t: "Android Applications", d: "Native Kotlin and cross-platform Flutter / React Native apps — Play Store ready from day one." },
-              { i: Workflow, t: "Automation Services", d: "Workflow automation, bots and integrations that free your team from repetitive work." },
-              { i: Palette, t: "UI/UX Design", d: "Design that closes deals — research, systems, prototypes and pixel-perfect handoff." },
-              { i: Share2, t: "Social Media Management", d: "Full-service social — content calendars, post production, engagement and performance reporting." },
-              { i: Box, t: "3D Modelling", d: "Photoreal product renders, hero scenes and animation-ready assets for web and marketing." },
-              { i: Video, t: "Video Editing", d: "Reels, ad creatives, brand films and product demos — story-led editing with motion design." },
-            ].map(({ i: Icon, t, d }) => (
-              <div
-                key={t}
-                className="reveal-card group relative bg-bg-base p-8 lg:p-10 transition-all hover:bg-bg-surface"
-              >
-                <div className="grid h-12 w-12 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 group-hover:border-gold-400/60 group-hover:bg-gold-400/10 transition-colors">
-                  <Icon size={22} />
+              {
+                pillar: "Enterprise Solutions",
+                items: [
+                  { i: Sparkles,  t: "AI Solutions",       d: "Agents, copilots and ML systems integrated where your team actually works." },
+                  { i: Briefcase, t: "CRM Platforms",      d: "Custom CRM built around your sales process, customer lifecycle and operations." },
+                  { i: Workflow,  t: "Automation Systems", d: "Free your team from repetitive work with workflows, bots and integrations." },
+                ],
+              },
+              {
+                pillar: "Product Engineering",
+                items: [
+                  { i: Globe,     t: "Web Applications",   d: "Production web apps on Next.js + React — fast, accessible, SEO-ready." },
+                  { i: Smartphone,t: "Mobile Applications",d: "Native Android and cross-platform apps — store-ready from day one." },
+                  { i: LayoutDashboard, t: "SaaS Platforms", d: "Multi-tenant SaaS with auth, billing, admin tooling and analytics." },
+                ],
+              },
+              {
+                pillar: "Design",
+                items: [
+                  { i: Palette,   t: "UI/UX Design",       d: "Research-led design systems, prototypes and pixel-perfect handoff." },
+                ],
+              },
+            ].map((group) => (
+              <div key={group.pillar}>
+                <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-5">
+                  {group.pillar}
                 </div>
-                <h3 className="mt-6 text-xl font-light text-ink-100">{t}</h3>
-                <p className="mt-3 text-sm text-ink-300 leading-relaxed font-light">
-                  {d}
-                </p>
-                <Link
-                  href="/services"
-                  className="inline-flex items-center gap-1.5 mt-6 text-xs uppercase tracking-[0.25em] text-gold-400 hover:text-gold-300 transition-colors"
-                >
-                  Learn more <ArrowUpRight size={14} />
-                </Link>
+                <Reveal stagger=".reveal-card" staggerGap={0.07} className="grid md:grid-cols-2 lg:grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+                  {group.items.map(({ i: Icon, t, d }) => (
+                    <div
+                      key={t}
+                      className="reveal-card group relative bg-bg-base p-8 lg:p-10 transition-all hover:bg-bg-surface"
+                    >
+                      <div className="grid h-12 w-12 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 group-hover:border-gold-400/60 group-hover:bg-gold-400/10 transition-colors">
+                        <Icon size={22} />
+                      </div>
+                      <h3 className="mt-6 text-xl font-light text-ink-100">{t}</h3>
+                      <p className="mt-3 text-sm text-ink-300 leading-relaxed font-light">
+                        {d}
+                      </p>
+                      <Link
+                        href="/services"
+                        className="inline-flex items-center gap-1.5 mt-6 text-xs uppercase tracking-[0.25em] text-gold-400 hover:text-gold-300 transition-colors"
+                      >
+                        Learn more <ArrowUpRight size={14} />
+                      </Link>
+                    </div>
+                  ))}
+                </Reveal>
               </div>
             ))}
-          </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* ========== INDUSTRIES ========== */}
+      {/* ========== INDUSTRIES WE EMPOWER — believable client-centric list ========== */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line relative overflow-hidden">
         <div className="absolute inset-0 grid-overlay opacity-40" />
         <div className="container-x relative">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="eyebrow justify-center">
               <span className="h-px w-8 bg-gold-400" />
-              Industries
+              Industries We Empower
               <span className="h-px w-8 bg-gold-400" />
             </div>
             <h2 className="section-title mt-5">
-              Deep expertise across regulated and digital-first industries.
+              Built for the businesses that move fast.
             </h2>
           </div>
 
           <Reveal stagger=".industry-card" staggerGap={0.06} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { i: Banknote, t: "Banking & Financial" },
-              { i: HeartPulse, t: "Healthcare & Life Sciences" },
-              { i: Factory, t: "Manufacturing" },
-              { i: ShoppingBag, t: "Retail & CPG" },
-              { i: Radio, t: "Telecom & Media" },
-              { i: Zap, t: "Energy & Utilities" },
+              { i: Rocket,        t: "Startups" },
+              { i: Building2,     t: "SMEs" },
+              { i: Briefcase,     t: "Professional Services" },
+              { i: GraduationCap, t: "Education" },
+              { i: HeartPulse,    t: "Healthcare" },
+              { i: ShoppingBag,   t: "E-Commerce" },
             ].map(({ i: Icon, t }) => (
               <Link
                 key={t}
@@ -246,30 +238,29 @@ export default function HomePage() {
 
           <div className="text-center mt-12">
             <Link href="/industries" className="btn-ghost">
-              View all industries <ArrowUpRight size={16} />
+              See how we serve each <ArrowUpRight size={16} />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ========== PRODUCTS ========== */}
+      {/* ========== SOLUTIONS (formerly Products) ========== */}
       <section className="py-24 lg:py-32">
         <div className="container-x">
           <div className="grid lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20 mb-16">
             <div>
               <div className="eyebrow">
                 <span className="h-px w-8 bg-gold-400" />
-                Our Products
+                Our Solutions
               </div>
               <h2 className="section-title mt-5">
-                Software platforms engineered for enterprise scale.
+                Ready-to-deploy solutions for modern businesses.
               </h2>
             </div>
             <div className="lg:pt-16">
               <p className="text-lg text-ink-300 font-light leading-relaxed">
-                Three flagship platforms power critical workloads for our
-                clients — built with the same rigor we bring to bespoke
-                engagements.
+                Practical software, AI systems and automation frameworks that
+                accelerate delivery and reduce development cost.
               </p>
             </div>
           </div>
@@ -277,19 +268,19 @@ export default function HomePage() {
           <Reveal stagger=".product-card" staggerGap={0.12} className="grid md:grid-cols-3 gap-6">
             {[
               {
-                name: "AUMOXO Nexus",
-                tag: "Integration Platform",
-                desc: "200+ connectors, low-code workflows, and event-driven orchestration deployed in the cloud or your VPC.",
+                name: "AUMOXO CRM",
+                tag: "Coming Soon",
+                desc: "Customer relationship management platform designed for sales, operations and customer-success teams.",
               },
               {
-                name: "AUMOXO Atlas",
-                tag: "Unified Data Platform",
-                desc: "Ingestion, governance, semantic layer and GenAI-ready APIs in one cohesive experience.",
+                name: "AUMOXO Automate",
+                tag: "Coming Soon",
+                desc: "Workflow automation and AI-powered process orchestration for modern businesses.",
               },
               {
-                name: "AUMOXO Pulse",
-                tag: "Observability Suite",
-                desc: "Traces, metrics, logs and SLO-aware alerting with 13-month retention for regulated industries.",
+                name: "AUMOXO Intelligence",
+                tag: "Coming Soon",
+                desc: "Analytics and reporting platform that transforms business data into actionable insights.",
               },
             ].map((p) => (
               <div key={p.name} className="product-card card p-8 gold-border flex flex-col">
@@ -306,7 +297,7 @@ export default function HomePage() {
                   href="/products"
                   className="inline-flex items-center gap-1.5 mt-6 text-xs uppercase tracking-[0.25em] text-gold-300 hover:text-gold-200"
                 >
-                  Explore product <ArrowUpRight size={14} />
+                  Join the waitlist <ArrowUpRight size={14} />
                 </Link>
               </div>
             ))}
@@ -314,70 +305,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ========== CASE STUDY / TESTIMONIAL ========== */}
+      {/* ========== WHY BUSINESSES CHOOSE AUMOXO — replaces fake testimonial ========== */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
         <div className="container-x">
-          <Reveal kind="fade-up" className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="eyebrow">
-                <span className="h-px w-8 bg-gold-400" />
-                Featured Outcome
-              </div>
-              <h2 className="section-title mt-5">
-                $48M saved over three years for a global bank.
-              </h2>
-              <p className="section-sub">
-                We led a multi-cloud consolidation across 14 business units —
-                modernizing 320 applications, automating 90% of operations, and
-                reducing change failure rate by 78%.
-              </p>
-              <div className="mt-8 grid grid-cols-3 gap-6">
-                {[
-                  { v: "320", l: "Apps modernized" },
-                  { v: "78%", l: "Lower CFR" },
-                  { v: "5.2x", l: "Deploy frequency" },
-                ].map((s) => (
-                  <div key={s.l}>
-                    <div className="font-display text-3xl font-extralight gold-text">
-                      {s.v}
-                    </div>
-                    <div className="mt-1 text-[11px] uppercase tracking-[0.25em] text-ink-400">
-                      {s.l}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 mt-10 text-gold-300 hover:text-gold-200 font-medium"
-              >
-                Read the full story <ArrowUpRight size={16} />
-              </Link>
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="eyebrow justify-center">
+              <span className="h-px w-8 bg-gold-400" />
+              Why Businesses Choose AUMOXO
+              <span className="h-px w-8 bg-gold-400" />
             </div>
-            <div className="card p-10 gold-border relative">
-              <Quote className="absolute top-6 right-6 text-gold-400/30" size={56} />
-              <p className="text-xl lg:text-2xl font-light text-ink-100 leading-relaxed">
-                "AUMOXO didn't just deliver a migration — they re-architected
-                how our technology organization operates. The financial impact
-                was immediate. The cultural impact has been lasting."
-              </p>
-              <div className="mt-8 flex items-center gap-4 pt-6 border-t border-line">
-                <div className="h-12 w-12 rounded-full bg-gold-gradient grid place-items-center text-black font-medium">
-                  PM
+            <h2 className="section-title mt-5">
+              Four reasons we win the work.
+            </h2>
+          </div>
+
+          <Reveal stagger=".why-card" staggerGap={0.08} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+            {[
+              { i: Sparkles,    t: "AI-First",         d: "We integrate intelligence into every workflow we build." },
+              { i: ShieldCheck, t: "Built For Scale",  d: "Enterprise-grade architecture from day one — not bolted on later." },
+              { i: Zap,         t: "Faster Delivery",  d: "Lean teams, modern technology, rapid execution from kickoff to launch." },
+              { i: Target,      t: "Business-Focused", d: "Solutions designed around measurable outcomes — not vanity metrics." },
+            ].map(({ i: Icon, t, d }) => (
+              <div key={t} className="why-card bg-bg-base p-8 lg:p-10">
+                <div className="grid h-12 w-12 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300">
+                  <Icon size={20} />
                 </div>
-                <div>
-                  <div className="text-ink-100 font-medium">Priya Mehta</div>
-                  <div className="text-sm text-ink-400">
-                    Group CTO · Global Tier-1 Bank
-                  </div>
-                </div>
+                <h3 className="mt-6 text-lg font-light text-ink-100">{t}</h3>
+                <p className="mt-3 text-sm text-ink-300 font-light leading-relaxed">{d}</p>
               </div>
-            </div>
+            ))}
           </Reveal>
         </div>
       </section>
 
-      {/* ========== INSIGHTS ========== */}
+      {/* ========== INSIGHTS TEASER — customer-search topics ========== */}
       <section className="py-24 lg:py-32">
         <div className="container-x">
           <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
@@ -387,39 +348,28 @@ export default function HomePage() {
                 Insights
               </div>
               <h2 className="section-title mt-5">
-                Perspectives from our practitioners.
+                Practical reads for builders & business leaders.
               </h2>
             </div>
-            <Link href="/about" className="btn-ghost">
-              All insights
-            </Link>
           </div>
 
           <Reveal stagger=".insight-card" staggerGap={0.12} className="grid md:grid-cols-3 gap-6">
             {[
-              {
-                tag: "GenAI",
-                title: "The enterprise GenAI maturity model — five stages to value",
-                date: "May 2026",
-              },
-              {
-                tag: "Cloud",
-                title: "Multi-cloud FinOps: how leaders cut 40% in 90 days",
-                date: "Apr 2026",
-              },
-              {
-                tag: "Security",
-                title: "Zero-trust beyond identity — the operating model shift",
-                date: "Mar 2026",
-              },
-            ].map((a) => (
-              <article
+              { tag: "AI",         title: "How AI can reduce operational costs across your business" },
+              { tag: "CRM",        title: "CRM vs spreadsheet management — when to make the switch" },
+              { tag: "Automation", title: "Automating lead follow-ups using AI agents" },
+              { tag: "Software",   title: "Building internal business software that teams actually use" },
+              { tag: "Support",    title: "AI agents for customer support — what works in practice" },
+              { tag: "Strategy",   title: "Choosing the right tech stack as a growing SME" },
+            ].slice(0, 3).map((a) => (
+              <Link
                 key={a.title}
+                href="/contact"
                 className="insight-card card p-8 flex flex-col group cursor-pointer"
               >
                 <div className="aspect-[16/10] -mx-8 -mt-8 mb-6 bg-gradient-to-br from-gold-400/20 via-bg-elevated to-bg-base relative overflow-hidden">
                   <div className="absolute inset-0 grid-overlay opacity-50" />
-                  <div className="absolute bottom-4 left-8 text-[11px] uppercase tracking-[0.3em] text-gold-400">
+                  <div className="absolute bottom-4 left-8 text-[11px] uppercase tracking-[0.3em] text-gold-700 dark:text-gold-300 bg-bg-base/60 border border-gold-400/40 rounded-full px-3 py-1">
                     {a.tag}
                   </div>
                 </div>
@@ -427,13 +377,13 @@ export default function HomePage() {
                   {a.title}
                 </h3>
                 <div className="mt-auto pt-6 flex items-center justify-between text-xs text-ink-400">
-                  <span>{a.date}</span>
+                  <span>Read with our team</span>
                   <ArrowUpRight
                     size={14}
                     className="text-gold-400 group-hover:translate-x-1 transition-transform"
                   />
                 </div>
-              </article>
+              </Link>
             ))}
           </Reveal>
         </div>
@@ -446,18 +396,18 @@ export default function HomePage() {
         <div className="container-x relative">
           <Reveal kind="scale-in" className="text-center max-w-3xl mx-auto">
             <h2 className="font-display text-4xl md:text-6xl font-extralight text-ink-100 tracking-tight leading-[1.05]">
-              Ready to build what's <span className="gold-text">next</span>?
+              Let's build something <span className="gold-text">great together</span>.
             </h2>
             <p className="mt-6 text-lg text-ink-300 font-light">
               Tell us about your business. We'll respond within one working day.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/contact" className="btn-gold">
-                Start a Conversation
+                Get in Touch
                 <ArrowUpRight size={18} />
               </Link>
-              <Link href="/services" className="btn-ghost">
-                See Services
+              <Link href="/contact" className="btn-ghost">
+                Schedule Consultation
               </Link>
             </div>
           </Reveal>

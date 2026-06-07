@@ -1,18 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import ParticleField from "./anim/ParticleField";
 
 /**
- * Fixed-position ambient particle field that lives behind ALL site content.
- * Visible through transparent / semi-transparent section backgrounds — gives
- * the entire site the antigravity-style spark layer.
- *
- * Hidden on /admin routes for a clean admin shell.
+ * Sitewide ambient particle field. Performance-conscious:
+ *   • Hidden on screens < 1024px (mobile + tablet) so it never causes lag
+ *   • Hidden on touch devices regardless of width
+ *   • Hidden on /admin routes
+ *   • Hidden when user prefers reduced motion
+ *   • Sparser particle count + no constellation lines (those live in the hero only)
  */
 export default function SiteParticles() {
   const pathname = usePathname();
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const evaluate = () => {
+      const wideEnough = window.innerWidth >= 1024;
+      const pointerFine = window.matchMedia("(pointer: fine)").matches;
+      const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      setEnabled(wideEnough && pointerFine && motionOk);
+    };
+    evaluate();
+    window.addEventListener("resize", evaluate);
+    return () => window.removeEventListener("resize", evaluate);
+  }, []);
+
   if (pathname?.startsWith("/admin")) return null;
+  if (!enabled) return null;
 
   return (
     <div
@@ -21,10 +38,10 @@ export default function SiteParticles() {
       style={{ contain: "strict" }}
     >
       <ParticleField
-        count={140}
-        cursorRadius={130}
-        cursorStrength={0.18}
-        constellationRadius={170}
+        count={90}
+        cursorRadius={120}
+        cursorStrength={0.12}
+        constellationRadius={0}
         showWand={false}
       />
     </div>

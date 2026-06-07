@@ -13,6 +13,7 @@ const schema = z.object({
   company: z.string().optional(),
   phone: z.string().optional(),
   service: z.string().min(1, "Please pick one"),
+  timeline: z.string().optional(),
   budget: z.string().optional(),
   message: z.string().min(10, "Tell us a little more (10+ chars)"),
   hp: z.string().max(0).optional(), // honeypot
@@ -92,30 +93,40 @@ export default function ContactForm() {
             <option value="" disabled>
               Choose a service…
             </option>
-            <optgroup label="Engineering">
+            <optgroup label="Enterprise Solutions">
+              <option>AI Solutions</option>
+              <option>CRM Solutions</option>
+              <option>Automation Systems</option>
+              <option>Enterprise Software</option>
+            </optgroup>
+            <optgroup label="Product Engineering">
               <option>Web Application</option>
-              <option>SaaS Dashboard</option>
-              <option>Android Application</option>
-              <option>Automation Services</option>
+              <option>SaaS Platform</option>
+              <option>Mobile Application</option>
             </optgroup>
-            <optgroup label="AI">
-              <option>AI Agent</option>
-              <option>Chatbot</option>
-            </optgroup>
-            <optgroup label="Design & Creative">
+            <optgroup label="Design & Strategy">
               <option>UI/UX Design</option>
-              <option>3D Modelling</option>
-              <option>Video Editing</option>
+              <option>Technology Consulting</option>
             </optgroup>
-            <optgroup label="Growth & Strategy">
-              <option>Social Media Management</option>
-              <option>Business Consultancy</option>
+            <optgroup label="Solutions">
+              <option>AI Customer Support Suite</option>
+              <option>CRM &amp; Sales Automation</option>
+              <option>Operations Automation</option>
+              <option>Coming-soon product waitlist</option>
             </optgroup>
             <optgroup label="Other">
-              <option>Products — AUMOXO Nexus / Atlas / Pulse</option>
               <option>Partnership inquiry</option>
               <option>Something else</option>
             </optgroup>
+          </select>
+        </Field>
+        <Field label="Project timeline">
+          <select className="input" defaultValue="" {...register("timeline")}>
+            <option value="">Select timeline</option>
+            <option>ASAP</option>
+            <option>Within 1 month</option>
+            <option>1–3 months</option>
+            <option>Exploring options</option>
           </select>
         </Field>
         <Field label="Indicative budget (optional)">

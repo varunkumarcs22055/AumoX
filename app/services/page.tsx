@@ -10,128 +10,111 @@ import {
   Bot,
   MessageCircle,
   Palette,
-  Box,
-  Video,
-  Share2,
   Briefcase,
+  Building2,
   Sparkles,
 } from "lucide-react";
 
 export const metadata = {
-  title: "Services — Engineering · AI · Design · Growth",
+  title: "Services — Technology That Moves Businesses Forward",
 };
 
 const pillars = [
   {
-    pillar: "Engineering & Development",
+    pillar: "Enterprise Solutions",
     blurb:
-      "Production-grade software — from marketing sites to mission-critical platforms — built by senior engineers.",
-    color: "from-amber-500/15 to-transparent",
+      "Software systems that run the business — built around your workflows, not a generic template.",
+    services: [
+      {
+        i: Sparkles,
+        name: "AI Solutions",
+        desc: "Agents, copilots and ML systems integrated where your team works. Built on Claude, GPT or open models with proper guardrails.",
+        deliverables: ["AI agents", "Custom chatbots", "RAG over your data", "Evaluation & guardrails"],
+      },
+      {
+        i: Briefcase,
+        name: "CRM Solutions",
+        desc: "Custom CRM systems built around your sales process, customer lifecycle and operational workflows.",
+        deliverables: ["Lead Management", "Pipeline Tracking", "Sales Automation", "Reporting & Analytics"],
+      },
+      {
+        i: Workflow,
+        name: "Automation Systems",
+        desc: "Free your team from repetitive work — workflow automation, integrations and AI-powered process orchestration.",
+        deliverables: ["n8n / Make / Zapier", "Custom RPA", "ETL pipelines", "Internal tools"],
+      },
+      {
+        i: Building2,
+        name: "Enterprise Software",
+        desc: "Internal systems, operations platforms, dashboards and business management software designed around your workflows.",
+        deliverables: ["Internal portals", "Operations platforms", "Admin dashboards", "Custom workflows"],
+      },
+    ],
+  },
+  {
+    pillar: "Product Engineering",
+    blurb:
+      "Production-grade product engineering — from marketing sites to multi-tenant SaaS, built by senior engineers.",
     services: [
       {
         i: Globe,
-        name: "Web Application Services",
+        name: "Web Applications",
         desc: "Modern web apps built on Next.js, React and Node — fast, accessible, SEO-ready and engineered to scale.",
-        deliverables: ["Marketing & corporate sites", "Customer portals", "E-commerce", "API integrations"],
+        deliverables: ["Marketing & corporate", "Customer portals", "E-commerce", "API integrations"],
       },
       {
         i: LayoutDashboard,
-        name: "SaaS Dashboards",
-        desc: "End-to-end SaaS product engineering — multi-tenant architecture, billing, auth, analytics and admin tooling.",
+        name: "SaaS Platforms",
+        desc: "End-to-end SaaS product engineering — multi-tenant architecture, auth, billing, admin tooling and analytics.",
         deliverables: ["Multi-tenant architecture", "Auth & RBAC", "Billing (Stripe/Razorpay)", "Admin & analytics"],
       },
       {
         i: Smartphone,
-        name: "Android Application Development",
-        desc: "Native Android apps in Kotlin and cross-platform with Flutter / React Native — Play Store ready from day one.",
+        name: "Mobile Applications",
+        desc: "Native Android in Kotlin, and cross-platform with Flutter or React Native — store-ready from day one.",
         deliverables: ["Native Kotlin", "Flutter / React Native", "Play Store publishing", "Crashlytics & analytics"],
       },
-      {
-        i: Workflow,
-        name: "Automation Services",
-        desc: "Free your team from repetitive work — workflow automation, integrations and bots across your stack.",
-        deliverables: ["n8n / Make / Zapier", "Custom RPA scripts", "ETL pipelines", "Internal tools"],
-      },
     ],
   },
   {
-    pillar: "AI & Intelligence",
+    pillar: "Design",
     blurb:
-      "Practical, production-ready AI — agents, assistants and copilots that move real business metrics.",
-    color: "from-violet-500/15 to-transparent",
-    services: [
-      {
-        i: Bot,
-        name: "AI Agents",
-        desc: "Custom agentic systems with tool use, memory and guardrails — built on Claude, GPT or open models.",
-        deliverables: ["Multi-tool agents", "RAG over your data", "Vector search", "Evaluation & guardrails"],
-      },
-      {
-        i: MessageCircle,
-        name: "Chatbots",
-        desc: "Customer-facing and internal chatbots — from rule-based assistants to fully conversational LLM bots.",
-        deliverables: ["Web & WhatsApp", "LLM-powered", "Knowledge base", "Human handoff"],
-      },
-    ],
-  },
-  {
-    pillar: "Design & Creative",
-    blurb:
-      "Design that closes deals — interfaces, motion and content that elevate every touchpoint of your brand.",
-    color: "from-rose-500/15 to-transparent",
+      "Design that closes deals — research, systems and pixel-perfect handoff.",
     services: [
       {
         i: Palette,
         name: "UI / UX Design",
-        desc: "End-to-end product design — research, wireframes, prototypes and pixel-perfect handoff in Figma.",
+        desc: "End-to-end product design — research, wireframes, prototypes and pixel-perfect Figma handoff.",
         deliverables: ["Design systems", "Wireframes & prototypes", "Usability testing", "Dev handoff"],
-      },
-      {
-        i: Box,
-        name: "3D Modelling",
-        desc: "Photoreal product renders, hero scenes and animation-ready assets for web and marketing.",
-        deliverables: ["Product visualization", "Hero scenes", "Animation rigs", "AR-ready assets"],
-      },
-      {
-        i: Video,
-        name: "Video Editing",
-        desc: "Reels, ad creatives, brand films and product demos — story-led editing with motion design.",
-        deliverables: ["Short-form reels", "Ad creatives", "Brand films", "Motion graphics"],
       },
     ],
   },
   {
-    pillar: "Growth & Strategy",
+    pillar: "Strategy",
     blurb:
-      "Specialist help where the impact compounds — social presence, brand voice and the strategic decisions in between.",
-    color: "from-emerald-500/15 to-transparent",
+      "Specialist help where the impact compounds — strategic technology decisions, well made.",
     services: [
       {
-        i: Share2,
-        name: "Social Media Management",
-        desc: "Full-service social — content calendars, post production, engagement and performance reporting.",
-        deliverables: ["Content calendars", "Post production", "Community management", "Monthly analytics"],
-      },
-      {
-        i: Briefcase,
-        name: "Business Consultancy",
-        desc: "Strategic advisory for tech-first businesses — GTM, ops design, fundraising readiness and team scaling.",
-        deliverables: ["GTM strategy", "Ops design", "Fundraising readiness", "Team scaling"],
+        i: Bot,
+        name: "Technology Consulting",
+        desc: "Technology strategy, process optimization, digital transformation planning and solution architecture.",
+        deliverables: ["Tech strategy", "Process optimization", "Transformation planning", "Solution architecture"],
       },
     ],
   },
 ];
 
 const process = [
-  { n: "01", t: "Discover", d: "We start with your goal — not a service list. A short, focused discovery aligns scope, success criteria and stakeholders." },
-  { n: "02", t: "Design", d: "Architecture, designs, sprint plan and timeline — clear deliverables, clear pricing, zero surprises." },
-  { n: "03", t: "Build", d: "A focused pod ships in weekly sprints with live previews. You see real progress, not status decks." },
-  { n: "04", t: "Launch & Support", d: "We launch with you and stay on for hyper-care. Day-2 ops, SLAs and continuous improvement available." },
+  { n: "01", t: "Strategy",     d: "We start with your goal — not a service list. A focused discovery aligns scope, success criteria and stakeholders." },
+  { n: "02", t: "Architecture", d: "Reference architecture, designs, sprint plan and timeline — clear deliverables, clear pricing, zero surprises." },
+  { n: "03", t: "Delivery",     d: "A focused pod ships in weekly sprints with live previews. You see real progress, not status decks." },
+  { n: "04", t: "Scale",        d: "We launch with you and stay on for hyper-care. Day-2 ops, SLAs and continuous improvement available." },
 ];
 
 export default function ServicesPage() {
   return (
     <>
+      {/* HERO */}
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />
         <div className="container-x relative">
@@ -141,17 +124,18 @@ export default function ServicesPage() {
               Services
             </div>
             <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[1.05] font-extralight tracking-tight text-ink-100">
-              Eleven services. <span className="gold-text">One partner.</span>
+              Technology that moves <span className="gold-text">businesses forward</span>.
             </h1>
             <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">
-              Engineering, AI, design and growth — under one roof, delivered by senior practitioners
-              who care as much about your business as you do.
+              From custom software and AI systems to automation and digital
+              transformation, AUMOXO delivers solutions designed for measurable
+              business impact.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <Link href="/contact" className="btn-gold">
-                Start a project <ArrowUpRight size={18} />
+                Discuss Project <ArrowUpRight size={18} />
               </Link>
-              <Link href="#engineering-development" className="btn-ghost">Explore services</Link>
+              <Link href="#enterprise-solutions" className="btn-ghost">Explore services</Link>
             </div>
           </div>
         </div>
@@ -197,7 +181,7 @@ export default function ServicesPage() {
                       href="/contact"
                       className="inline-flex items-center gap-1.5 mt-7 text-xs uppercase tracking-[0.25em] text-gold-600 dark:text-gold-300 hover:opacity-80"
                     >
-                      Request a quote <ArrowUpRight size={14} />
+                      Discuss Project <ArrowUpRight size={14} />
                     </Link>
                   </div>
                 ))}
@@ -207,21 +191,22 @@ export default function ServicesPage() {
         );
       })}
 
-      {/* Coming soon */}
+      {/* Coming soon — Business Operations product */}
       <section className="py-24 lg:py-32">
         <div className="container-x">
           <div className="card gold-border p-10 lg:p-14 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
             <div>
               <div className="eyebrow">
                 <span className="h-px w-8 bg-gold-400" />
-                Coming soon
+                Coming Soon
               </div>
               <h3 className="mt-4 font-display text-3xl font-extralight text-ink-100">
-                Business Management <span className="text-ink-400 font-extralight">— in development</span>
+                Building the future of business operations.
               </h3>
               <p className="mt-3 text-ink-300 font-light max-w-2xl">
-                A full-spectrum operations practice for high-growth teams — finance ops, HR systems,
-                vendor management and process design. Join the waitlist.
+                We're developing the next generation of business management tools
+                focused on automation, intelligence and operational efficiency.
+                Join the waitlist for early access.
               </p>
             </div>
             <Link href="/contact" className="btn-ghost shrink-0">
@@ -231,12 +216,12 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Process */}
+      {/* How We Work */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
         <div className="container-x">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="eyebrow justify-center"><span className="h-px w-8 bg-gold-400" />How We Work<span className="h-px w-8 bg-gold-400" /></div>
-            <h2 className="section-title mt-5">A clear, disciplined delivery model.</h2>
+            <h2 className="section-title mt-5">A disciplined four-step delivery model.</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
             {process.map((p) => (
@@ -250,15 +235,21 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      {/* CTA */}
       <section className="py-24 lg:py-32">
         <div className="container-x text-center">
           <h2 className="section-title mx-auto">Let's scope your project.</h2>
           <p className="section-sub mx-auto text-center">
-            A 30-minute call is usually enough to map outcomes, scope and a path forward.
+            A short call is usually enough to map outcomes, scope and a path forward.
           </p>
-          <Link href="/contact" className="btn-gold mt-10">
-            Book a consultation <ArrowUpRight size={18} />
-          </Link>
+          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/contact" className="btn-gold">
+              Discuss Project <ArrowUpRight size={18} />
+            </Link>
+            <Link href="/contact" className="btn-ghost">
+              Schedule Consultation
+            </Link>
+          </div>
         </div>
       </section>
     </>

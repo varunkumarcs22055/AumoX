@@ -8,58 +8,37 @@ import LogoO from "./LogoO";
 
 const cols = [
   {
-    title: "Services",
+    title: "Enterprise Solutions",
+    links: [
+      { href: "/services", label: "AI Solutions" },
+      { href: "/services", label: "CRM Platforms" },
+      { href: "/services", label: "Automation Systems" },
+      { href: "/services", label: "Enterprise Software" },
+    ],
+  },
+  {
+    title: "Product Engineering",
     links: [
       { href: "/services", label: "Web Applications" },
-      { href: "/services", label: "SaaS Dashboards" },
-      { href: "/services", label: "AI Agents & Chatbots" },
-      { href: "/services", label: "Android Apps" },
-      { href: "/services", label: "Automation" },
+      { href: "/services", label: "Mobile Applications" },
+      { href: "/services", label: "SaaS Platforms" },
       { href: "/services", label: "UI/UX Design" },
-      { href: "/services", label: "Social Media Management" },
-      { href: "/services", label: "3D Modelling & Video" },
     ],
   },
   {
-    title: "Industries",
+    title: "Solutions",
     links: [
-      { href: "/industries", label: "Banking & Financial" },
-      { href: "/industries", label: "Healthcare" },
-      { href: "/industries", label: "Manufacturing" },
-      { href: "/industries", label: "Retail & CPG" },
-      { href: "/industries", label: "Telecom" },
-      { href: "/industries", label: "Energy & Utilities" },
-    ],
-  },
-  {
-    title: "Products",
-    links: [
-      { href: "/products", label: "AUMOXO Nexus" },
-      { href: "/products", label: "AUMOXO Atlas" },
-      { href: "/products", label: "AUMOXO Pulse" },
-      { href: "/products", label: "Platform APIs" },
-      { href: "/products", label: "Documentation" },
+      { href: "/products", label: "AUMOXO CRM" },
+      { href: "/products", label: "AUMOXO AI Assistant" },
+      { href: "/products", label: "AUMOXO Operations Hub" },
     ],
   },
   {
     title: "Company",
     links: [
       { href: "/about", label: "About AUMOXO" },
-      { href: "/leadership", label: "Leadership" },
+      { href: "/industries", label: "Industries" },
       { href: "/partners", label: "Partners" },
-      { href: "/careers", label: "Careers" },
-      { href: "/locations", label: "Locations" },
-      { href: "/awards", label: "Awards" },
-    ],
-  },
-  {
-    title: "Insights & Press",
-    links: [
-      { href: "/insights", label: "Insights" },
-      { href: "/work", label: "Case Studies" },
-      { href: "/newsroom", label: "Newsroom" },
-      { href: "/investors", label: "Investor Relations" },
-      { href: "/sustainability", label: "Sustainability" },
       { href: "/contact", label: "Contact" },
     ],
   },
@@ -104,7 +83,7 @@ export default function Footer() {
             </div>
             <div className="mt-2 inline-flex items-center gap-2 text-sm text-ink-300">
               <MapPin size={16} className="text-gold-400" />
-              Global · Headquartered Worldwide
+              Serving businesses worldwide
             </div>
           </div>
 
@@ -132,7 +111,7 @@ export default function Footer() {
         </div>
 
         {/* Link grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 py-16">
           {cols.map((col) => (
             <div key={col.title}>
               <h4 className="text-[11px] uppercase tracking-[0.3em] text-gold-400 font-medium">

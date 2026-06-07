@@ -29,14 +29,14 @@ export const metadata: Metadata = {
     description: "Enterprise technology services and products engineered for the next decade.",
     url: siteUrl,
     siteName: "AUMOXO",
-    images: ["/logo-full.jpeg"],
+    images: ["/logo.jpeg"],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "AUMOXO — Think Infinite",
     description: "Enterprise technology services and products built for scale.",
-    images: ["/logo-full.jpeg"],
+    images: ["/logo.jpeg"],
   },
   icons: { icon: "/favicon.svg" },
 };

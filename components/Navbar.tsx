@@ -10,10 +10,10 @@ import ThemeToggle from "./ThemeToggle";
 const links = [
   { href: "/services", label: "Services" },
   { href: "/industries", label: "Industries" },
-  { href: "/products", label: "Products" },
-  { href: "/work", label: "Work" },
-  { href: "/insights", label: "Insights" },
-  { href: "/careers", label: "Careers" },
+  { href: "/products", label: "Solutions" },
+  // { href: "/work", label: "Work" },        // disabled — folder renamed to _disabled_work
+  // { href: "/insights", label: "Insights" }, // disabled — folder renamed to _disabled_insights
+  // { href: "/careers", label: "Careers" },   // disabled — folder renamed to _disabled_careers
   { href: "/about", label: "About" },
 ];
 

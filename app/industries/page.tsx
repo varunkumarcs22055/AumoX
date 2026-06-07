@@ -1,30 +1,56 @@
 import Link from "next/link";
-import Reveal from "@/components/anim/Reveal";
 import {
   ArrowUpRight,
-  Banknote,
-  HeartPulse,
-  Factory,
-  ShoppingBag,
-  Radio,
-  Zap,
+  Rocket,
+  Building2,
+  Briefcase,
   GraduationCap,
-  Plane,
+  HeartPulse,
+  ShoppingBag,
 } from "lucide-react";
+import Reveal from "@/components/anim/Reveal";
 
 export const metadata = {
-  title: "Industries — Deep Expertise Across Sectors",
+  title: "Industries — Technology Built Around Your Industry",
 };
 
 const industries = [
-  { i: Banknote, t: "Banking & Financial Services", d: "Core modernization, digital banking, risk and regulatory programs across retail, commercial and capital markets.", stat: "60+", statL: "Tier-1 clients" },
-  { i: HeartPulse, t: "Healthcare & Life Sciences", d: "Connected care, clinical platforms and HIPAA-compliant data engineering for providers, payers and biotech.", stat: "HIPAA", statL: "Compliant" },
-  { i: Factory, t: "Manufacturing & Industrial", d: "Industry 4.0, smart factories, IoT and supply chain platforms for global manufacturers.", stat: "30+", statL: "Smart factories" },
-  { i: ShoppingBag, t: "Retail & Consumer Goods", d: "Unified commerce, demand sensing, store experience and direct-to-consumer engineering.", stat: "120M+", statL: "Shoppers reached" },
-  { i: Radio, t: "Telecom & Media", d: "5G OSS/BSS, content platforms and customer experience modernization at hyperscale.", stat: "5G", statL: "Programs live" },
-  { i: Zap, t: "Energy & Utilities", d: "Smart grid, asset performance and clean-energy data platforms for transition-era operators.", stat: "12 GW", statL: "Assets monitored" },
-  { i: GraduationCap, t: "Public Sector & Education", d: "Citizen services, modernization and learning platforms with strict accessibility and compliance.", stat: "WCAG", statL: "AA delivered" },
-  { i: Plane, t: "Travel & Hospitality", d: "Reservation systems, loyalty engines and unified guest experience for global brands.", stat: "40+", statL: "Brands served" },
+  {
+    i: Rocket,
+    t: "Startups",
+    short: "MVPs, SaaS, AI Products, Growth Infrastructure",
+    d: "Ship your MVP, build your SaaS product, integrate AI from day one — fast, lean, production-grade.",
+  },
+  {
+    i: Building2,
+    t: "Small & Medium Businesses",
+    short: "CRM, Automation, Internal Systems",
+    d: "Replace spreadsheets with custom CRM, automate operations, and bring intelligence to everyday workflows.",
+  },
+  {
+    i: Briefcase,
+    t: "Professional Services",
+    short: "Client Management, Reporting, Operations",
+    d: "Client portals, project management, billing automation, and the reporting your partners actually use.",
+  },
+  {
+    i: GraduationCap,
+    t: "Education",
+    short: "Student Portals, LMS, CRM, Admission Systems",
+    d: "Admissions, student management, learning management, and engagement platforms for modern institutions.",
+  },
+  {
+    i: HeartPulse,
+    t: "Healthcare",
+    short: "Patient Systems, Booking Platforms, Automation",
+    d: "Appointment scheduling, patient engagement, operations dashboards — built with privacy and reliability first.",
+  },
+  {
+    i: ShoppingBag,
+    t: "E-Commerce",
+    short: "Store Operations, Analytics, AI Support",
+    d: "Commerce platforms, customer analytics, AI customer support, and operations tooling for direct-to-consumer brands.",
+  },
 ];
 
 export default function IndustriesPage() {
@@ -39,55 +65,64 @@ export default function IndustriesPage() {
               Industries
             </div>
             <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[1.05] font-extralight tracking-tight text-ink-100">
-              Domain depth meets <span className="gold-text">engineering scale</span>.
+              Technology built around <span className="gold-text">your industry</span>.
             </h1>
             <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">
-              We bring deep sector knowledge to every engagement — paired with the engineering
-              muscle to operationalize it at enterprise scale.
+              We combine domain understanding with modern software, AI, and
+              automation to solve industry-specific challenges.
             </p>
           </div>
         </div>
       </section>
 
+      {/* Industries We Serve */}
       <section className="py-24 lg:py-32">
         <div className="container-x">
-          <Reveal stagger=".industry-tile" staggerGap={0.06} className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {industries.map(({ i: Icon, t, d, stat, statL }) => (
-              <div key={t} className="industry-tile card p-8 flex flex-col group">
-                <div className="grid h-14 w-14 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 group-hover:bg-gold-400/10 transition-colors">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="eyebrow justify-center">
+              <span className="h-px w-8 bg-gold-400" />
+              Industries We Serve
+              <span className="h-px w-8 bg-gold-400" />
+            </div>
+            <h2 className="section-title mt-5">
+              Built for businesses across six sectors.
+            </h2>
+          </div>
+
+          <Reveal stagger=".industry-tile" staggerGap={0.06} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {industries.map(({ i: Icon, t, short, d }) => (
+              <div key={t} className="industry-tile card p-8 flex flex-col gold-border">
+                <div className="grid h-14 w-14 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300">
                   <Icon size={22} />
                 </div>
                 <h3 className="mt-6 text-xl font-light text-ink-100 leading-snug">{t}</h3>
-                <p className="mt-3 text-sm text-ink-300 font-light leading-relaxed flex-1">{d}</p>
-                <div className="mt-6 pt-6 border-t border-line flex items-center justify-between">
-                  <div>
-                    <div className="font-display text-2xl font-extralight gold-text">{stat}</div>
-                    <div className="text-[10px] uppercase tracking-[0.25em] text-ink-400 mt-1">{statL}</div>
-                  </div>
-                  <Link
-                    href="/contact"
-                    className="text-gold-400 hover:text-gold-300 transition-colors"
-                    aria-label={`Learn more about ${t}`}
-                  >
-                    <ArrowUpRight size={20} />
-                  </Link>
+                <div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-gold-400">
+                  {short}
                 </div>
+                <p className="mt-4 text-sm text-ink-300 font-light leading-relaxed flex-1">{d}</p>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-1.5 mt-6 text-xs uppercase tracking-[0.25em] text-gold-300 hover:text-gold-200"
+                >
+                  Discuss your project <ArrowUpRight size={14} />
+                </Link>
               </div>
             ))}
           </Reveal>
         </div>
       </section>
 
+      {/* CTA */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
         <div className="container-x text-center">
           <h2 className="section-title mx-auto">
             Don't see your industry?
           </h2>
           <p className="section-sub mx-auto text-center">
-            Our cross-domain capabilities translate. Let's talk about your context.
+            Our capabilities translate. Let's talk about your context.
           </p>
           <Link href="/contact" className="btn-gold mt-10">
-            Get in touch <ArrowUpRight size={18} />
+            Get in Touch <ArrowUpRight size={18} />
           </Link>
         </div>
       </section>

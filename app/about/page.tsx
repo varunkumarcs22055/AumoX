@@ -1,29 +1,21 @@
 import Link from "next/link";
-import { ArrowUpRight, Target, Eye, Shield, Sparkles, Users, Globe } from "lucide-react";
+import { ArrowUpRight, Target, Eye, Shield, Sparkles, Users, Compass } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import LogoO from "@/components/LogoO";
 
-export const metadata = {
-  title: "About — Think Infinite",
-};
+export const metadata = { title: "About — AUMOXO" };
 
 const values = [
-  { i: Target, t: "Outcomes over output", d: "We measure ourselves by the business impact we create — not effort spent." },
-  { i: Shield, t: "Trust by design", d: "Security, privacy and compliance are foundational — never afterthoughts." },
-  { i: Sparkles, t: "Engineering excellence", d: "Craft is non-negotiable. We hire and develop the top 1% of practitioners." },
-  { i: Users, t: "Partner first", d: "We win when our clients and partners win. Aligned incentives, always." },
-];
-
-const milestones = [
-  { y: "2024", t: "Founded", d: "AUMOXO founded with a vision to redefine enterprise technology partnership." },
-  { y: "2025", t: "First 50 enterprises", d: "Scaled to serve 50+ global enterprise clients across 12 countries." },
-  { y: "2026", t: "Platform launch", d: "Released AUMOXO Nexus, Atlas and Pulse — our flagship enterprise platforms." },
-  { y: "Today", t: "Global scale", d: "1.2K+ engineers across 60+ countries, serving 250+ enterprise customers." },
+  { i: Target,   t: "Outcomes over output",   d: "We measure ourselves by the business impact we create — not effort spent." },
+  { i: Shield,   t: "Trust by design",        d: "Security, privacy and reliability are foundational — not afterthoughts." },
+  { i: Sparkles, t: "Engineering excellence", d: "Craft is non-negotiable. We bring senior practitioners to every engagement." },
+  { i: Users,    t: "Partner first",          d: "We win when our clients win. Aligned incentives, transparent communication." },
 ];
 
 export default function AboutPage() {
   return (
     <>
+      {/* HERO */}
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />
         <div className="container-x relative">
@@ -33,18 +25,18 @@ export default function AboutPage() {
               About AUMOXO
             </div>
             <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[1.05] font-extralight tracking-tight text-ink-100">
-              Built for the enterprises <span className="gold-text">shaping tomorrow</span>.
+              Helping businesses automate, grow, and innovate through{" "}
+              <span className="gold-text">technology</span>.
             </h1>
             <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">
-              We are technologists, engineers and strategists united by a single
-              belief — that the next decade of enterprise will be defined by
-              those who think infinite.
+              AUMOXO is a modern technology partner for organizations that want
+              to move faster, operate smarter, and build for what's next.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Mission */}
+      {/* MISSION */}
       <section className="py-24 lg:py-32">
         <div className="container-x">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -63,13 +55,12 @@ export default function AboutPage() {
                 Our Mission
               </div>
               <h2 className="section-title mt-5">
-                To unlock infinite potential within every enterprise we serve.
+                Make world-class technology accessible to every business.
               </h2>
               <p className="section-sub">
-                AUMOXO exists at the intersection of strategy, engineering and
-                operations. We combine deep technical capability with sector
-                expertise to help leaders move faster, build smarter and operate
-                with confidence at any scale.
+                We combine AI, software engineering, and product thinking to help
+                organizations move faster, operate smarter, and serve their
+                customers better.
               </p>
               <div className="mt-8 grid grid-cols-2 gap-6 pt-8 border-t border-line">
                 <div className="flex items-start gap-3">
@@ -77,7 +68,7 @@ export default function AboutPage() {
                   <div>
                     <div className="font-medium text-ink-100">Mission</div>
                     <div className="text-sm text-ink-300 font-light mt-1">
-                      Enable enterprise reinvention through technology.
+                      Enable business reinvention through accessible technology.
                     </div>
                   </div>
                 </div>
@@ -86,7 +77,7 @@ export default function AboutPage() {
                   <div>
                     <div className="font-medium text-ink-100">Vision</div>
                     <div className="text-sm text-ink-300 font-light mt-1">
-                      The world's most trusted enterprise technology partner.
+                      A trusted technology partner for the next decade of business.
                     </div>
                   </div>
                 </div>
@@ -96,13 +87,54 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Values */}
+      {/* FOUNDER / COMPANY STORY */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
+        <div className="container-x">
+          <div className="max-w-4xl mx-auto">
+            <div className="eyebrow">
+              <span className="h-px w-8 bg-gold-400" />
+              Our Story
+            </div>
+            <h2 className="section-title mt-5">
+              Started with a simple belief.
+            </h2>
+            <div className="mt-10 space-y-6 text-lg text-ink-200 font-light leading-relaxed">
+              <p>
+                AUMOXO was started with a simple belief: businesses shouldn't need
+                massive budgets to access world-class technology. The companies that
+                win the next decade won't be the ones with the deepest pockets —
+                they'll be the ones who move fastest with the smartest stack.
+              </p>
+              <p>
+                We combine AI, software engineering, and product thinking to help
+                organizations move faster and operate smarter. Whether you're a
+                startup shipping your first MVP or an established business
+                modernizing core operations, we bring the same craft and rigor.
+              </p>
+              <p className="text-gold-300 dark:text-gold-200 font-normal">
+                Think infinite. Build practical. Ship now.
+              </p>
+            </div>
+            <div className="mt-10 flex items-center gap-4 pt-8 border-t border-line">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-gold-gradient text-black font-medium">
+                <Compass size={20} />
+              </div>
+              <div>
+                <div className="text-ink-100 font-medium">The AUMOXO team</div>
+                <div className="text-sm text-ink-400">Founders &amp; practitioners</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VALUES */}
+      <section className="py-24 lg:py-32">
         <div className="container-x">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="eyebrow justify-center">
               <span className="h-px w-8 bg-gold-400" />
-              Our Values
+              Core Values
               <span className="h-px w-8 bg-gold-400" />
             </div>
             <h2 className="section-title mt-5">The principles we operate by.</h2>
@@ -121,89 +153,19 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Timeline */}
-      <section className="py-24 lg:py-32">
-        <div className="container-x">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="eyebrow justify-center">
-              <span className="h-px w-8 bg-gold-400" />
-              Our Journey
-              <span className="h-px w-8 bg-gold-400" />
-            </div>
-            <h2 className="section-title mt-5">Milestones on the road so far.</h2>
-          </div>
-          <div className="relative max-w-4xl mx-auto">
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold-400/40 to-transparent" />
-            <div className="space-y-12">
-              {milestones.map((m, i) => (
-                <div
-                  key={m.y}
-                  className={`relative flex items-center gap-8 md:gap-12 ${
-                    i % 2 === 1 ? "md:flex-row-reverse md:text-right" : ""
-                  }`}
-                >
-                  <div className="absolute left-4 md:left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-gold-400 ring-4 ring-bg-base" />
-                  <div className="hidden md:block flex-1" />
-                  <div className="flex-1 pl-12 md:pl-0 md:px-12">
-                    <div className="font-display text-3xl font-extralight gold-text">{m.y}</div>
-                    <h3 className="mt-2 text-xl font-light text-ink-100">{m.t}</h3>
-                    <p className="mt-2 text-sm text-ink-300 font-light leading-relaxed">{m.d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Global footprint */}
+      {/* CTA — replaces Journey timeline + Global footprint + Join the team */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
-        <div className="container-x">
-          <div className="grid lg:grid-cols-[1fr_2fr] gap-12 items-end">
-            <div>
-              <div className="eyebrow">
-                <span className="h-px w-8 bg-gold-400" />
-                Global Footprint
-              </div>
-              <h2 className="section-title mt-5">A truly global delivery model.</h2>
-            </div>
-            <p className="text-ink-300 font-light text-lg leading-relaxed lg:pb-3">
-              With engineering hubs across the Americas, Europe and Asia, we deliver
-              follow-the-sun operations and 24×7 mission-critical support.
-            </p>
-          </div>
-          <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
-            {[
-              { v: "60+", l: "Countries" },
-              { v: "18", l: "Delivery hubs" },
-              { v: "24×7", l: "Operations" },
-              { v: "12+", l: "Languages" },
-            ].map((s) => (
-              <div key={s.l} className="bg-bg-base p-8 text-center">
-                <Globe className="mx-auto text-gold-400 mb-3" size={20} />
-                <div className="font-display text-3xl font-extralight gold-text">{s.v}</div>
-                <div className="text-[11px] uppercase tracking-[0.25em] text-ink-400 mt-1">
-                  {s.l}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24 lg:py-32">
         <div className="container-x text-center">
-          <h2 className="section-title mx-auto">Join the team. Or work with us.</h2>
+          <h2 className="section-title mx-auto">Let's build something great together.</h2>
           <p className="section-sub mx-auto text-center">
-            We're hiring across engineering, design and consulting — globally.
+            Whether you have a clear scope or just an idea — start the conversation.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact" className="btn-gold">
-              Get in touch <ArrowUpRight size={18} />
+              Get in Touch <ArrowUpRight size={18} />
             </Link>
             <Link href="/contact" className="btn-ghost">
-              See open roles
+              Schedule Consultation
             </Link>
           </div>
         </div>

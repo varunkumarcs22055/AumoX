@@ -69,7 +69,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.3em] text-ink-400">Phone</div>
-                    <div className="text-ink-100">+91 · By appointment</div>
+                    <div className="text-ink-100">Calls available by appointment</div>
                   </div>
                 </li>
                 <li className="flex gap-4">

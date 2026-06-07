@@ -8,6 +8,7 @@ const schema = z.object({
   company: z.string().max(160).optional(),
   phone: z.string().max(40).optional(),
   service: z.string().min(1).max(120),
+  timeline: z.string().max(60).optional(),
   budget: z.string().max(60).optional(),
   message: z.string().min(10).max(5000),
   hp: z.string().max(0).optional(),
@@ -125,6 +126,7 @@ function notifyHtml(d: z.infer<typeof schema>) {
         ${row("Company", d.company)}
         ${row("Phone", d.phone)}
         ${row("Service", d.service)}
+        ${row("Timeline", d.timeline)}
         ${row("Budget", d.budget)}
       </table>
       <div style="padding:0 24px 24px">

@@ -25,31 +25,58 @@ export default function Hero3D() {
     const el = wrapRef.current;
     if (!el) return;
 
-    // Smooth, frame-locked cursor follow. Target updates on mousemove,
-    // current values LERP toward target each frame — produces flowy motion
-    // instead of the jitter that comes from per-event transforms.
-    const target = { x: 0, y: 0 };
-    const current = { x: 0, y: 0 };
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const handler = (e: MouseEvent) => {
-      const r = el.getBoundingClientRect();
-      const nx = (e.clientX - r.left) / r.width - 0.5;
-      const ny = (e.clientY - r.top) / r.height - 0.5;
-      target.x = nx * 18; // small max offset
-      target.y = ny * 18;
-    };
-    window.addEventListener("mousemove", handler);
-
-    // Continuous lerp loop — single rAF, applies smoothed value to a CSS var
+    // No mouse parallax on touch devices — saves a continuous rAF loop on mobile.
     let raf = 0;
-    function flow() {
-      current.x += (target.x - current.x) * 0.06; // ease constant
-      current.y += (target.y - current.y) * 0.06;
-      el!.style.setProperty("--mx", `${current.x.toFixed(2)}px`);
-      el!.style.setProperty("--my", `${current.y.toFixed(2)}px`);
+    let cleanupMouse = () => {};
+    if (!isTouch && !reducedMotion) {
+      const target = { x: 0, y: 0 };
+      const current = { x: 0, y: 0 };
+      let idleFrames = 0;
+      let last = 0;
+
+      const handler = (e: MouseEvent) => {
+        const now = performance.now();
+        if (now - last < 16) return; // ~60Hz cap on event work
+        last = now;
+        const r = el.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        target.x = nx * 18;
+        target.y = ny * 18;
+        idleFrames = 0;
+        if (!raf) raf = requestAnimationFrame(flow);
+      };
+      window.addEventListener("mousemove", handler, { passive: true });
+
+      function flow() {
+        const dx = target.x - current.x;
+        const dy = target.y - current.y;
+        current.x += dx * 0.08;
+        current.y += dy * 0.08;
+        el!.style.setProperty("--mx", `${current.x.toFixed(2)}px`);
+        el!.style.setProperty("--my", `${current.y.toFixed(2)}px`);
+
+        // Stop the loop once we've settled (saves CPU when idle)
+        if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+          if (++idleFrames > 6) {
+            raf = 0;
+            return;
+          }
+        } else {
+          idleFrames = 0;
+        }
+        raf = requestAnimationFrame(flow);
+      }
+      // Prime once so the value is set
       raf = requestAnimationFrame(flow);
+
+      cleanupMouse = () => {
+        window.removeEventListener("mousemove", handler);
+      };
     }
-    flow();
 
     // Entrance choreography
     const ctx = gsap.context(() => {
@@ -124,8 +151,8 @@ export default function Hero3D() {
     }, el);
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("mousemove", handler);
+      if (raf) cancelAnimationFrame(raf);
+      cleanupMouse();
       ctx.revert();
     };
   }, []);
@@ -163,13 +190,13 @@ export default function Hero3D() {
         }}
       />
 
-      {/* Mesh blobs */}
+      {/* Mesh blobs — lighter blur on small screens (`md:blur-3xl` only) */}
       <div
-        className="hero-deco-soft absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full blur-3xl opacity-40 animate-[float-blob_18s_ease-in-out_infinite]"
+        className="hero-deco-soft absolute -top-32 -right-32 w-[500px] h-[500px] lg:w-[700px] lg:h-[700px] rounded-full blur-2xl md:blur-3xl opacity-40 animate-[float-blob_22s_ease-in-out_infinite]"
         style={{ background: "radial-gradient(circle, rgba(212,175,55,0.55), transparent 60%)" }}
       />
       <div
-        className="hero-deco-soft absolute -bottom-40 -left-32 w-[600px] h-[600px] rounded-full blur-3xl opacity-30 animate-[float-blob_22s_ease-in-out_infinite_reverse]"
+        className="hero-deco-soft absolute -bottom-40 -left-32 w-[400px] h-[400px] lg:w-[600px] lg:h-[600px] rounded-full blur-2xl md:blur-3xl opacity-30 animate-[float-blob_26s_ease-in-out_infinite_reverse]"
         style={{ background: "radial-gradient(circle, rgba(184,148,31,0.5), transparent 60%)" }}
       />
 
@@ -321,9 +348,10 @@ export default function Hero3D() {
         </div>
       </div>
 
-      {/* Premium canvas particle field — 280 gold sparks, gentle cursor influence */}
+      {/* Premium canvas particle field — ParticleField auto-scales count down on
+          small screens / touch devices so mobile stays smooth */}
       <div className="hero-deco-soft is-particles absolute inset-0">
-        <ParticleField count={280} cursorRadius={110} cursorStrength={0.12} />
+        <ParticleField count={200} cursorRadius={110} cursorStrength={0.1} />
       </div>
 
       {/* Left-side vignette so foreground copy stays legible */}
