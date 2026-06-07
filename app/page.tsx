@@ -95,7 +95,16 @@ export default function HomePage() {
       <section className="border-y border-line bg-bg-surface">
         <div className="py-6">
           <div className="marquee">
-            <div className="marquee-track text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium">
+            <div
+              className="marquee-track text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium"
+              style={{
+                display: "flex",
+                gap: "5rem",
+                width: "max-content",
+                animation: "marquee 38s linear infinite",
+                willChange: "transform",
+              }}
+            >
               {/* Exactly TWO copies — required for translateX(-50%) to loop seamlessly */}
               {[0, 1].flatMap((loop) =>
                 [
