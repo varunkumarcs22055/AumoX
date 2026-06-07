@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeroBackground from "@/components/HeroBackground";
+import Marquee from "@/components/Marquee";
 import Reveal from "@/components/anim/Reveal";
 import HeroEntrance, { SplitWords } from "@/components/anim/HeroEntrance";
 import MagneticLink from "@/components/anim/MagneticLink";
@@ -94,42 +95,29 @@ export default function HomePage() {
       {/* ========== BOTTOM STRIP — moving marquee of capabilities ========== */}
       <section className="border-y border-line bg-bg-surface">
         <div className="py-6">
-          <div className="marquee">
-            <div
-              className="marquee-track text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium"
-              style={{
-                display: "flex",
-                gap: "5rem",
-                width: "max-content",
-                animation: "marquee 38s linear infinite",
-                willChange: "transform",
-              }}
-            >
-              {/* Exactly TWO copies — required for translateX(-50%) to loop seamlessly */}
-              {[0, 1].flatMap((loop) =>
-                [
-                  "AI Solutions",
-                  "Enterprise Software",
-                  "CRM Platforms",
-                  "Business Automation",
-                  "Web & Mobile Development",
-                  "Custom Software",
-                  "SaaS Engineering",
-                  "AI Agents & Chatbots",
-                  "Mobile Apps",
-                  "UI / UX Design",
-                ].map((label) => (
-                  <span
-                    key={`${loop}-${label}`}
-                    className="flex items-center gap-10 whitespace-nowrap"
-                  >
-                    <span>{label}</span>
-                    <span className="text-gold-400/60">•</span>
-                  </span>
-                ))
-              )}
-            </div>
-          </div>
+          <Marquee
+            speedSeconds={28}
+            items={[
+              "AI Solutions",
+              "Enterprise Software",
+              "CRM Platforms",
+              "Business Automation",
+              "Web & Mobile Development",
+              "Custom Software",
+              "SaaS Engineering",
+              "AI Agents & Chatbots",
+              "Mobile Apps",
+              "UI / UX Design",
+            ].map((label) => (
+              <span
+                className="flex items-center gap-6 text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium"
+                key={label}
+              >
+                <span>{label}</span>
+                <span className="text-gold-400/60">•</span>
+              </span>
+            ))}
+          />
         </div>
       </section>
 
