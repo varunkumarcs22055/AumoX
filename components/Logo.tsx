@@ -32,7 +32,7 @@ export default function Logo({ className = "" }: LogoProps) {
   return (
     <Link
       href="/"
-      className={`group inline-flex items-center gap-1.5 ${className}`}
+      className={`group inline-flex items-center ${className}`}
       aria-label="AUMOXO home"
     >
       <span
@@ -49,7 +49,7 @@ export default function Logo({ className = "" }: LogoProps) {
         />
       </span>
 
-      <span className="flex flex-col leading-tight">
+      <span className="flex flex-col leading-tight -ml-4 lg:-ml-5">
         <span className="text-[18px] lg:text-[20px] font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
           AUM<LogoO />X<LogoO />
         </span>
