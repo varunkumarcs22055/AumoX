@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Linkedin, Twitter, Github, Youtube, Mail, MapPin } from "lucide-react";
 import { LogoMark } from "./Logo";
+import LogoO from "./LogoO";
 
 const cols = [
   {
@@ -58,8 +59,8 @@ export default function Footer() {
             <div className="flex items-center gap-4">
               <LogoMark size={56} />
               <div>
-                <div className="text-2xl font-semibold tracking-[0.18em] text-ink-100 whitespace-nowrap">
-                  AUMOXO
+                <div className="text-2xl font-semibold tracking-[0.16em] text-ink-100 whitespace-nowrap inline-flex items-center">
+                  AUM<LogoO size={0.9} spacing={0.04} />X<LogoO size={0.9} spacing={0.04} />
                 </div>
                 <div className="text-[10px] tracking-[0.35em] uppercase text-gold-600 dark:text-gold-400/80 mt-1">
                   Think Infinite
