@@ -38,7 +38,14 @@ export const metadata: Metadata = {
     description: "Enterprise technology services and products built for scale.",
     images: ["/logo.jpeg"],
   },
-  icons: { icon: "/favicon.svg" },
+  icons: {
+    icon: [
+      { url: "/logo.jpeg", type: "image/jpeg" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/logo.jpeg",
+    shortcut: "/logo.jpeg",
+  },
 };
 
 // Inline script that runs before paint — applies stored theme (or dark default) to avoid FOUC.

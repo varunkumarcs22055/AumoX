@@ -52,7 +52,7 @@ export default function Logo({ className = "" }: LogoProps) {
       className={`group inline-flex items-center gap-3 ${className}`}
       aria-label="AUMOXO home"
     >
-      <span className="relative block h-16 w-16 lg:h-20 lg:w-20 overflow-hidden rounded-md shrink-0 transition-transform duration-300 group-hover:scale-[1.05]">
+      <span className="relative block h-12 w-12 lg:h-14 lg:w-14 overflow-hidden rounded-md shrink-0 transition-transform duration-300 group-hover:scale-[1.05]">
         {/* Dark mode — black bleeds via mix-blend-mode */}
         <Image
           src="/logo.jpeg"
@@ -76,10 +76,10 @@ export default function Logo({ className = "" }: LogoProps) {
       </span>
 
       <span className="flex flex-col leading-none">
-        <span className="text-[22px] lg:text-[26px] font-semibold tracking-[0.18em] text-ink-100 whitespace-nowrap">
+        <span className="text-[18px] lg:text-[20px] font-semibold tracking-[0.18em] text-ink-100 whitespace-nowrap">
           AUMOXO
         </span>
-        <span className="mt-1 text-[10px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
+        <span className="mt-[3px] text-[9px] tracking-[0.4em] uppercase text-gold-600 dark:text-gold-400/90">
           Think Infinite
         </span>
       </span>
