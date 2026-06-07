@@ -243,10 +243,12 @@
   .marquee:hover .marquee-track {
     animation-play-state: paused;
   }
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
+}
+
+/* Marquee keyframes at root (outside @layer) so the animation reliably registers. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 /* Border + bg-line helpers across themes */

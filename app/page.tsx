@@ -96,7 +96,8 @@ export default function HomePage() {
         <div className="py-6">
           <div className="marquee">
             <div className="marquee-track text-[13px] uppercase tracking-[0.25em] text-ink-300 font-medium">
-              {Array.from({ length: 3 }).flatMap((_, loop) =>
+              {/* Exactly TWO copies — required for translateX(-50%) to loop seamlessly */}
+              {[0, 1].flatMap((loop) =>
                 [
                   "AI Solutions",
                   "Enterprise Software",
