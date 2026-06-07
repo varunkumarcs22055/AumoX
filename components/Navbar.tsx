@@ -47,20 +47,8 @@ export default function Navbar() {
             : "bg-transparent"
         }`}
       >
-        {/* Top utility bar */}
-        <div className="hidden lg:block border-b border-line/60">
-          <div className="container-x flex items-center justify-end gap-6 py-2 text-[11px] uppercase tracking-[0.25em] text-ink-400">
-            <Link href="/investors" className="hover:text-gold-300 transition-colors">Investor Relations</Link>
-            <span className="text-line">|</span>
-            <Link href="/newsroom" className="hover:text-gold-300 transition-colors">Newsroom</Link>
-            <span className="text-line">|</span>
-            <Link href="/sustainability" className="hover:text-gold-300 transition-colors">Sustainability</Link>
-            <span className="text-line">|</span>
-            <Link href="/locations" className="hover:text-gold-300 transition-colors">Locations</Link>
-            <span className="text-line">|</span>
-            <span className="text-gold-400/80">Global · EN</span>
-          </div>
-        </div>
+        {/* Top utility bar removed — those pages referenced fake enterprise content
+            and don't fit a service-led startup positioning. */}
 
         {/* Main nav */}
         <div className="container-x flex items-center justify-between h-[68px]">

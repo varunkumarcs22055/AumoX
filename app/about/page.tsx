@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, Target, Eye, Shield, Sparkles, Users, Compass } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
-import LogoO from "@/components/LogoO";
 
 export const metadata = { title: "About — AUMOXO" };
 
@@ -42,8 +41,8 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="card p-12 gold-border text-center">
               <LogoMark size={120} className="mx-auto" />
-              <div className="wordmark text-3xl mt-8 whitespace-nowrap">
-                AUM<LogoO />X<LogoO />
+              <div className="text-3xl mt-8 font-semibold tracking-[0.2em] text-ink-100 whitespace-nowrap">
+                AUMOXO
               </div>
               <div className="text-xs tracking-[0.4em] uppercase text-gold-400 mt-3">
                 Think Infinite
