@@ -1,61 +1,100 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, Check, X, RotateCcw, Eye, EyeOff } from "lucide-react";
-import { insightsStore, newId, type Insight } from "@/lib/admin/store";
+import { Plus, Edit2, Trash2, Check, X, RotateCcw, Eye, EyeOff, Loader2 } from "lucide-react";
 
-const TAGS = ["GenAI", "Cloud", "Security", "Data", "Engineering", "Leadership", "Industry", "Sustainability", "Other"];
+type Insight = {
+  id: string;
+  title: string;
+  tag: string;
+  excerpt: string;
+  date: string;
+  readMin: number;
+  author?: string;
+  published: boolean;
+};
+
+const TAGS = ["AI", "CRM", "Automation", "Software", "Cloud", "Security", "Strategy", "Industry", "Other"];
+
+const newId = () => Math.random().toString(36).slice(2, 10);
 
 export default function InsightsAdmin() {
   const [items, setItems] = useState<Insight[]>([]);
   const [editing, setEditing] = useState<Insight | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => { setItems(insightsStore.list()); }, []);
-  function refresh() { setItems(insightsStore.list()); }
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/insights", { cache: "no-store" });
+      const data = await res.json();
+      setItems(data.items ?? []);
+    } finally { setLoading(false); }
+  }
+
+  useEffect(() => { load(); }, []);
 
   function startNew() {
     setEditing({
       id: newId(),
-      title: "",
-      tag: "GenAI",
-      excerpt: "",
+      title: "", tag: "AI", excerpt: "",
       date: new Date().toISOString().slice(0, 10),
-      readMin: 5,
-      author: "",
-      published: true,
+      readMin: 5, author: "", published: true,
     });
     setShowForm(true);
   }
   function startEdit(i: Insight) { setEditing({ ...i }); setShowForm(true); }
   function cancel() { setEditing(null); setShowForm(false); }
 
-  function save() {
+  async function save() {
     if (!editing) return;
     if (!editing.title.trim() || !editing.excerpt.trim()) {
       alert("Title and excerpt are required");
       return;
     }
-    insightsStore.upsert(editing);
-    refresh();
-    cancel();
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item: editing }),
+      });
+      const data = await res.json();
+      setItems(data.items ?? []);
+      cancel();
+    } finally { setSaving(false); }
   }
 
-  function togglePublished(i: Insight) {
-    insightsStore.upsert({ ...i, published: !i.published });
-    refresh();
+  async function togglePublished(i: Insight) {
+    const updated = { ...i, published: !i.published };
+    setItems((all) => all.map((x) => (x.id === i.id ? updated : x)));
+    await fetch("/api/admin/insights", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ item: updated }),
+    });
   }
 
-  function remove(i: Insight) {
+  async function remove(i: Insight) {
     if (!confirm(`Delete article "${i.title}"?`)) return;
-    insightsStore.remove(i.id);
-    refresh();
+    await fetch("/api/admin/insights", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: i.id }),
+    });
+    load();
   }
 
-  function resetAll() {
-    if (!confirm("Reset to default articles? Your edits will be lost.")) return;
-    insightsStore.reset();
-    refresh();
+  async function resetAll() {
+    if (!confirm("Reset to default articles?")) return;
+    await fetch("/api/admin/insights", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reset: true }),
+    });
+    load();
   }
 
   return (
@@ -64,19 +103,14 @@ export default function InsightsAdmin() {
         <div>
           <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">Insights</div>
           <h1 className="mt-2 font-display text-4xl font-extralight text-ink-100">Articles</h1>
-          <p className="mt-2 text-ink-300 font-light">Publish thought-leadership articles for /insights.</p>
+          <p className="mt-2 text-ink-300 font-light">Manage thought-leadership articles. Saved to the live database.</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={resetAll} className="btn-ghost text-sm !py-2 !px-4">
-            <RotateCcw size={14} /> Reset
-          </button>
-          <button onClick={startNew} className="btn-gold text-sm !py-2 !px-4">
-            <Plus size={16} /> New article
-          </button>
+          <button onClick={resetAll} className="btn-ghost text-sm !py-2 !px-4"><RotateCcw size={14} /> Reset</button>
+          <button onClick={startNew} className="btn-gold text-sm !py-2 !px-4"><Plus size={16} /> New article</button>
         </div>
       </div>
 
-      {/* Form */}
       {showForm && editing && (
         <div className="mt-8 card p-6 gold-border">
           <h2 className="font-display text-xl font-light text-ink-100 mb-5">
@@ -84,7 +118,7 @@ export default function InsightsAdmin() {
           </h2>
           <div className="grid md:grid-cols-2 gap-5">
             <Field label="Title" className="md:col-span-2">
-              <input className="input" value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="The enterprise GenAI maturity model…" />
+              <input className="input" value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="How AI can reduce operational costs…" />
             </Field>
             <Field label="Tag">
               <select className="input" value={editing.tag} onChange={(e) => setEditing({ ...editing, tag: e.target.value })}>
@@ -92,7 +126,7 @@ export default function InsightsAdmin() {
               </select>
             </Field>
             <Field label="Author">
-              <input className="input" value={editing.author ?? ""} onChange={(e) => setEditing({ ...editing, author: e.target.value })} placeholder="Anika Sharma" />
+              <input className="input" value={editing.author ?? ""} onChange={(e) => setEditing({ ...editing, author: e.target.value })} placeholder="Optional" />
             </Field>
             <Field label="Publish date">
               <input type="date" className="input" value={editing.date} onChange={(e) => setEditing({ ...editing, date: e.target.value })} />
@@ -111,22 +145,24 @@ export default function InsightsAdmin() {
             </Field>
           </div>
           <div className="mt-6 flex gap-3">
-            <button onClick={save} className="btn-gold text-sm !py-2 !px-4"><Check size={16} /> Save</button>
+            <button onClick={save} disabled={saving} className="btn-gold text-sm !py-2 !px-4 disabled:opacity-60">
+              {saving ? <><Loader2 size={16} className="animate-spin"/> Saving…</> : <><Check size={16} /> Save</>}
+            </button>
             <button onClick={cancel} className="btn-ghost text-sm !py-2 !px-4"><X size={16} /> Cancel</button>
           </div>
         </div>
       )}
 
-      {/* List */}
       <div className="mt-10 grid md:grid-cols-2 gap-4">
-        {items.length === 0 && (
+        {loading ? (
+          <div className="card p-10 text-center text-ink-400 md:col-span-2">Loading…</div>
+        ) : items.length === 0 ? (
           <div className="card p-10 text-center text-ink-400 md:col-span-2">No articles yet.</div>
-        )}
-        {items.map((i) => (
+        ) : items.map((i) => (
           <div key={i.id} className={`card p-6 flex flex-col ${i.published ? "" : "opacity-60"}`}>
             <div className="flex items-start justify-between gap-3">
               <span className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{i.tag}</span>
-              <button onClick={() => togglePublished(i)} className="text-ink-300 hover:text-gold-300 transition-colors" aria-label="Toggle published">
+              <button onClick={() => togglePublished(i)} className="text-ink-300 hover:text-gold-300" aria-label="Toggle published">
                 {i.published ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
             </div>
@@ -135,12 +171,8 @@ export default function InsightsAdmin() {
             <div className="mt-4 flex items-center justify-between pt-4 border-t border-line text-xs text-ink-400">
               <span>{i.date} · {i.readMin} min · {i.author || "—"}</span>
               <div className="flex gap-1">
-                <button onClick={() => startEdit(i)} className="p-1.5 rounded text-gold-300 hover:bg-gold-400/10 transition-colors" aria-label="Edit">
-                  <Edit2 size={14} />
-                </button>
-                <button onClick={() => remove(i)} className="p-1.5 rounded text-red-400 hover:bg-red-400/10 transition-colors" aria-label="Delete">
-                  <Trash2 size={14} />
-                </button>
+                <button onClick={() => startEdit(i)} className="p-1.5 rounded text-gold-300 hover:bg-gold-400/10" aria-label="Edit"><Edit2 size={14} /></button>
+                <button onClick={() => remove(i)} className="p-1.5 rounded text-red-400 hover:bg-red-400/10" aria-label="Delete"><Trash2 size={14} /></button>
               </div>
             </div>
           </div>

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, Inbox, type LucideIcon } from "lucide-react";
-import { jobsStore, insightsStore } from "@/lib/admin/store";
 
 export default function AdminDashboard() {
   const [counts, setCounts] = useState({
@@ -13,28 +12,23 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    const jobs = jobsStore.list();
-    const insights = insightsStore.list();
-    setCounts((c) => ({
-      ...c,
-      jobsActive: jobs.filter((j) => j.active).length,
-      jobsTotal: jobs.length,
-      insightsPublished: insights.filter((i) => i.published).length,
-      insightsTotal: insights.length,
-    }));
-
-    // Fetch live query counts from the DB
-    fetch("/api/admin/queries", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        const all = (data.queries ?? []) as { read: boolean }[];
-        setCounts((c) => ({
-          ...c,
-          queriesTotal: all.length,
-          queriesUnread: all.filter((q) => !q.read).length,
-        }));
-      })
-      .catch(() => { /* DB may not be wired yet */ });
+    Promise.all([
+      fetch("/api/admin/jobs", { cache: "no-store" }).then((r) => r.json()).catch(() => ({ jobs: [] })),
+      fetch("/api/admin/insights", { cache: "no-store" }).then((r) => r.json()).catch(() => ({ items: [] })),
+      fetch("/api/admin/queries", { cache: "no-store" }).then((r) => r.json()).catch(() => ({ queries: [] })),
+    ]).then(([jobs, insights, queries]) => {
+      const j = (jobs.jobs ?? []) as { active: boolean }[];
+      const i = (insights.items ?? []) as { published: boolean }[];
+      const q = (queries.queries ?? []) as { read: boolean }[];
+      setCounts({
+        jobsActive: j.filter((x) => x.active).length,
+        jobsTotal: j.length,
+        insightsPublished: i.filter((x) => x.published).length,
+        insightsTotal: i.length,
+        queriesTotal: q.length,
+        queriesUnread: q.filter((x) => !x.read).length,
+      });
+    });
   }, []);
 
   return (
@@ -47,17 +41,16 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Status banner */}
       <div className="mt-8 card p-5 flex items-start gap-4 gold-border">
         <Database className="text-gold-400 shrink-0" size={20} />
         <div className="text-sm text-ink-300 font-light leading-relaxed">
-          <span className="text-ink-100 font-medium">Storage:</span> Local browser only (MVP).
-          Changes you make here are saved to <code className="text-gold-300">localStorage</code>.
-          When the DB is wired in, this layer swaps to API calls automatically — UI unchanged.
+          <span className="text-ink-100 font-medium">Storage:</span> Vercel KV (Redis).
+          Edits here update the live site for every visitor. If KV isn&apos;t enabled yet
+          (Project → Storage → Create → KV), the API falls back to in-memory storage
+          and resets between deploys.
         </div>
       </div>
 
-      {/* Tiles */}
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <DashCard
           href="/admin/queries"
@@ -72,7 +65,7 @@ export default function AdminDashboard() {
           icon={Briefcase}
           title="Careers"
           stat={`${counts.jobsActive} active · ${counts.jobsTotal} total`}
-          desc="Add, edit, archive or delete job openings shown on /careers."
+          desc="Add, edit, archive or delete job openings."
         />
         <DashCard
           href="/admin/insights"
@@ -85,21 +78,20 @@ export default function AdminDashboard() {
           href="/admin/settings"
           icon={Settings}
           title="Site settings"
-          stat="Stats · Contact"
-          desc="Edit the hero stats and contact email destination."
+          stat="Hero stats · Server config"
+          desc="Edit the hero stats and view env-managed config."
         />
       </div>
 
-      {/* Next-up notes */}
       <div className="mt-10 card p-6">
         <div className="flex items-center gap-2 text-gold-400 text-[11px] uppercase tracking-[0.3em]">
           <AlertCircle size={14} /> Coming next
         </div>
         <ul className="mt-4 grid md:grid-cols-2 gap-3 text-sm text-ink-300 font-light">
-          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Wire to Vercel KV / Postgres so edits go live for all visitors</li>
-          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Manage services, products, partners</li>
-          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Image uploads (Vercel Blob / S3)</li>
-          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Multi-user accounts + audit log</li>
+          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Page content editor (services / industries / solutions copy)</li>
+          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Multi-user accounts with audit log</li>
+          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Image upload (Vercel Blob)</li>
+          <li className="flex items-start gap-2"><span className="text-gold-400">◆</span> Email digest of new queries</li>
         </ul>
       </div>
     </div>

@@ -1,64 +1,103 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, Check, X, RotateCcw, MapPin } from "lucide-react";
-import { jobsStore, newId, type Job } from "@/lib/admin/store";
+import { Plus, Edit2, Trash2, Check, X, RotateCcw, MapPin, Loader2 } from "lucide-react";
+
+type Job = {
+  id: string;
+  title: string;
+  team: string;
+  location: string;
+  type: string;
+  level: string;
+  description?: string;
+  active: boolean;
+};
 
 const TYPES = ["Full-time", "Part-time", "Contract", "Internship"];
 const LEVELS = ["Junior", "Mid", "Mid–Senior", "Senior", "Staff", "Principal", "Lead", "Manager", "Director"];
+
+const newId = () => Math.random().toString(36).slice(2, 10);
 
 export default function CareersAdmin() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [editing, setEditing] = useState<Job | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => { setJobs(jobsStore.list()); }, []);
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/jobs", { cache: "no-store" });
+      const data = await res.json();
+      setJobs(data.jobs ?? []);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  function refresh() { setJobs(jobsStore.list()); }
+  useEffect(() => { load(); }, []);
 
   function startNew() {
     setEditing({
       id: newId(),
-      title: "",
-      team: "",
-      location: "",
-      type: "Full-time",
-      level: "Senior",
-      description: "",
-      active: true,
+      title: "", team: "", location: "",
+      type: "Full-time", level: "Senior",
+      description: "", active: true,
     });
     setShowForm(true);
   }
-
   function startEdit(j: Job) { setEditing({ ...j }); setShowForm(true); }
   function cancel() { setEditing(null); setShowForm(false); }
 
-  function saveJob() {
+  async function saveJob() {
     if (!editing) return;
     if (!editing.title.trim() || !editing.team.trim()) {
       alert("Title and team are required");
       return;
     }
-    jobsStore.upsert(editing);
-    refresh();
-    cancel();
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job: editing }),
+      });
+      const data = await res.json();
+      setJobs(data.jobs ?? []);
+      cancel();
+    } finally { setSaving(false); }
   }
 
-  function toggleActive(j: Job) {
-    jobsStore.upsert({ ...j, active: !j.active });
-    refresh();
+  async function toggleActive(j: Job) {
+    const updated = { ...j, active: !j.active };
+    setJobs((all) => all.map((x) => (x.id === j.id ? updated : x)));
+    await fetch("/api/admin/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job: updated }),
+    });
   }
 
-  function remove(j: Job) {
+  async function remove(j: Job) {
     if (!confirm(`Delete role "${j.title}"?`)) return;
-    jobsStore.remove(j.id);
-    refresh();
+    await fetch("/api/admin/jobs", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: j.id }),
+    });
+    load();
   }
 
-  function resetAll() {
+  async function resetAll() {
     if (!confirm("Reset to default jobs? Your edits will be lost.")) return;
-    jobsStore.reset();
-    refresh();
+    await fetch("/api/admin/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reset: true }),
+    });
+    load();
   }
 
   return (
@@ -67,7 +106,7 @@ export default function CareersAdmin() {
         <div>
           <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">Careers</div>
           <h1 className="mt-2 font-display text-4xl font-extralight text-ink-100">Open Roles</h1>
-          <p className="mt-2 text-ink-300 font-light">Manage roles shown on the public /careers page.</p>
+          <p className="mt-2 text-ink-300 font-light">Manage roles shown on the public /careers page. Saved to the live database.</p>
         </div>
         <div className="flex gap-3">
           <button onClick={resetAll} className="btn-ghost text-sm !py-2 !px-4">
@@ -79,22 +118,15 @@ export default function CareersAdmin() {
         </div>
       </div>
 
-      {/* Form */}
       {showForm && editing && (
         <div className="mt-8 card p-6 gold-border">
           <h2 className="font-display text-xl font-light text-ink-100 mb-5">
             {jobs.find(j => j.id === editing.id) ? "Edit role" : "New role"}
           </h2>
           <div className="grid md:grid-cols-2 gap-5">
-            <Field label="Title">
-              <input className="input" value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="Senior Cloud Architect" />
-            </Field>
-            <Field label="Team">
-              <input className="input" value={editing.team} onChange={(e) => setEditing({ ...editing, team: e.target.value })} placeholder="Cloud & Infrastructure" />
-            </Field>
-            <Field label="Location">
-              <input className="input" value={editing.location} onChange={(e) => setEditing({ ...editing, location: e.target.value })} placeholder="Remote · Global" />
-            </Field>
+            <Field label="Title"><input className="input" value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="Senior Cloud Architect" /></Field>
+            <Field label="Team"><input className="input" value={editing.team} onChange={(e) => setEditing({ ...editing, team: e.target.value })} placeholder="Cloud & Infrastructure" /></Field>
+            <Field label="Location"><input className="input" value={editing.location} onChange={(e) => setEditing({ ...editing, location: e.target.value })} placeholder="Remote · Global" /></Field>
             <Field label="Type">
               <select className="input" value={editing.type} onChange={(e) => setEditing({ ...editing, type: e.target.value })}>
                 {TYPES.map(t => <option key={t}>{t}</option>)}
@@ -116,18 +148,20 @@ export default function CareersAdmin() {
             <textarea className="input min-h-[100px] resize-y" value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} />
           </Field>
           <div className="mt-6 flex gap-3">
-            <button onClick={saveJob} className="btn-gold text-sm !py-2 !px-4"><Check size={16} /> Save</button>
+            <button onClick={saveJob} disabled={saving} className="btn-gold text-sm !py-2 !px-4 disabled:opacity-60">
+              {saving ? <><Loader2 size={16} className="animate-spin"/> Saving…</> : <><Check size={16} /> Save</>}
+            </button>
             <button onClick={cancel} className="btn-ghost text-sm !py-2 !px-4"><X size={16} /> Cancel</button>
           </div>
         </div>
       )}
 
-      {/* List */}
       <div className="mt-10 space-y-3">
-        {jobs.length === 0 && (
-          <div className="card p-10 text-center text-ink-400">No roles yet — click "New role" to add one.</div>
-        )}
-        {jobs.map((j) => (
+        {loading ? (
+          <div className="card p-10 text-center text-ink-400">Loading…</div>
+        ) : jobs.length === 0 ? (
+          <div className="card p-10 text-center text-ink-400">No roles yet — click &quot;New role&quot; to add one.</div>
+        ) : jobs.map((j) => (
           <div key={j.id} className={`card p-5 grid md:grid-cols-[2fr_1fr_auto_auto] items-center gap-4 ${j.active ? "" : "opacity-60"}`}>
             <div>
               <div className="text-ink-100 font-light text-lg">{j.title}</div>
@@ -139,23 +173,12 @@ export default function CareersAdmin() {
               <MapPin size={14} className="text-gold-400" />
               {j.location}
             </div>
-            <button
-              onClick={() => toggleActive(j)}
-              className={`text-xs uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border transition-colors ${
-                j.active
-                  ? "border-green-400/40 text-green-300 hover:bg-green-400/10"
-                  : "border-ink-400/40 text-ink-400 hover:bg-bg-elevated"
-              }`}
-            >
+            <button onClick={() => toggleActive(j)} className={`text-xs uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border transition-colors ${j.active ? "border-green-400/40 text-green-300 hover:bg-green-400/10" : "border-ink-400/40 text-ink-400 hover:bg-bg-elevated"}`}>
               {j.active ? "Active" : "Hidden"}
             </button>
             <div className="flex gap-2">
-              <button onClick={() => startEdit(j)} className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10 transition-colors" aria-label="Edit">
-                <Edit2 size={16} />
-              </button>
-              <button onClick={() => remove(j)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors" aria-label="Delete">
-                <Trash2 size={16} />
-              </button>
+              <button onClick={() => startEdit(j)} className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10" aria-label="Edit"><Edit2 size={16} /></button>
+              <button onClick={() => remove(j)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10" aria-label="Delete"><Trash2 size={16} /></button>
             </div>
           </div>
         ))}

@@ -1,25 +1,54 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, RotateCcw, Info } from "lucide-react";
-import { statsStore, type SiteStats } from "@/lib/admin/store";
+import { Check, RotateCcw, Info, Loader2 } from "lucide-react";
+
+type SiteStats = {
+  countries: number;
+  clients: number;
+  engineers: number;
+  uptime: number;
+};
 
 export default function SettingsAdmin() {
   const [stats, setStats] = useState<SiteStats>({ countries: 0, clients: 0, engineers: 0, uptime: 0 });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => { setStats(statsStore.get()); }, []);
-
-  function save() {
-    statsStore.save(stats);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/settings", { cache: "no-store" });
+      const data = await res.json();
+      if (data.stats) setStats(data.stats);
+    } finally { setLoading(false); }
   }
 
-  function reset() {
+  useEffect(() => { load(); }, []);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stats }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    } finally { setSaving(false); }
+  }
+
+  async function reset() {
     if (!confirm("Reset stats to defaults?")) return;
-    statsStore.reset();
-    setStats(statsStore.get());
+    const res = await fetch("/api/admin/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reset: true }),
+    });
+    const data = await res.json();
+    if (data.stats) setStats(data.stats);
   }
 
   return (
@@ -28,7 +57,7 @@ export default function SettingsAdmin() {
         <div>
           <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">Settings</div>
           <h1 className="mt-2 font-display text-4xl font-extralight text-ink-100">Site Settings</h1>
-          <p className="mt-2 text-ink-300 font-light">Tune the headline numbers and configuration shown across the site.</p>
+          <p className="mt-2 text-ink-300 font-light">Tune the headline numbers shown across the site. Saved to the live database.</p>
         </div>
       </div>
 
@@ -37,26 +66,34 @@ export default function SettingsAdmin() {
           <h2 className="font-display text-xl font-light text-ink-100">Hero stats</h2>
           <p className="text-sm text-ink-300 mt-1 font-light">Shown in the hero bar on the home page.</p>
 
-          <div className="mt-6 grid sm:grid-cols-2 gap-5">
-            <Field label="Countries served">
-              <input type="number" className="input" value={stats.countries} onChange={(e) => setStats({ ...stats, countries: Number(e.target.value) })} />
-            </Field>
-            <Field label="Enterprise clients">
-              <input type="number" className="input" value={stats.clients} onChange={(e) => setStats({ ...stats, clients: Number(e.target.value) })} />
-            </Field>
-            <Field label="Engineers worldwide">
-              <input type="number" className="input" value={stats.engineers} onChange={(e) => setStats({ ...stats, engineers: Number(e.target.value) })} />
-            </Field>
-            <Field label="Platform availability (%)">
-              <input type="number" step="0.01" className="input" value={stats.uptime} onChange={(e) => setStats({ ...stats, uptime: Number(e.target.value) })} />
-            </Field>
-          </div>
+          {loading ? (
+            <div className="mt-8 text-center text-ink-400">Loading…</div>
+          ) : (
+            <>
+              <div className="mt-6 grid sm:grid-cols-2 gap-5">
+                <Field label="Countries served">
+                  <input type="number" className="input" value={stats.countries} onChange={(e) => setStats({ ...stats, countries: Number(e.target.value) })} />
+                </Field>
+                <Field label="Enterprise clients">
+                  <input type="number" className="input" value={stats.clients} onChange={(e) => setStats({ ...stats, clients: Number(e.target.value) })} />
+                </Field>
+                <Field label="Engineers worldwide">
+                  <input type="number" className="input" value={stats.engineers} onChange={(e) => setStats({ ...stats, engineers: Number(e.target.value) })} />
+                </Field>
+                <Field label="Platform availability (%)">
+                  <input type="number" step="0.01" className="input" value={stats.uptime} onChange={(e) => setStats({ ...stats, uptime: Number(e.target.value) })} />
+                </Field>
+              </div>
 
-          <div className="mt-6 flex items-center gap-3">
-            <button onClick={save} className="btn-gold text-sm !py-2 !px-4"><Check size={16} /> Save</button>
-            <button onClick={reset} className="btn-ghost text-sm !py-2 !px-4"><RotateCcw size={14} /> Reset</button>
-            {saved && <span className="text-sm text-green-400">Saved ✓</span>}
-          </div>
+              <div className="mt-6 flex items-center gap-3">
+                <button onClick={save} disabled={saving} className="btn-gold text-sm !py-2 !px-4 disabled:opacity-60">
+                  {saving ? <><Loader2 size={16} className="animate-spin"/> Saving…</> : <><Check size={16} /> Save</>}
+                </button>
+                <button onClick={reset} className="btn-ghost text-sm !py-2 !px-4"><RotateCcw size={14} /> Reset</button>
+                {saved && <span className="text-sm text-green-400">Saved ✓</span>}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="card p-7">
@@ -64,12 +101,12 @@ export default function SettingsAdmin() {
             <Info size={14} /> Server-side settings
           </div>
           <p className="mt-3 text-sm text-ink-300 font-light leading-relaxed">
-            These are managed via environment variables in Vercel — they don't live in localStorage.
+            These are managed via environment variables in Vercel — they don&apos;t live in the database.
           </p>
           <dl className="mt-5 space-y-3 text-sm">
             <Row k="Contact email" v="harshchakravarti77@gmail.com" hint="CONTACT_EMAIL_TO" />
             <Row k="Mailer" v="Resend" hint="RESEND_API_KEY" />
-            <Row k="Site URL" v="aumox.vercel.app" hint="NEXT_PUBLIC_SITE_URL" />
+            <Row k="Site URL" v="aumoxo.tech" hint="NEXT_PUBLIC_SITE_URL" />
             <Row k="Admin password" v="••••••••" hint="ADMIN_PASSWORD" />
           </dl>
           <p className="mt-5 text-xs text-ink-400 font-light">
