@@ -273,14 +273,12 @@
 :root:not(.dark) .hero-deco-soft.is-particles { opacity: 0.35; mix-blend-mode: multiply; }
 :root:not(.dark) .hero-orbit-soft { opacity: 0.75; }
 
+/* Honor reduced motion preference, but scoped — don't kill ALL animations
+   with a wildcard !important rule (that overrode inline styles too). */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
   html { scroll-behavior: auto; }
-  .marquee-track { animation: none !important; }
+  /* Specific opt-outs for decorative loops only */
+  .marquee-track { animation: none; }
 }
 
 /* Smooth theme transition only during toggle */
