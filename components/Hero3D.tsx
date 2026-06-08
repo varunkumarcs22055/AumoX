@@ -335,27 +335,31 @@ export default function Hero3D() {
           />
         </svg>
 
-        {/* LOGO at the center — transparent PNG, sits cleanly on any background. */}
-        <div
-          ref={logoRef}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: "55%", height: "55%" }}
-        >
-          {/* Soft gold halo glow behind the image */}
+        {/* LOGO at the center — outer wrapper centers via flex (no transform),
+            inner ref-ed element is what GSAP animates so transforms don't
+            knock it out of position. */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
-            className="absolute inset-[-25%] rounded-full pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(240,221,160,0.4) 0%, rgba(212,175,55,0.22) 35%, transparent 70%)",
-              filter: "blur(24px)",
-            }}
-          />
-          <img
-            src="/logo-mark.png"
-            alt=""
-            className="relative block w-full h-full object-contain"
-            style={{ filter: "drop-shadow(0 0 18px rgba(240,221,160,0.45))" }}
-          />
+            ref={logoRef}
+            className="relative"
+            style={{ width: "55%", height: "55%" }}
+          >
+            {/* Soft gold halo glow behind the image */}
+            <div
+              className="absolute inset-[-25%] rounded-full pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(240,221,160,0.4) 0%, rgba(212,175,55,0.22) 35%, transparent 70%)",
+                filter: "blur(24px)",
+              }}
+            />
+            <img
+              src="/logo-mark.png"
+              alt=""
+              className="relative block w-full h-full object-contain"
+              style={{ filter: "drop-shadow(0 0 18px rgba(240,221,160,0.45))" }}
+            />
+          </div>
         </div>
       </div>
 
