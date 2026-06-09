@@ -7,34 +7,35 @@
    Dark is default (set via .dark on <html> in layout).
    ============================================================ */
 @layer base {
-  /* LIGHT THEME — calm warm-white + soft charcoal + muted gold.
-     Tuned to be pleasant to the eye for long reads (no harsh contrast,
-     no over-saturated gold). Everything decorative is dialled down. */
+  /* LIGHT THEME — clean professional near-white + slate ink + neutral hairlines.
+     Structural lines are NEUTRAL (not gold) — gold is reserved for real accents
+     (eyebrows, the gold wordmark, CTAs). This kills the muddy olive tint that
+     gold borders + gold grid gave the old cream theme. */
   :root {
     color-scheme: light;
-    --bg-base:     252 251 247;   /* very soft warm white */
-    --bg-surface:  246 244 238;   /* gentle layered surface */
-    --bg-elevated: 239 235 226;   /* slightly warmer panel */
-    --bg-panel:    229 224 213;
+    --bg-base:     250 250 249;   /* clean soft white, a hair warm */
+    --bg-surface:  245 245 244;   /* light neutral surface */
+    --bg-elevated: 239 239 238;   /* elevated panel */
+    --bg-panel:    231 231 230;
 
-    --ink-0:   255 255 253;
-    --ink-100: 28 28 36;          /* soft charcoal (not pure black — easier on eyes) */
-    --ink-200: 56 56 66;
-    --ink-300: 100 100 112;
-    --ink-400: 140 140 152;
-    --ink-500: 180 180 190;
+    --ink-0:   255 255 255;
+    --ink-100: 24 24 27;          /* slate near-black — crisp headings */
+    --ink-200: 39 39 45;
+    --ink-300: 82 82 91;          /* body text — comfortable ~7:1 contrast */
+    --ink-400: 122 122 131;
+    --ink-500: 161 161 170;
 
-    --line:        184 148 31;    /* warmer, more muted gold */
-    --line-strong: 156 126 36;
-    --line-subtle: 17 17 26;
+    --line:        24 24 27;      /* NEUTRAL — renders as clean grey hairlines at low opacity */
+    --line-strong: 158 116 16;    /* rich dark-goldenrod — eyebrows / accent text (pops on white) */
+    --line-subtle: 24 24 27;
 
-    --hero-vignette-1: rgba(184, 148, 31, 0.05);  /* much subtler atmosphere */
-    --hero-vignette-2: rgba(245, 158, 11, 0.035);
-    --hero-glow-blob:  rgba(184, 148, 31, 0.09);
+    --hero-vignette-1: rgba(184, 134, 11, 0.05);  /* whisper-soft gold atmosphere */
+    --hero-vignette-2: rgba(120, 120, 130, 0.035);
+    --hero-glow-blob:  rgba(184, 134, 11, 0.07);
 
-    --gold-text-from:  #A88333;    /* readable but not harsh */
-    --gold-text-mid:   #8B6A22;
-    --gold-text-to:    #6E5318;
+    --gold-text-from:  #C2900C;    /* saturated gold — clearly golden + legible on white */
+    --gold-text-mid:   #A2780F;
+    --gold-text-to:    #806009;
   }
 
   /* DARK THEME — pure black + cream-gold (premium aesthetic) */
@@ -272,6 +273,48 @@
 :root:not(.dark) .hero-deco-soft { opacity: 0.4; }
 :root:not(.dark) .hero-deco-soft.is-particles { opacity: 0.35; mix-blend-mode: multiply; }
 :root:not(.dark) .hero-orbit-soft { opacity: 0.75; }
+
+/* ============================================================
+   LIGHT-MODE POLISH — neutral, professional finish
+   Borders rest neutral grey; hover lifts with a soft neutral
+   shadow + a subtle warm-gold edge (brand warmth, no mud).
+   ============================================================ */
+:root:not(.dark) .card {
+  border-color: rgb(var(--line) / 0.1);
+}
+:root:not(.dark) .card:hover {
+  border-color: rgb(184 134 11 / 0.5);
+  box-shadow: 0 18px 44px -28px rgba(24, 24, 27, 0.22);
+}
+/* Decorative gold edge — deep goldenrod so the premium edge is actually visible on white */
+:root:not(.dark) .gold-border::before {
+  background: linear-gradient(135deg, rgba(184,134,11,0.6), transparent 42%, transparent 58%, rgba(184,134,11,0.6));
+}
+/* Gold CTA: rich, saturated gold object with a sheen highlight — clearly gold on white */
+:root:not(.dark) .btn-gold {
+  background: linear-gradient(135deg, #EBCB52 0%, #C49A22 48%, #9E7814 100%);
+  box-shadow: 0 10px 30px -10px rgba(184, 134, 11, 0.5);
+}
+:root:not(.dark) .btn-gold:hover {
+  box-shadow: 0 16px 40px -12px rgba(184, 134, 11, 0.62);
+}
+/* Stronger input focus ring in light for clarity */
+:root:not(.dark) .input:focus {
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.2);
+}
+
+/* Solid gold accent text/icons/links are too pale on white — deepen + saturate
+   them in light mode so they read as real gold with proper contrast. Opacity-
+   modified (/60) and dark: variants are untouched, so decorative sparkles and
+   dark-bg accents stay as designed. */
+:root:not(.dark) .text-gold-300,
+:root:not(.dark) .text-gold-400 {
+  color: #9E7410;
+}
+/* The little gold icon chips: lift the tint + border so the accent has presence */
+:root:not(.dark) .bg-gold-400\/5 { background-color: rgb(184 134 11 / 0.08); }
+:root:not(.dark) .border-gold-400\/30 { border-color: rgb(184 134 11 / 0.35); }
+:root:not(.dark) .border-gold-400\/60 { border-color: rgb(184 134 11 / 0.55); }
 
 /* Honor reduced motion preference, but scoped — don't kill ALL animations
    with a wildcard !important rule (that overrode inline styles too). */
