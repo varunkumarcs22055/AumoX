@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Linkedin, Twitter, Github, Youtube, Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, Loader2, CheckCircle2 } from "lucide-react";
 import Logo from "./Logo";
 
 const cols = [
@@ -43,6 +44,89 @@ const cols = [
   },
 ];
 
+function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [msg, setMsg] = useState("");
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setStatus("error");
+      setMsg("Please enter a valid email.");
+      return;
+    }
+    setStatus("loading");
+    try {
+      // Reuse the contact pipeline — subscriptions land in the admin inbox.
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Newsletter subscriber",
+          email,
+          service: "Newsletter",
+          message: "Newsletter subscription request from the website footer.",
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setStatus("done");
+      setMsg("You're subscribed — thank you.");
+      setEmail("");
+    } catch {
+      setStatus("error");
+      setMsg("Something went wrong. Please try again.");
+    }
+  }
+
+  return (
+    <>
+      <form onSubmit={onSubmit} className="mt-6 flex flex-col sm:flex-row gap-3">
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@company.com"
+          className="input flex-1"
+          aria-label="Email"
+          disabled={status === "loading" || status === "done"}
+        />
+        <button
+          type="submit"
+          disabled={status === "loading" || status === "done"}
+          className="btn-gold whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {status === "loading" ? (
+            <>
+              <Loader2 size={16} className="animate-spin" /> Subscribing…
+            </>
+          ) : status === "done" ? (
+            <>
+              <CheckCircle2 size={16} /> Subscribed
+            </>
+          ) : (
+            "Subscribe"
+          )}
+        </button>
+      </form>
+      <p
+        className={`mt-3 text-xs ${
+          status === "error"
+            ? "text-red-400"
+            : status === "done"
+            ? "text-green-500 dark:text-green-400"
+            : "text-ink-400"
+        }`}
+      >
+        {status === "idle" || status === "loading"
+          ? "By subscribing you agree to our privacy policy. Unsubscribe any time."
+          : msg}
+      </p>
+    </>
+  );
+}
+
 export default function Footer() {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
@@ -81,21 +165,7 @@ export default function Footer() {
             <h3 className="mt-3 text-2xl font-light text-ink-100">
               Insights for leaders building the next decade
             </h3>
-            <form className="mt-6 flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="your@company.com"
-                className="input flex-1"
-                aria-label="Email"
-              />
-              <button type="button" className="btn-gold whitespace-nowrap">
-                Subscribe
-              </button>
-            </form>
-            <p className="mt-3 text-xs text-ink-400">
-              By subscribing you agree to our privacy policy. Unsubscribe any
-              time.
-            </p>
+            <NewsletterForm />
           </div>
         </div>
 
@@ -131,20 +201,6 @@ export default function Footer() {
             <Link href="/privacy" className="hover:text-gold-300 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-gold-300 transition-colors">Terms of Service</Link>
             <Link href="/cookies" className="hover:text-gold-300 transition-colors">Cookies</Link>
-          </div>
-          <div className="flex items-center gap-4 text-ink-300">
-            <a aria-label="LinkedIn" href="#" className="hover:text-gold-300 transition-colors">
-              <Linkedin size={18} />
-            </a>
-            <a aria-label="Twitter" href="#" className="hover:text-gold-300 transition-colors">
-              <Twitter size={18} />
-            </a>
-            <a aria-label="GitHub" href="#" className="hover:text-gold-300 transition-colors">
-              <Github size={18} />
-            </a>
-            <a aria-label="YouTube" href="#" className="hover:text-gold-300 transition-colors">
-              <Youtube size={18} />
-            </a>
           </div>
         </div>
       </div>

@@ -152,7 +152,7 @@ function notifyHtml(d: z.infer<typeof schema>) {
         <div style="background:#000;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;font-size:14px;line-height:1.6;white-space:pre-wrap">${escapeHtml(d.message)}</div>
       </div>
       <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:#52525b">
-        Sent from aumox.com · Reply directly to respond to ${escapeHtml(d.name)}.
+        Sent from aumoxo.tech · Reply directly to respond to ${escapeHtml(d.name)}.
       </div>
     </div>
   </div>`;

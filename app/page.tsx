@@ -280,17 +280,17 @@ export default function HomePage() {
               {
                 name: "AUMOXO CRM",
                 tag: "Coming Soon",
-                desc: "Customer relationship management platform designed for sales, operations and customer-success teams.",
+                desc: "Lead tracking, follow-ups and sales pipeline management for teams that sell.",
               },
               {
-                name: "AUMOXO Automate",
+                name: "AUMOXO AI Assistant",
                 tag: "Coming Soon",
-                desc: "Workflow automation and AI-powered process orchestration for modern businesses.",
+                desc: "A custom-trained business assistant connected to your company knowledge.",
               },
               {
-                name: "AUMOXO Intelligence",
+                name: "AUMOXO Operations Hub",
                 tag: "Coming Soon",
-                desc: "Analytics and reporting platform that transforms business data into actionable insights.",
+                desc: "Workflow automation and a team operations platform for everyday work.",
               },
             ].map((p) => (
               <div key={p.name} className="product-card card p-8 gold-border flex flex-col">
