@@ -104,7 +104,7 @@ export default function SettingsAdmin() {
             These are managed via environment variables in Vercel — they don&apos;t live in the database.
           </p>
           <dl className="mt-5 space-y-3 text-sm">
-            <Row k="Contact email" v="harshchakravarti77@gmail.com" hint="CONTACT_EMAIL_TO" />
+            <Row k="Contact email" v="hello@aumoxo.tech" hint="CONTACT_EMAIL_TO" />
             <Row k="Mailer" v="Resend" hint="RESEND_API_KEY" />
             <Row k="Site URL" v="aumoxo.tech" hint="NEXT_PUBLIC_SITE_URL" />
             <Row k="Admin password" v="••••••••" hint="ADMIN_PASSWORD" />

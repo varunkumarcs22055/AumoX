@@ -49,9 +49,9 @@ export default async function MaintenanceGate({
           For urgent matters, email{" "}
           <a
             className="text-gold-300 hover:underline"
-            href="mailto:harshchakravarti77@gmail.com"
+            href="mailto:hello@aumoxo.tech"
           >
-            harshchakravarti77@gmail.com
+            hello@aumoxo.tech
           </a>
         </p>
       </div>

@@ -8,7 +8,7 @@
 > **Business Model:** Service + Product (tech services + tech products)
 > **Product Sales Model:** Quote / demo request (no checkout) — change later if needed
 > **Chatbot:** Static / rule-based (no AI API) — see §4
-> **Owner:** harshchakravarti77@gmail.com
+> **Owner:** hello@aumoxo.tech
 > **Last Updated:** 2026-05-24
 
 ---
@@ -133,7 +133,7 @@ Confident, modern, slightly playful. Not corporate-stiff. Think Linear / Vercel 
 - **Form must:**
   - Validate client-side (Zod + react-hook-form)
   - Submit to a serverless function (`/api/contact`)
-  - Send real email via Resend / Nodemailer to `harshchakravarti77@gmail.com`
+  - Send real email via Resend / Nodemailer to `hello@aumoxo.tech`
   - Send auto-reply confirmation to the visitor
   - Honeypot + rate-limit + hCaptcha for spam protection
   - Show success / error toast
@@ -206,7 +206,7 @@ Validate (Zod) → Honeypot check → Rate-limit (Upstash) → hCaptcha verify
    ↓
 Resend.emails.send({
   from: 'contact@[brand].com',
-  to: 'harshchakravarti77@gmail.com',
+  to: 'hello@aumoxo.tech',
   replyTo: visitorEmail,
   subject: `New inquiry from ${name}`,
   react: <ContactEmailTemplate {...data} />
@@ -372,7 +372,7 @@ Dark mode: invert with `#0A0A0A` background, `#FAFAFA` text. Tailwind handles vi
 ## 12. Environment Variables Needed
 ```
 RESEND_API_KEY=
-CONTACT_EMAIL_TO=harshchakravarti77@gmail.com
+CONTACT_EMAIL_TO=hello@aumoxo.tech
 CONTACT_EMAIL_FROM=contact@[brand].com
 HCAPTCHA_SECRET=
 NEXT_PUBLIC_HCAPTCHA_SITEKEY=
@@ -462,7 +462,7 @@ Footer with 4 columns + newsletter, floating static Chatbot bubble (bottom-right
 Contact form:
 - Fields: name, email, company, phone, service, budget, message
 - Zod validation
-- POST to /api/contact which uses Resend to email harshchakravarti77@gmail.com
+- POST to /api/contact which uses Resend to email hello@aumoxo.tech
 - Auto-reply to visitor
 - Honeypot + rate-limit (Upstash) + hCaptcha
 - Toast notifications

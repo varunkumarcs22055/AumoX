@@ -63,11 +63,11 @@ export default function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-5 text-sm text-ink-300">
               <a
-                href="mailto:harshchakravarti77@gmail.com"
+                href="mailto:hello@aumoxo.tech"
                 className="inline-flex items-center gap-2 hover:text-gold-300 transition-colors"
               >
                 <Mail size={16} className="text-gold-400" />
-                harshchakravarti77@gmail.com
+                hello@aumoxo.tech
               </a>
             </div>
             <div className="mt-2 inline-flex items-center gap-2 text-sm text-ink-300">

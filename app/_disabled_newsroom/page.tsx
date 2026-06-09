@@ -114,7 +114,7 @@ export default function NewsroomPage() {
           <Mic className="mx-auto text-gold-400 mb-6" size={28} />
           <h2 className="section-title mx-auto">Media inquiries</h2>
           <p className="section-sub mx-auto text-center">For interviews, quotes and briefings, our communications team responds within 24 hours.</p>
-          <a href="mailto:harshchakravarti77@gmail.com?subject=Media%20inquiry" className="btn-gold mt-10">
+          <a href="mailto:hello@aumoxo.tech?subject=Media%20inquiry" className="btn-gold mt-10">
             Contact press team <ArrowUpRight size={18} />
           </a>
         </div>

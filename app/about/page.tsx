@@ -17,6 +17,35 @@ const values = [
   { i: Users,    t: "Partner first",          d: "We win when our clients win. Aligned incentives, transparent communication." },
 ];
 
+const leadership = [
+  {
+    name: "Aditya Singh",
+    role: "Founder & CEO",
+    initials: "AS",
+    focus: ["Product Strategy", "Business Development", "Client Success", "Company Growth"],
+  },
+  {
+    name: "Varun Thakur",
+    role: "Co-Founder & CTO",
+    initials: "VT",
+    focus: ["Architecture", "Engineering", "Infrastructure", "Scalability"],
+  },
+  {
+    name: "Prathamesh",
+    role: "Head of Engineering",
+    initials: "P",
+    focus: ["Development Operations", "Technical Delivery", "Code Quality", "Project Execution"],
+  },
+];
+
+const assurance = [
+  "Bug Fixes",
+  "Security Updates",
+  "Performance Monitoring",
+  "Technical Assistance",
+  "Minor Improvements",
+];
+
 export default function AboutPage() {
   return (
     <>
@@ -101,10 +130,12 @@ export default function AboutPage() {
             </h2>
             <div className="mt-10 space-y-6 text-lg text-ink-200 font-light leading-relaxed">
               <p>
-                AUMOXO was started with a simple belief: businesses shouldn't need
-                massive budgets to access world-class technology. The companies that
-                win the next decade won't be the ones with the deepest pockets —
-                they'll be the ones who move fastest with the smartest stack.
+                AUMOXO was founded by <span className="text-ink-100">Aditya Singh</span> and{" "}
+                <span className="text-ink-100">Varun Thakur</span> on a simple belief:
+                businesses shouldn't need massive budgets or large consulting firms to
+                access world-class technology. The companies that win the next decade
+                won't be the ones with the deepest pockets — they'll be the ones who
+                move fastest with the smartest stack.
               </p>
               <p>
                 We combine AI, software engineering, and product thinking to help
@@ -121,8 +152,87 @@ export default function AboutPage() {
                 <Compass size={20} />
               </div>
               <div>
-                <div className="text-ink-100 font-medium">The AUMOXO team</div>
-                <div className="text-sm text-ink-400">Founders &amp; practitioners</div>
+                <div className="text-ink-100 font-medium">Aditya Singh &amp; Varun Thakur</div>
+                <div className="text-sm text-ink-400">Founders, AUMOXO</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* LEADERSHIP */}
+      <section className="py-24 lg:py-32">
+        <div className="container-x">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="eyebrow justify-center">
+              <span className="h-px w-8 bg-gold-400" />
+              Leadership
+              <span className="h-px w-8 bg-gold-400" />
+            </div>
+            <h2 className="section-title mt-5">The team behind every engagement.</h2>
+            <p className="section-sub mx-auto text-center">
+              Founder-led delivery — every project is directly overseen by the leadership team.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {leadership.map((m) => (
+              <div key={m.name} className="card p-8 gold-border flex flex-col">
+                <div className="grid h-16 w-16 place-items-center rounded-full bg-gold-gradient text-black font-display text-xl font-medium">
+                  {m.initials}
+                </div>
+                <h3 className="mt-6 font-display text-2xl font-light text-ink-100">{m.name}</h3>
+                <div className="mt-1 text-[11px] uppercase tracking-[0.25em] text-gold-400">
+                  {m.role}
+                </div>
+                <ul className="mt-6 space-y-2.5 pt-6 border-t border-line">
+                  {m.focus.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-ink-200">
+                      <Sparkles size={14} className="text-gold-400 shrink-0 mt-0.5" />
+                      <span className="font-light">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 text-center text-ink-300 font-light max-w-3xl mx-auto">
+            Together, the leadership team combines entrepreneurial thinking, technical
+            expertise, and execution-focused delivery to help businesses build,
+            automate, and scale with confidence.
+          </p>
+        </div>
+      </section>
+
+      {/* GROWTH ASSURANCE */}
+      <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
+        <div className="container-x">
+          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-center">
+            <div>
+              <div className="eyebrow">
+                <span className="h-px w-8 bg-gold-400" />
+                AUMOXO Growth Assurance
+              </div>
+              <h2 className="section-title mt-5">
+                6 months of complimentary post-launch support.
+              </h2>
+              <p className="section-sub">
+                We don't disappear after launch. Every project includes six months of
+                included support — so your investment keeps paying off and your systems
+                keep getting better.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+              {assurance.map((a) => (
+                <div key={a} className="bg-bg-base p-7 flex items-center gap-3">
+                  <Shield size={18} className="text-gold-400 shrink-0" />
+                  <span className="text-ink-100 font-light">{a}</span>
+                </div>
+              ))}
+              <div className="bg-bg-base p-7 flex items-center gap-3 sm:col-span-2">
+                <Sparkles size={18} className="text-gold-400 shrink-0" />
+                <span className="text-ink-300 font-light text-sm">
+                  Reduces risk and ensures long-term success.
+                </span>
               </div>
             </div>
           </div>

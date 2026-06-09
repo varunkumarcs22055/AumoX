@@ -63,10 +63,10 @@ export default function ContactPage() {
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.3em] text-ink-400">Email</div>
                     <a
-                      href="mailto:harshchakravarti77@gmail.com"
+                      href="mailto:hello@aumoxo.tech"
                       className="text-ink-100 hover:text-gold-300 transition-colors"
                     >
-                      harshchakravarti77@gmail.com
+                      hello@aumoxo.tech
                     </a>
                   </div>
                 </li>
@@ -107,7 +107,7 @@ export default function ContactPage() {
                   Press and analyst inquiries are handled by our communications team.
                 </p>
                 <a
-                  href="mailto:harshchakravarti77@gmail.com?subject=Media%20inquiry"
+                  href="mailto:hello@aumoxo.tech?subject=Media%20inquiry"
                   className="inline-flex items-center gap-1.5 mt-4 text-xs uppercase tracking-[0.25em] text-gold-300 hover:text-gold-200"
                 >
                   Media contact <ArrowUpRight size={14} />

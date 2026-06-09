@@ -80,7 +80,7 @@ export async function POST(req: Request) {
     // Continue anyway — email is still useful
   }
 
-  const to = process.env.CONTACT_EMAIL_TO ?? "harshchakravarti77@gmail.com";
+  const to = process.env.CONTACT_EMAIL_TO ?? "hello@aumoxo.tech";
   const from = process.env.CONTACT_EMAIL_FROM ?? "onboarding@resend.dev";
   const apiKey = process.env.RESEND_API_KEY;
 

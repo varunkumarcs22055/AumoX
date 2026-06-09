@@ -47,7 +47,7 @@ The contact form uses **[Resend](https://resend.com)** — free tier is 3,000 em
 
 ```env
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxx
-CONTACT_EMAIL_TO=harshchakravarti77@gmail.com
+CONTACT_EMAIL_TO=hello@aumoxo.tech
 CONTACT_EMAIL_FROM=onboarding@resend.dev   # use your verified domain in prod
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```

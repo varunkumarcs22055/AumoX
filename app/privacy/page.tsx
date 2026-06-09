@@ -39,7 +39,7 @@ export default function PrivacyPage() {
           </section>
           <section>
             <h2 className="text-xl text-ink-100 font-light mb-3">8. Contact</h2>
-            <p>Questions about this Policy? Email <a href="mailto:harshchakravarti77@gmail.com" className="text-gold-300 hover:text-gold-200">harshchakravarti77@gmail.com</a>.</p>
+            <p>Questions about this Policy? Email <a href="mailto:hello@aumoxo.tech" className="text-gold-300 hover:text-gold-200">hello@aumoxo.tech</a>.</p>
           </section>
         </div>
       </article>

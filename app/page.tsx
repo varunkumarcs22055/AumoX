@@ -21,8 +21,9 @@ import {
   GraduationCap,
   HeartPulse,
   ShoppingBag,
-  ShieldCheck,
-  Zap,
+  Home,
+  Users,
+  Handshake,
   Target,
 } from "lucide-react";
 
@@ -220,7 +221,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <Reveal stagger=".industry-card" staggerGap={0.06} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Reveal stagger=".industry-card" staggerGap={0.06} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
             {[
               { i: Rocket,        t: "Startups" },
               { i: Building2,     t: "SMEs" },
@@ -228,6 +229,7 @@ export default function HomePage() {
               { i: GraduationCap, t: "Education" },
               { i: HeartPulse,    t: "Healthcare" },
               { i: ShoppingBag,   t: "E-Commerce" },
+              { i: Home,          t: "Real Estate" },
             ].map(({ i: Icon, t }) => (
               <Link
                 key={t}
@@ -329,10 +331,10 @@ export default function HomePage() {
 
           <Reveal stagger=".why-card" staggerGap={0.08} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
             {[
-              { i: Sparkles,    t: "AI-First",         d: "We integrate intelligence into every workflow we build." },
-              { i: ShieldCheck, t: "Built For Scale",  d: "Enterprise-grade architecture from day one — not bolted on later." },
-              { i: Zap,         t: "Faster Delivery",  d: "Lean teams, modern technology, rapid execution from kickoff to launch." },
-              { i: Target,      t: "Business-Focused", d: "Solutions designed around measurable outcomes — not vanity metrics." },
+              { i: Users,     t: "Founder-Led Delivery",      d: "Every project is directly overseen by the leadership team." },
+              { i: Sparkles,  t: "AI-First Thinking",         d: "We identify automation opportunities before development begins." },
+              { i: Target,    t: "Business-Focused Execution", d: "We focus on measurable outcomes, not technical jargon." },
+              { i: Handshake, t: "Long-Term Partnership",     d: "We stay involved beyond launch — building relationships, not transactions." },
             ].map(({ i: Icon, t, d }) => (
               <div key={t} className="why-card bg-bg-base p-8 lg:p-10">
                 <div className="grid h-12 w-12 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300">

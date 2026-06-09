@@ -4,7 +4,7 @@ import { Linkedin, Twitter, ArrowUpRight } from "lucide-react";
 export const metadata = { title: "Leadership — The People Behind AUMOXO" };
 
 const leaders = [
-  { name: "Harsh Chakravarti", role: "Founder & Chief Executive Officer", initials: "HC", bio: "Two decades architecting enterprise platforms for global Fortune 500 organizations. Previously led technology at three publicly listed firms." },
+  { name: "Aditya Singh", role: "Founder & Chief Executive Officer", initials: "AS", bio: "Founder of AUMOXO, leading product strategy, business development and company growth." },
   { name: "Anika Sharma", role: "Chief Artificial Intelligence Officer", initials: "AS", bio: "Former research lead at a top-3 AI lab. Author of 40+ peer-reviewed papers on agentic systems and applied ML." },
   { name: "David Okafor", role: "Chief Operating Officer", initials: "DO", bio: "Scaled global delivery for two services giants from $200M to $2B+ run rate. Operational rigor meets human leadership." },
   { name: "Marina Volkov", role: "Chief Technology Officer", initials: "MV", bio: "Distributed systems veteran. Built planet-scale platforms at three of the largest cloud providers." },

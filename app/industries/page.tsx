@@ -7,6 +7,7 @@ import {
   GraduationCap,
   HeartPulse,
   ShoppingBag,
+  Home,
 } from "lucide-react";
 import Reveal from "@/components/anim/Reveal";
 
@@ -62,6 +63,12 @@ const industries = [
     short: "Store Operations, Analytics, AI Support",
     d: "Commerce platforms, customer analytics, AI customer support, and operations tooling for direct-to-consumer brands.",
   },
+  {
+    i: Home,
+    t: "Real Estate",
+    short: "Listings, Lead Capture, CRM, Automation",
+    d: "Property portals, lead capture and routing, agent CRM, and automated follow-ups that turn enquiries into deals.",
+  },
 ];
 
 export default function IndustriesPage() {
@@ -96,7 +103,7 @@ export default function IndustriesPage() {
               <span className="h-px w-8 bg-gold-400" />
             </div>
             <h2 className="section-title mt-5">
-              Built for businesses across six sectors.
+              Built for businesses across seven sectors.
             </h2>
           </div>
 

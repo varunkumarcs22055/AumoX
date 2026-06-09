@@ -26,13 +26,17 @@ export default function JsonLd() {
           "AUMOXO develops enterprise-grade software, AI solutions, automation systems, and digital products that help organizations innovate faster, operate smarter, and scale confidently.",
         slogan: "Think Infinite",
         foundingDate: "2026",
-        email: "harshchakravarti77@gmail.com",
+        founder: [
+          { "@type": "Person", name: "Aditya Singh", jobTitle: "Founder & CEO" },
+          { "@type": "Person", name: "Varun Thakur", jobTitle: "Co-Founder & CTO" },
+        ],
+        email: "hello@aumoxo.tech",
         sameAs: [
           // add real social handles here later
         ],
         contactPoint: {
           "@type": "ContactPoint",
-          email: "harshchakravarti77@gmail.com",
+          email: "hello@aumoxo.tech",
           contactType: "customer support",
           areaServed: "Worldwide",
           availableLanguage: ["English"],

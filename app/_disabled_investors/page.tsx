@@ -140,7 +140,7 @@ export default function InvestorsPage() {
         <div className="container-x text-center">
           <h2 className="section-title mx-auto">Investor inquiries</h2>
           <p className="section-sub mx-auto text-center">Connect with our Investor Relations team.</p>
-          <a href="mailto:harshchakravarti77@gmail.com?subject=Investor%20inquiry" className="btn-gold mt-10">
+          <a href="mailto:hello@aumoxo.tech?subject=Investor%20inquiry" className="btn-gold mt-10">
             Contact IR <ArrowUpRight size={18} />
           </a>
         </div>
