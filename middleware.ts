@@ -1,27 +1,39 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verifySessionToken, AUTH_COOKIE } from "@/lib/admin/auth";
 
 /**
- * Protects /admin/* (except /admin/login) with a simple cookie check.
- * Set in /api/admin/login when password is correct. Replace with a real
- * auth provider (Auth.js, Clerk, Supabase Auth) when the DB is wired in.
+ * Two responsibilities:
+ *  1. Protect /admin/* (except /admin/login) by verifying an HMAC-signed cookie.
+ *  2. Forward the current pathname as `x-pathname` so server components
+ *     (e.g. MaintenanceGate) can branch on it.
  */
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Always forward the pathname so layouts know which route is rendering
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    const auth = req.cookies.get("aumox_admin_auth");
-    if (!auth || auth.value !== "authenticated") {
+    const token = req.cookies.get(AUTH_COOKIE)?.value;
+    const result = await verifySessionToken(token);
+    if (!result.ok) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/admin/login";
       loginUrl.searchParams.set("from", pathname);
-      return NextResponse.redirect(loginUrl);
+      const res = NextResponse.redirect(loginUrl);
+      res.cookies.set(AUTH_COOKIE, "", { path: "/", maxAge: 0 });
+      return res;
     }
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // Run on all non-static paths so x-pathname is available everywhere
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|logo-mark.png|logo.jpeg|robots.txt|sitemap.xml).*)",
+  ],
 };

@@ -183,4 +183,13 @@ export const statsDb = {
   reset: () => setValue(S_KEY, DEFAULT_STATS),
 };
 
+// ---------- Maintenance mode ----------
+const M_KEY = "maintenance";
+export type Maintenance = { enabled: boolean; message?: string };
+const DEFAULT_MAINTENANCE: Maintenance = { enabled: false };
+export const maintenanceDb = {
+  get: () => getValue<Maintenance>(M_KEY, DEFAULT_MAINTENANCE),
+  set: (m: Maintenance) => setValue(M_KEY, m),
+};
+
 export const newId = () => Math.random().toString(36).slice(2, 10);

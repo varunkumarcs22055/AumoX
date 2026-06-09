@@ -69,7 +69,7 @@ To customize: edit `lib/chatbot-flow.ts` — each node has `message` and `option
 ## Branding
 
 - **Logo:** SVG component at `components/Logo.tsx` (full + mark variants) — recreates the gold A emblem
-- **Original PNG:** `public/logo-full.jpeg` (your provided file)
+- **Brand image:** `public/logo-mark.png` (transparent PNG used everywhere) + `public/logo.jpeg` (OG/social card image)
 - **Color tokens:** `tailwind.config.ts` → `colors.gold` (50–700) and `colors.bg`
 - **Typography:** Inter via `next/font/google` (variable, swap)
 
@@ -103,7 +103,8 @@ To swap brand assets:
 │   └── chatbot-flow.ts       # JSON flow for the bot
 ├── public/
 │   ├── favicon.svg
-│   └── logo-full.jpeg
+│   ├── logo-mark.png       # transparent brand mark
+│   └── logo.jpeg           # OG / social card image
 ├── tailwind.config.ts
 ├── tsconfig.json
 └── package.json

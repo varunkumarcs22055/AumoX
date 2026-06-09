@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, Inbox, type LucideIcon } from "lucide-react";
+import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 
 export default function AdminDashboard() {
   const [counts, setCounts] = useState({
@@ -41,7 +42,11 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="mt-8 card p-5 flex items-start gap-4 gold-border">
+      <div className="mt-8">
+        <MaintenanceToggle />
+      </div>
+
+      <div className="mt-6 card p-5 flex items-start gap-4 gold-border">
         <Database className="text-gold-400 shrink-0" size={20} />
         <div className="text-sm text-ink-300 font-light leading-relaxed">
           <span className="text-ink-100 font-medium">Storage:</span> Vercel KV (Redis).

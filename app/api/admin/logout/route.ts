@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { AUTH_COOKIE } from "@/lib/admin/auth";
 
 export async function POST() {
   const res = NextResponse.json({ ok: true });
-  res.cookies.set("aumox_admin_auth", "", { path: "/", maxAge: 0 });
+  res.cookies.set(AUTH_COOKIE, "", { path: "/", maxAge: 0 });
   return res;
 }

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jobsDb, type Job } from "@/lib/admin/db";
+import { verifySessionToken, AUTH_COOKIE } from "@/lib/admin/auth";
 
 async function isAuthed() {
   const c = await cookies();
-  return c.get("aumox_admin_auth")?.value === "authenticated";
+  return (await verifySessionToken(c.get(AUTH_COOKIE)?.value)).ok;
 }
 
 export async function GET() {

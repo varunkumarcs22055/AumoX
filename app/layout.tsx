@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
 import SiteParticles from "@/components/SiteParticles";
 import JsonLd from "@/components/JsonLd";
+import MaintenanceGate from "@/components/MaintenanceGate";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
@@ -137,11 +138,13 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-bg-base text-ink-100 font-sans">
         <ThemeProvider>
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <SiteParticles />
-          <Chatbot />
+          <MaintenanceGate>
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <SiteParticles />
+            <Chatbot />
+          </MaintenanceGate>
         </ThemeProvider>
       </body>
     </html>
