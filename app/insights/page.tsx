@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Clock } from "lucide-react";
+import { ArrowUpRight, Clock, ExternalLink } from "lucide-react";
 import Reveal from "@/components/anim/Reveal";
 import { insightsDb } from "@/lib/admin/db";
 
@@ -59,31 +59,56 @@ export default async function InsightsPage() {
             </div>
           ) : (
             <Reveal stagger=".insight-tile" staggerGap={0.08} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {items.map((a) => (
-                <article key={a.id} className="insight-tile card flex flex-col overflow-hidden group">
-                  <div className="aspect-[16/9] bg-gradient-to-br from-gold-400/20 via-bg-elevated to-bg-base relative overflow-hidden">
-                    <div className="absolute inset-0 grid-overlay opacity-50" />
-                    <div className="absolute bottom-4 left-6 text-[11px] uppercase tracking-[0.3em] text-gold-700 dark:text-gold-300 bg-bg-base/60 border border-gold-400/40 rounded-full px-3 py-1">
-                      {a.tag}
+              {items.map((a) => {
+                const card = (
+                  <>
+                    <div className="aspect-[16/9] bg-gradient-to-br from-gold-400/20 via-bg-elevated to-bg-base relative overflow-hidden">
+                      <div className="absolute inset-0 grid-overlay opacity-50" />
+                      <div className="absolute bottom-4 left-6 text-[11px] uppercase tracking-[0.3em] text-gold-700 dark:text-gold-300 bg-bg-base/60 border border-gold-400/40 rounded-full px-3 py-1">
+                        {a.tag}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col flex-1 p-7">
-                    <h2 className="text-xl text-ink-100 font-light leading-snug group-hover:text-gold-300 transition-colors">
-                      {a.title}
-                    </h2>
-                    <p className="mt-3 text-sm text-ink-300 font-light leading-relaxed flex-1">
-                      {a.excerpt}
-                    </p>
-                    <div className="mt-6 pt-5 border-t border-line flex items-center justify-between text-xs text-ink-400">
-                      <span>{fmtDate(a.date)}{a.author ? ` · ${a.author}` : ""}</span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock size={13} className="text-gold-400" />
-                        {a.readMin} min
-                      </span>
+                    <div className="flex flex-col flex-1 p-7">
+                      <h2 className="text-xl text-ink-100 font-light leading-snug group-hover:text-gold-300 transition-colors">
+                        {a.title}
+                      </h2>
+                      <p className="mt-3 text-sm text-ink-300 font-light leading-relaxed flex-1">
+                        {a.excerpt}
+                      </p>
+                      <div className="mt-6 pt-5 border-t border-line flex items-center justify-between text-xs text-ink-400">
+                        <span>{fmtDate(a.date)}{a.author ? ` · ${a.author}` : ""}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          {a.url ? (
+                            <>
+                              Read article <ExternalLink size={13} className="text-gold-400" />
+                            </>
+                          ) : (
+                            <>
+                              <Clock size={13} className="text-gold-400" />
+                              {a.readMin} min
+                            </>
+                          )}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </>
+                );
+                return a.url ? (
+                  <a
+                    key={a.id}
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="insight-tile card flex flex-col overflow-hidden group cursor-pointer"
+                  >
+                    {card}
+                  </a>
+                ) : (
+                  <article key={a.id} className="insight-tile card flex flex-col overflow-hidden group">
+                    {card}
+                  </article>
+                );
+              })}
             </Reveal>
           )}
         </div>

@@ -11,6 +11,7 @@ type Insight = {
   date: string;
   readMin: number;
   author?: string;
+  url?: string;
   published: boolean;
 };
 
@@ -41,7 +42,7 @@ export default function InsightsAdmin() {
       id: newId(),
       title: "", tag: "AI", excerpt: "",
       date: new Date().toISOString().slice(0, 10),
-      readMin: 5, author: "", published: true,
+      readMin: 5, author: "", url: "", published: true,
     });
     setShowForm(true);
   }
@@ -134,6 +135,9 @@ export default function InsightsAdmin() {
             </Field>
             <Field label="Read time (minutes)">
               <input type="number" min={1} max={60} className="input" value={editing.readMin} onChange={(e) => setEditing({ ...editing, readMin: Number(e.target.value) })} />
+            </Field>
+            <Field label="Article link (Medium / Hashnode / LinkedIn…)" className="md:col-span-2">
+              <input type="url" className="input" value={editing.url ?? ""} onChange={(e) => setEditing({ ...editing, url: e.target.value })} placeholder="https://medium.com/@aumoxo/your-article" />
             </Field>
             <Field label="Published" className="md:col-span-2">
               <label className="flex items-center gap-3 mt-2">

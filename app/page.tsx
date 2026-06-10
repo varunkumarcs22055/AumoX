@@ -377,7 +377,9 @@ export default async function HomePage() {
             {latestInsights.map((a) => (
               <Link
                 key={a.id}
-                href="/insights"
+                href={a.url || "/insights"}
+                target={a.url ? "_blank" : undefined}
+                rel={a.url ? "noopener noreferrer" : undefined}
                 className="insight-card card p-8 flex flex-col group cursor-pointer"
               >
                 <div className="aspect-[16/10] -mx-8 -mt-8 mb-6 bg-gradient-to-br from-gold-400/20 via-bg-elevated to-bg-base relative overflow-hidden">

@@ -76,6 +76,8 @@ export type Insight = {
   date: string;
   readMin: number;
   author?: string;
+  /** External article URL (Medium, Hashnode, LinkedIn, …) — cards link here */
+  url?: string;
   published: boolean;
 };
 
