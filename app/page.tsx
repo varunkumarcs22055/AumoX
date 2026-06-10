@@ -26,6 +26,7 @@ import {
   Users,
   Handshake,
   Target,
+  Shield,
 } from "lucide-react";
 
 export default async function HomePage() {
@@ -349,6 +350,54 @@ export default async function HomePage() {
               </div>
             ))}
           </Reveal>
+        </div>
+      </section>
+
+      {/* ========== GROWTH ASSURANCE — 6 months post-launch support ========== */}
+      <section className="py-24 lg:py-32">
+        <div className="container-x">
+          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-center">
+            <div>
+              <div className="eyebrow">
+                <span className="h-px w-8 bg-gold-400" />
+                AUMOXO Growth Assurance
+              </div>
+              <h2 className="section-title mt-5">
+                6 months of complimentary post-launch support.
+              </h2>
+              <p className="section-sub">
+                We don't disappear after launch. Every project includes six months
+                of included support — so your investment keeps paying off and your
+                systems keep getting better.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 mt-6 text-gold-300 hover:text-gold-200 transition-colors font-medium"
+              >
+                Start a project <ArrowUpRight size={16} />
+              </Link>
+            </div>
+            <Reveal stagger=".assure-tile" staggerGap={0.07} className="grid sm:grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+              {[
+                "Bug Fixes",
+                "Security Updates",
+                "Performance Monitoring",
+                "Technical Assistance",
+                "Minor Improvements",
+              ].map((a) => (
+                <div key={a} className="assure-tile bg-bg-base p-7 flex items-center gap-3">
+                  <Shield size={18} className="text-gold-400 shrink-0" />
+                  <span className="text-ink-100 font-light">{a}</span>
+                </div>
+              ))}
+              <div className="assure-tile bg-bg-base p-7 flex items-center gap-3">
+                <Sparkles size={18} className="text-gold-400 shrink-0" />
+                <span className="text-ink-300 font-light text-sm">
+                  Reduces risk and ensures long-term success.
+                </span>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
