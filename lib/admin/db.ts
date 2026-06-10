@@ -186,12 +186,51 @@ export const statsDb = {
 };
 
 // ---------- Maintenance mode ----------
+// Stored in Vercel Edge Config (not KV/memory): the flag must be shared
+// across ALL serverless functions instantly. In-memory storage is isolated
+// per function, so the admin toggle would never reach page renders.
 const M_KEY = "maintenance";
 export type Maintenance = { enabled: boolean; message?: string };
 const DEFAULT_MAINTENANCE: Maintenance = { enabled: false };
+
 export const maintenanceDb = {
-  get: () => getValue<Maintenance>(M_KEY, DEFAULT_MAINTENANCE),
-  set: (m: Maintenance) => setValue(M_KEY, m),
+  async get(): Promise<Maintenance> {
+    if (process.env.EDGE_CONFIG) {
+      try {
+        const { get } = await import("@vercel/edge-config");
+        const m = await get<Maintenance>(M_KEY);
+        if (m && typeof m.enabled === "boolean") return m;
+      } catch (e) {
+        console.warn("[db] Edge Config read failed, falling back:", e);
+      }
+    }
+    return getValue<Maintenance>(M_KEY, DEFAULT_MAINTENANCE);
+  },
+  async set(m: Maintenance): Promise<void> {
+    const id = process.env.EDGE_CONFIG_ID;
+    const token = process.env.VERCEL_API_TOKEN;
+    const teamId = process.env.VERCEL_TEAM_ID;
+    if (id && token) {
+      const res = await fetch(
+        `https://api.vercel.com/v1/edge-config/${id}/items${teamId ? `?teamId=${teamId}` : ""}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            items: [{ operation: "upsert", key: M_KEY, value: m }],
+          }),
+        }
+      );
+      if (!res.ok) {
+        throw new Error(`Edge Config write failed: ${res.status} ${await res.text()}`);
+      }
+      return;
+    }
+    await setValue(M_KEY, m);
+  },
 };
 
 export const newId = () => Math.random().toString(36).slice(2, 10);

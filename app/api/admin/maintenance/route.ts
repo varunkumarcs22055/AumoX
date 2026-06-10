@@ -24,6 +24,14 @@ export async function POST(req: Request) {
     message:
       typeof body.message === "string" ? body.message.slice(0, 400) : undefined,
   };
-  await maintenanceDb.set(next);
+  try {
+    await maintenanceDb.set(next);
+  } catch (e) {
+    console.error("[maintenance] write failed:", e);
+    return NextResponse.json(
+      { error: "Could not persist the maintenance flag. Try again." },
+      { status: 502 }
+    );
+  }
   return NextResponse.json({ maintenance: next });
 }
