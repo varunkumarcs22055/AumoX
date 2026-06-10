@@ -12,11 +12,57 @@
  */
 
 import { kv } from "@vercel/kv";
+import { put, list } from "@vercel/blob";
 
-// In-memory fallback — only used when KV is not configured (local dev)
+// Storage priority: KV (if configured) → Vercel Blob (production default)
+// → in-memory Map (local dev only). Blob/KV are REQUIRED in production:
+// serverless functions don't share memory, so without shared storage the
+// admin's writes are invisible to public page renders.
 const mem = new Map<string, unknown>();
 const KV_ENABLED =
   !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
+const BLOB_ENABLED = !!process.env.BLOB_READ_WRITE_TOKEN;
+
+// Secret path segment so blob URLs (public-access) are unguessable.
+const BLOB_PREFIX = process.env.BLOB_DB_PREFIX || "db";
+const blobPath = (key: string) => `${BLOB_PREFIX}/${key}.json`;
+const blobUrlCache = new Map<string, string>();
+
+async function blobGet<T>(key: string): Promise<T | undefined> {
+  try {
+    let url = blobUrlCache.get(key);
+    if (!url) {
+      const { blobs } = await list({ prefix: blobPath(key), limit: 1 });
+      if (blobs.length === 0) return undefined;
+      url = blobs[0].url;
+      blobUrlCache.set(key, url);
+    }
+    // Cache-busting query forces the blob CDN to revalidate — reads stay fresh.
+    const res = await fetch(`${url}?v=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return undefined;
+    return (await res.json()) as T;
+  } catch (e) {
+    console.warn("[db] Blob read failed:", e);
+    return undefined;
+  }
+}
+
+async function blobSet<T>(key: string, value: T): Promise<boolean> {
+  try {
+    const blob = await put(blobPath(key), JSON.stringify(value), {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      cacheControlMaxAge: 60,
+      contentType: "application/json",
+    });
+    blobUrlCache.set(key, blob.url);
+    return true;
+  } catch (e) {
+    console.warn("[db] Blob write failed:", e);
+    return false;
+  }
+}
 
 async function getValue<T>(key: string, fallback: T): Promise<T> {
   if (KV_ENABLED) {
@@ -24,8 +70,12 @@ async function getValue<T>(key: string, fallback: T): Promise<T> {
       const v = await kv.get<T>(key);
       return (v as T) ?? fallback;
     } catch (e) {
-      console.warn("[db] KV.get failed, using memory:", e);
+      console.warn("[db] KV.get failed:", e);
     }
+  }
+  if (BLOB_ENABLED) {
+    const v = await blobGet<T>(key);
+    return v ?? fallback;
   }
   return (mem.get(key) as T) ?? fallback;
 }
@@ -36,8 +86,11 @@ async function setValue<T>(key: string, value: T): Promise<void> {
       await kv.set(key, value);
       return;
     } catch (e) {
-      console.warn("[db] KV.set failed, using memory:", e);
+      console.warn("[db] KV.set failed:", e);
     }
+  }
+  if (BLOB_ENABLED) {
+    if (await blobSet(key, value)) return;
   }
   mem.set(key, value);
 }
@@ -194,7 +247,29 @@ export type Maintenance = { enabled: boolean; message?: string };
 const DEFAULT_MAINTENANCE: Maintenance = { enabled: false };
 
 export const maintenanceDb = {
-  async get(): Promise<Maintenance> {
+  /**
+   * opts.consistent — read the source of truth via the Vercel REST API
+   * instead of the edge-distributed copy. Edge reads can lag a write by
+   * several seconds; the admin UI must see its own writes immediately.
+   */
+  async get(opts?: { consistent?: boolean }): Promise<Maintenance> {
+    const id = process.env.EDGE_CONFIG_ID;
+    const token = process.env.VERCEL_API_TOKEN;
+    const teamId = process.env.VERCEL_TEAM_ID;
+    if (opts?.consistent && id && token) {
+      try {
+        const res = await fetch(
+          `https://api.vercel.com/v1/edge-config/${id}/item/${M_KEY}${teamId ? `?teamId=${teamId}` : ""}`,
+          { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
+        );
+        if (res.ok) {
+          const j = (await res.json()) as { value?: Maintenance };
+          if (j?.value && typeof j.value.enabled === "boolean") return j.value;
+        }
+      } catch (e) {
+        console.warn("[db] Edge Config consistent read failed:", e);
+      }
+    }
     if (process.env.EDGE_CONFIG) {
       try {
         const { get } = await import("@vercel/edge-config");

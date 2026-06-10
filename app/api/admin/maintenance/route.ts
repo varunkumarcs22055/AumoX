@@ -9,9 +9,10 @@ async function isAuthed() {
 }
 
 export async function GET() {
-  // Public endpoint — used by the site shell to decide whether to render
-  // the maintenance page. No auth required to READ the flag.
-  const m = await maintenanceDb.get();
+  // Public endpoint — used by the admin toggle to show current state.
+  // Consistent read: must reflect a just-saved toggle immediately, so the
+  // admin UI never shows a stale state after refresh.
+  const m = await maintenanceDb.get({ consistent: true });
   return NextResponse.json({ maintenance: m });
 }
 
