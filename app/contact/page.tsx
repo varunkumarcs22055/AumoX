@@ -14,7 +14,14 @@ export const metadata = {
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string }>;
+}) {
+  const { role } = await searchParams;
+  const isApplication = Boolean(role);
+
   return (
     <>
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
@@ -23,15 +30,30 @@ export default function ContactPage() {
           <div className="max-w-4xl">
             <div className="eyebrow">
               <span className="h-px w-8 bg-gold-400" />
-              Contact
+              {isApplication ? "Careers · Application" : "Contact"}
             </div>
-            <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[1.05] font-extralight tracking-tight text-ink-100">
-              Let's build what's <span className="gold-text">next</span>.
-            </h1>
-            <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">
-              Tell us about your business. A specialist from our team will respond
-              within one working day.
-            </p>
+            {isApplication ? (
+              <>
+                <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[1.05] font-extralight tracking-tight text-ink-100">
+                  Join the <span className="gold-text">AUMOXO</span> team.
+                </h1>
+                <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">
+                  You're applying for <span className="text-gold-300">{role}</span>.
+                  Tell us about yourself and share your portfolio or resume link —
+                  we read every application and reply within a few working days.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[1.05] font-extralight tracking-tight text-ink-100">
+                  Let's build what's <span className="gold-text">next</span>.
+                </h1>
+                <p className="mt-8 max-w-2xl text-lg text-ink-300 font-light">
+                  Tell us about your business. A specialist from our team will respond
+                  within one working day.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </section>

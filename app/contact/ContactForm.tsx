@@ -25,6 +25,7 @@ type Status = "idle" | "loading" | "success" | "error";
 
 export default function ContactForm() {
   const search = useSearchParams();
+  const isApplication = Boolean(search.get("role"));
   const [status, setStatus] = useState<Status>("idle");
   const [serverMsg, setServerMsg] = useState("");
 
@@ -72,7 +73,11 @@ export default function ContactForm() {
         return;
       }
       setStatus("success");
-      setServerMsg("Thanks — we'll be in touch within one working day.");
+      setServerMsg(
+        isApplication
+          ? "Application received — we'll get back to you within a few working days."
+          : "Thanks — we'll be in touch within one working day."
+      );
       reset();
     } catch {
       setStatus("error");
@@ -94,71 +99,82 @@ export default function ContactForm() {
             {...register("email")}
           />
         </Field>
-        <Field label="Company">
-          <input className="input" placeholder="Acme Corp" {...register("company")} />
+        <Field label={isApplication ? "Current company (optional)" : "Company"}>
+          <input className="input" placeholder={isApplication ? "Where you work now" : "Acme Corp"} {...register("company")} />
         </Field>
         <Field label="Phone (optional)">
           <input className="input" placeholder="+1 555 0123" {...register("phone")} />
         </Field>
-        <Field label="I'm interested in" error={errors.service?.message}>
-          <select className="input" defaultValue="" {...register("service")}>
-            <option value="" disabled>
-              Choose a service…
-            </option>
-            <optgroup label="Enterprise Solutions">
-              <option>AI Solutions</option>
-              <option>CRM Solutions</option>
-              <option>Automation Systems</option>
-              <option>Enterprise Software</option>
-            </optgroup>
-            <optgroup label="Product Engineering">
-              <option>Web Application</option>
-              <option>SaaS Platform</option>
-              <option>Mobile Application</option>
-            </optgroup>
-            <optgroup label="Design & Strategy">
-              <option>UI/UX Design</option>
-              <option>Technology Consulting</option>
-            </optgroup>
-            <optgroup label="Solutions">
-              <option>AI Customer Support Suite</option>
-              <option>CRM &amp; Sales Automation</option>
-              <option>Operations Automation</option>
-              <option>Coming-soon product waitlist</option>
-            </optgroup>
-            <optgroup label="Other">
-              <option>Careers / Job application</option>
-              <option>Partnership inquiry</option>
-              <option>Something else</option>
-            </optgroup>
-          </select>
-        </Field>
-        <Field label="Project timeline">
-          <select className="input" defaultValue="" {...register("timeline")}>
-            <option value="">Select timeline</option>
-            <option>ASAP</option>
-            <option>Within 1 month</option>
-            <option>1–3 months</option>
-            <option>Exploring options</option>
-          </select>
-        </Field>
-        <Field label="Indicative budget (optional)">
-          <select className="input" defaultValue="" {...register("budget")}>
-            <option value="">Select range</option>
-            <option>Under $25K</option>
-            <option>$25K – $100K</option>
-            <option>$100K – $500K</option>
-            <option>$500K – $2M</option>
-            <option>$2M+</option>
-            <option>Not sure yet</option>
-          </select>
-        </Field>
+        {!isApplication && (
+          <>
+            <Field label="I'm interested in" error={errors.service?.message}>
+              <select className="input" defaultValue="" {...register("service")}>
+                <option value="" disabled>
+                  Choose a service…
+                </option>
+                <optgroup label="Enterprise Solutions">
+                  <option>AI Solutions</option>
+                  <option>CRM Solutions</option>
+                  <option>Automation Systems</option>
+                  <option>Enterprise Software</option>
+                </optgroup>
+                <optgroup label="Product Engineering">
+                  <option>Web Application</option>
+                  <option>SaaS Platform</option>
+                  <option>Mobile Application</option>
+                </optgroup>
+                <optgroup label="Design & Strategy">
+                  <option>UI/UX Design</option>
+                  <option>Technology Consulting</option>
+                </optgroup>
+                <optgroup label="Solutions">
+                  <option>AI Customer Support Suite</option>
+                  <option>CRM &amp; Sales Automation</option>
+                  <option>Operations Automation</option>
+                  <option>Coming-soon product waitlist</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option>Careers / Job application</option>
+                  <option>Partnership inquiry</option>
+                  <option>Something else</option>
+                </optgroup>
+              </select>
+            </Field>
+            <Field label="Project timeline">
+              <select className="input" defaultValue="" {...register("timeline")}>
+                <option value="">Select timeline</option>
+                <option>ASAP</option>
+                <option>Within 1 month</option>
+                <option>1–3 months</option>
+                <option>Exploring options</option>
+              </select>
+            </Field>
+            <Field label="Indicative budget (optional)">
+              <select className="input" defaultValue="" {...register("budget")}>
+                <option value="">Select range</option>
+                <option>Under $25K</option>
+                <option>$25K – $100K</option>
+                <option>$100K – $500K</option>
+                <option>$500K – $2M</option>
+                <option>$2M+</option>
+                <option>Not sure yet</option>
+              </select>
+            </Field>
+          </>
+        )}
       </div>
 
-      <Field label="Tell us about your project" error={errors.message?.message}>
+      <Field
+        label={isApplication ? "Tell us about yourself" : "Tell us about your project"}
+        error={errors.message?.message}
+      >
         <textarea
           className="input min-h-[140px] resize-y"
-          placeholder="What outcomes are you hoping to achieve?"
+          placeholder={
+            isApplication
+              ? "Your experience, links to your resume / portfolio / GitHub, and why AUMOXO."
+              : "What outcomes are you hoping to achieve?"
+          }
           {...register("message")}
         />
       </Field>
@@ -185,7 +201,7 @@ export default function ContactForm() {
             </>
           ) : (
             <>
-              Send message <Send size={16} />
+              {isApplication ? "Submit application" : "Send message"} <Send size={16} />
             </>
           )}
         </button>

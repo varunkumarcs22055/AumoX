@@ -54,17 +54,20 @@ export default function Navbar() {
         <div className="container-x flex items-center justify-between h-[80px] lg:h-[96px]">
           <Logo />
 
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-8">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="nav-link">
+              <Link key={l.href} href={l.href} className="nav-link whitespace-nowrap">
                 {l.label}
               </Link>
             ))}
           </nav>
 
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0">
             <ThemeToggle />
-            <Link href="/contact" className="btn-gold !py-2 !px-5 text-sm">
+            <Link
+              href="/contact"
+              className="hidden xl:inline-flex btn-gold !py-2 !px-5 text-sm whitespace-nowrap"
+            >
               Get in Touch
               <ArrowUpRight size={16} />
             </Link>
