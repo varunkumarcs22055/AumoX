@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Target, Eye, Shield, Sparkles, Users, Compass } from "lucide-react";
 import Logo from "@/components/Logo";
+import TeamAvatar from "@/components/TeamAvatar";
 
 export const metadata = {
   title: "About AUMOXO — Helping Businesses Innovate Through Technology",
@@ -22,18 +23,21 @@ const leadership = [
     name: "Aditya Singh",
     role: "Founder & CEO",
     initials: "AS",
+    photo: "/team/aditya.jpg",
     focus: ["Product Strategy", "Business Development", "Client Success", "Company Growth"],
   },
   {
     name: "Varun Thakur",
     role: "Co-Founder & CTO",
     initials: "VT",
+    photo: "/team/varun.jpg",
     focus: ["Architecture", "Engineering", "Infrastructure", "Scalability"],
   },
   {
     name: "Prathamesh",
     role: "Head of Engineering",
     initials: "P",
+    photo: "/team/prathamesh.jpg",
     focus: ["Development Operations", "Technical Delivery", "Code Quality", "Project Execution"],
   },
 ];
@@ -177,9 +181,7 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {leadership.map((m) => (
               <div key={m.name} className="card p-8 gold-border flex flex-col">
-                <div className="grid h-16 w-16 place-items-center rounded-full bg-gold-gradient text-black font-display text-xl font-medium">
-                  {m.initials}
-                </div>
+                <TeamAvatar name={m.name} initials={m.initials} photo={m.photo} size={88} />
                 <h3 className="mt-6 font-display text-2xl font-light text-ink-100">{m.name}</h3>
                 <div className="mt-1 text-[11px] uppercase tracking-[0.25em] text-gold-400">
                   {m.role}

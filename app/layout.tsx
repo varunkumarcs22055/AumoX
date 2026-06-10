@@ -7,6 +7,7 @@ import Chatbot from "@/components/Chatbot";
 import SiteParticles from "@/components/SiteParticles";
 import JsonLd from "@/components/JsonLd";
 import MaintenanceGate from "@/components/MaintenanceGate";
+import PageTransition from "@/components/PageTransition";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
@@ -140,7 +141,9 @@ export default function RootLayout({
         <ThemeProvider>
           <MaintenanceGate>
             <Navbar />
-            <main className="min-h-screen">{children}</main>
+            <main className="min-h-screen">
+              <PageTransition>{children}</PageTransition>
+            </main>
             <Footer />
             <SiteParticles />
             <Chatbot />

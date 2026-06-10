@@ -252,6 +252,20 @@
   to   { transform: translateX(-50%); }
 }
 
+/* ============================================================
+   PAGE TRANSITION — smooth enter on every route change.
+   PageTransition.tsx remounts this wrapper per pathname so the
+   animation replays. Subtle fade + rise = premium, not flashy.
+   ============================================================ */
+.page-transition {
+  animation: pageEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: center top;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
 /* Border + bg-line helpers across themes */
 .border-line { border-color: rgb(var(--line) / 0.2) !important; }
 .bg-line { background-color: rgb(var(--line) / 0.2); }
@@ -322,6 +336,7 @@
   html { scroll-behavior: auto; }
   /* Specific opt-outs for decorative loops only */
   .marquee-track { animation: none; }
+  .page-transition { animation: none; }
 }
 
 /* Smooth theme transition only during toggle */
