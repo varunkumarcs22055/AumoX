@@ -11,7 +11,9 @@ const links = [
   { href: "/services", label: "Services" },
   { href: "/industries", label: "Industries" },
   { href: "/products", label: "Solutions" },
+  { href: "/insights", label: "Insights" },
   { href: "/about", label: "About" },
+  { href: "/careers", label: "Careers" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -52,7 +54,7 @@ export default function Navbar() {
         <div className="container-x flex items-center justify-between h-[80px] lg:h-[96px]">
           <Logo />
 
-          <nav className="hidden lg:flex items-center gap-9">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
             {links.map((l) => (
               <Link key={l.href} href={l.href} className="nav-link">
                 {l.label}

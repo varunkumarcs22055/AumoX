@@ -106,6 +106,7 @@ export default function InsightsAdmin() {
           <p className="mt-2 text-ink-300 font-light">Manage thought-leadership articles. Saved to the live database.</p>
         </div>
         <div className="flex gap-3">
+          <a href="/insights" target="_blank" className="btn-ghost text-sm !py-2 !px-4">View public page</a>
           <button onClick={resetAll} className="btn-ghost text-sm !py-2 !px-4"><RotateCcw size={14} /> Reset</button>
           <button onClick={startNew} className="btn-gold text-sm !py-2 !px-4"><Plus size={16} /> New article</button>
         </div>

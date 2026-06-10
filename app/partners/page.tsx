@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Reveal from "@/components/anim/Reveal";
 import { ArrowUpRight, Handshake, Award, Globe, Shield } from "lucide-react";
 
 export const metadata = {
@@ -89,9 +90,9 @@ export default function PartnersPage() {
             <h2 className="section-title mt-5">A framework that scales with the relationship.</h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <Reveal stagger=".tier-card" staggerGap={0.1} className="grid md:grid-cols-2 gap-6">
             {tiers.map((t) => (
-              <div key={t.name} className="card p-10 gold-border">
+              <div key={t.name} className="tier-card card p-10 gold-border">
                 <div className="flex items-center justify-between">
                   <div className="font-display text-3xl font-light text-ink-100">{t.name}</div>
                   <span className="text-[11px] uppercase tracking-[0.3em] text-gold-400 border border-gold-400/40 rounded-full px-3 py-1">
@@ -108,21 +109,21 @@ export default function PartnersPage() {
                 </ul>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Benefits */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
         <div className="container-x">
-          <div className="grid lg:grid-cols-3 gap-8">
+          <Reveal stagger=".benefit-row" staggerGap={0.08} className="grid lg:grid-cols-3 gap-8">
             {[
               { i: Handshake, t: "Aligned incentives", d: "Joint planning and revenue models that reward outcomes — not just activity." },
               { i: Award, t: "Industry-leading enablement", d: "Certifications, lab credits, and engineering bootcamps for your teams." },
               { i: Globe, t: "Global reach", d: "Plug into our enterprise relationships across 60+ countries." },
               { i: Shield, t: "Compliance & trust", d: "Inherit our ISO 27001, SOC 2 and HIPAA-aligned delivery posture." },
             ].map(({ i: Icon, t, d }) => (
-              <div key={t} className="flex gap-5">
+              <div key={t} className="benefit-row flex gap-5">
                 <div className="shrink-0 grid h-12 w-12 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300">
                   <Icon size={20} />
                 </div>
@@ -132,7 +133,7 @@ export default function PartnersPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 

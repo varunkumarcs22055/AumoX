@@ -4,6 +4,7 @@ import Marquee from "@/components/Marquee";
 import Reveal from "@/components/anim/Reveal";
 import HeroEntrance, { SplitWords } from "@/components/anim/HeroEntrance";
 import MagneticLink from "@/components/anim/MagneticLink";
+import { insightsDb } from "@/lib/admin/db";
 import {
   ArrowUpRight,
   Globe,
@@ -27,7 +28,10 @@ import {
   Target,
 } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const latestInsights = (await insightsDb.list())
+    .filter((i) => i.published)
+    .slice(0, 3);
   return (
     <>
       {/* ========== HERO ========== */}
@@ -361,20 +365,19 @@ export default function HomePage() {
                 Practical reads for builders & business leaders.
               </h2>
             </div>
+            <Link
+              href="/insights"
+              className="inline-flex items-center gap-2 text-gold-300 hover:text-gold-200 transition-colors font-medium"
+            >
+              All insights <ArrowUpRight size={16} />
+            </Link>
           </div>
 
           <Reveal stagger=".insight-card" staggerGap={0.12} className="grid md:grid-cols-3 gap-6">
-            {[
-              { tag: "AI",         title: "How AI can reduce operational costs across your business" },
-              { tag: "CRM",        title: "CRM vs spreadsheet management — when to make the switch" },
-              { tag: "Automation", title: "Automating lead follow-ups using AI agents" },
-              { tag: "Software",   title: "Building internal business software that teams actually use" },
-              { tag: "Support",    title: "AI agents for customer support — what works in practice" },
-              { tag: "Strategy",   title: "Choosing the right tech stack as a growing SME" },
-            ].slice(0, 3).map((a) => (
+            {latestInsights.map((a) => (
               <Link
-                key={a.title}
-                href="/contact"
+                key={a.id}
+                href="/insights"
                 className="insight-card card p-8 flex flex-col group cursor-pointer"
               >
                 <div className="aspect-[16/10] -mx-8 -mt-8 mb-6 bg-gradient-to-br from-gold-400/20 via-bg-elevated to-bg-base relative overflow-hidden">
@@ -387,7 +390,7 @@ export default function HomePage() {
                   {a.title}
                 </h3>
                 <div className="mt-auto pt-6 flex items-center justify-between text-xs text-ink-400">
-                  <span>Read with our team</span>
+                  <span>{a.readMin} min read</span>
                   <ArrowUpRight
                     size={14}
                     className="text-gold-400 group-hover:translate-x-1 transition-transform"

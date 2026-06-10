@@ -38,6 +38,8 @@ const cols = [
     links: [
       { href: "/about", label: "About AUMOXO" },
       { href: "/industries", label: "Industries" },
+      { href: "/careers", label: "Careers" },
+      { href: "/insights", label: "Insights" },
       { href: "/partners", label: "Partners" },
       { href: "/contact", label: "Contact" },
     ],

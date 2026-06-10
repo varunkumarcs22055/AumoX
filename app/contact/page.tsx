@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import ContactForm from "./ContactForm";
+import Reveal from "@/components/anim/Reveal";
 import { Mail, MapPin, Phone, Clock, ArrowUpRight } from "lucide-react";
 
 export const metadata = {
@@ -37,14 +38,14 @@ export default function ContactPage() {
 
       <section className="py-24 lg:py-32">
         <div className="container-x">
-          <div className="grid lg:grid-cols-[2fr_1fr] gap-12 lg:gap-20">
-            <div className="card p-8 lg:p-12 gold-border">
+          <Reveal stagger=".contact-col" staggerGap={0.15} className="grid lg:grid-cols-[2fr_1fr] gap-12 lg:gap-20">
+            <div className="contact-col card p-8 lg:p-12 gold-border">
               <Suspense fallback={<div className="text-ink-400">Loading…</div>}>
                 <ContactForm />
               </Suspense>
             </div>
 
-            <aside className="space-y-10">
+            <aside className="contact-col space-y-10">
               <div>
                 <div className="eyebrow">
                   <span className="h-px w-8 bg-gold-400" />
@@ -114,7 +115,7 @@ export default function ContactPage() {
                 </a>
               </div>
             </aside>
-          </div>
+          </Reveal>
         </div>
       </section>
     </>

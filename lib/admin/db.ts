@@ -127,9 +127,9 @@ export const queriesDb = {
 // ---------- Jobs ----------
 const J_KEY = "jobs";
 const DEFAULT_JOBS: Job[] = [
-  { id: "1", title: "Senior Cloud Architect",   team: "Cloud & Infrastructure", location: "Remote · Global",    type: "Full-time", level: "Senior",    active: true },
-  { id: "2", title: "Principal AI Engineer",    team: "AI & Data",              location: "Bangalore · Hybrid", type: "Full-time", level: "Principal", active: true },
-  { id: "3", title: "Staff Platform Engineer",  team: "Engineering",            location: "Remote · EMEA",      type: "Full-time", level: "Staff",     active: true },
+  { id: "1", title: "Full-Stack Engineer (Next.js / Node)", team: "Engineering",          location: "Remote · India",  type: "Full-time",  level: "Mid–Senior", description: "Build client products end-to-end with Next.js, React and Node — from data model to pixel-perfect UI.", active: true },
+  { id: "2", title: "AI Engineer",                          team: "AI & Automation",      location: "Remote · India",  type: "Full-time",  level: "Mid",        description: "Ship AI agents, chatbots and automation workflows on top of modern LLMs for real client use-cases.", active: true },
+  { id: "3", title: "UI/UX Design Intern",                  team: "Design",               location: "Remote",          type: "Internship", level: "Junior",     description: "Work with the founders on design systems, prototypes and client-facing product design.", active: true },
 ];
 export const jobsDb = {
   async list() {

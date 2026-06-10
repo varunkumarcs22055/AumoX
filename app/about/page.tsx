@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, Target, Eye, Shield, Sparkles, Users, Compass } from "lucide-react";
 import Logo from "@/components/Logo";
 import TeamAvatar from "@/components/TeamAvatar";
+import Reveal from "@/components/anim/Reveal";
 
 export const metadata = {
   title: "About AUMOXO — Helping Businesses Innovate Through Technology",
@@ -77,13 +78,13 @@ export default function AboutPage() {
       {/* MISSION */}
       <section className="py-24 lg:py-32">
         <div className="container-x">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="card p-12 gold-border text-center">
+          <Reveal stagger=".mission-col" staggerGap={0.15} className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="mission-col card p-12 gold-border text-center">
               <div className="flex justify-center scale-150 origin-center my-6">
                 <Logo />
               </div>
             </div>
-            <div>
+            <div className="mission-col">
               <div className="eyebrow">
                 <span className="h-px w-8 bg-gold-400" />
                 Our Mission
@@ -117,7 +118,7 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -178,9 +179,9 @@ export default function AboutPage() {
               Founder-led delivery — every project is directly overseen by the leadership team.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <Reveal stagger=".leader-card" staggerGap={0.12} className="grid md:grid-cols-3 gap-6">
             {leadership.map((m) => (
-              <div key={m.name} className="card p-8 gold-border flex flex-col">
+              <div key={m.name} className="leader-card card p-8 gold-border flex flex-col">
                 <TeamAvatar name={m.name} initials={m.initials} photo={m.photo} size={88} />
                 <h3 className="mt-6 font-display text-2xl font-light text-ink-100">{m.name}</h3>
                 <div className="mt-1 text-[11px] uppercase tracking-[0.25em] text-gold-400">
@@ -196,7 +197,7 @@ export default function AboutPage() {
                 </ul>
               </div>
             ))}
-          </div>
+          </Reveal>
           <p className="mt-10 text-center text-ink-300 font-light max-w-3xl mx-auto">
             Together, the leadership team combines entrepreneurial thinking, technical
             expertise, and execution-focused delivery to help businesses build,
@@ -223,20 +224,20 @@ export default function AboutPage() {
                 keep getting better.
               </p>
             </div>
-            <div className="grid sm:grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+            <Reveal stagger=".assure-tile" staggerGap={0.07} className="grid sm:grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line">
               {assurance.map((a) => (
-                <div key={a} className="bg-bg-base p-7 flex items-center gap-3">
+                <div key={a} className="assure-tile bg-bg-base p-7 flex items-center gap-3">
                   <Shield size={18} className="text-gold-400 shrink-0" />
                   <span className="text-ink-100 font-light">{a}</span>
                 </div>
               ))}
-              <div className="bg-bg-base p-7 flex items-center gap-3 sm:col-span-2">
+              <div className="assure-tile bg-bg-base p-7 flex items-center gap-3 sm:col-span-2">
                 <Sparkles size={18} className="text-gold-400 shrink-0" />
                 <span className="text-ink-300 font-light text-sm">
                   Reduces risk and ensures long-term success.
                 </span>
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -252,9 +253,9 @@ export default function AboutPage() {
             </div>
             <h2 className="section-title mt-5">The principles we operate by.</h2>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+          <Reveal stagger=".value-tile" staggerGap={0.08} className="grid md:grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
             {values.map(({ i: Icon, t, d }) => (
-              <div key={t} className="bg-bg-base p-8">
+              <div key={t} className="value-tile bg-bg-base p-8">
                 <div className="grid h-12 w-12 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300">
                   <Icon size={20} />
                 </div>
@@ -262,25 +263,27 @@ export default function AboutPage() {
                 <p className="mt-3 text-sm text-ink-300 font-light leading-relaxed">{d}</p>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA — replaces Journey timeline + Global footprint + Join the team */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
         <div className="container-x text-center">
-          <h2 className="section-title mx-auto">Let's build something great together.</h2>
-          <p className="section-sub mx-auto text-center">
-            Whether you have a clear scope or just an idea — start the conversation.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="btn-gold">
-              Get in Touch <ArrowUpRight size={18} />
-            </Link>
-            <Link href="/contact" className="btn-ghost">
-              Schedule Consultation
-            </Link>
-          </div>
+          <Reveal kind="scale-in">
+            <h2 className="section-title mx-auto">Let's build something great together.</h2>
+            <p className="section-sub mx-auto text-center">
+              Whether you have a clear scope or just an idea — start the conversation.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/contact" className="btn-gold">
+                Get in Touch <ArrowUpRight size={18} />
+              </Link>
+              <Link href="/contact" className="btn-ghost">
+                Schedule Consultation
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
     </>

@@ -109,6 +109,9 @@ export default function CareersAdmin() {
           <p className="mt-2 text-ink-300 font-light">Manage roles shown on the public /careers page. Saved to the live database.</p>
         </div>
         <div className="flex gap-3">
+          <a href="/careers" target="_blank" className="btn-ghost text-sm !py-2 !px-4">
+            View public page
+          </a>
           <button onClick={resetAll} className="btn-ghost text-sm !py-2 !px-4">
             <RotateCcw size={14} /> Reset
           </button>

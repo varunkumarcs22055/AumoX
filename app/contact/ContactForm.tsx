@@ -44,6 +44,18 @@ export default function ContactForm() {
     }
   }, [search, setValue]);
 
+  // Pre-fill a job application coming from the careers page (?role=Job Title)
+  useEffect(() => {
+    const role = search.get("role");
+    if (role) {
+      setValue("service", "Careers / Job application");
+      setValue(
+        "message",
+        `Applying for: ${role}\n\nHi AUMOXO team,\n\nI'd like to apply for the ${role} position. Here's a bit about me and a link to my resume/portfolio:\n\n`
+      );
+    }
+  }, [search, setValue]);
+
   async function onSubmit(data: FormData) {
     setStatus("loading");
     setServerMsg("");
@@ -115,6 +127,7 @@ export default function ContactForm() {
               <option>Coming-soon product waitlist</option>
             </optgroup>
             <optgroup label="Other">
+              <option>Careers / Job application</option>
               <option>Partnership inquiry</option>
               <option>Something else</option>
             </optgroup>
