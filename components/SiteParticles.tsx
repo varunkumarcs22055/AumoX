@@ -28,7 +28,7 @@ export default function SiteParticles() {
     return () => window.removeEventListener("resize", evaluate);
   }, []);
 
-  if (pathname?.startsWith("/admin")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal")) return null;
   if (!enabled) return null;
 
   return (

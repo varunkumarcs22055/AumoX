@@ -16,13 +16,15 @@ export default async function MaintenanceGate({
 }) {
   const h = await headers();
   const pathname = h.get("x-pathname") || "/";
-  const isAdmin = pathname.startsWith("/admin");
+  // Admin stays reachable to lift maintenance; the client portal is a
+  // logged-in app — clients keep access to their project status.
+  const isExempt = pathname.startsWith("/admin") || pathname.startsWith("/portal");
 
   const m = await maintenanceDb
     .get()
     .catch(() => ({ enabled: false } as const));
 
-  if (!m.enabled || isAdmin) return <>{children}</>;
+  if (!m.enabled || isExempt) return <>{children}</>;
 
   return (
     <div className="min-h-screen bg-bg-base text-ink-100 grid place-items-center px-6">

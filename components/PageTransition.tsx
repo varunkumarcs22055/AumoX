@@ -15,9 +15,9 @@ export default function PageTransition({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // Admin shell can use sticky/fixed positioning, which a transformed wrapper
-  // would break — skip the transition there.
-  if (pathname?.startsWith("/admin")) return <>{children}</>;
+  // Admin/portal shells use sticky/fixed positioning, which a transformed
+  // wrapper would break — skip the transition there.
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal")) return <>{children}</>;
   return (
     <div key={pathname} className="page-transition">
       {children}

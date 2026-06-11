@@ -13,12 +13,16 @@ import {
   Menu,
   X,
   ExternalLink,
+  Users,
+  FolderKanban,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
 const links = [
   { href: "/admin",           label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/queries",   label: "Inbox",     icon: Inbox },
+  { href: "/admin/clients",   label: "Clients",   icon: Users },
+  { href: "/admin/projects",  label: "Projects",  icon: FolderKanban },
   { href: "/admin/careers",   label: "Careers",   icon: Briefcase },
   { href: "/admin/insights",  label: "Insights",  icon: BookOpen },
   { href: "/admin/settings",  label: "Settings",  icon: Settings },

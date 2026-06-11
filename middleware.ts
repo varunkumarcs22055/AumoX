@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifySessionToken, AUTH_COOKIE } from "@/lib/admin/auth";
+import {
+  verifySessionToken,
+  verifyClientToken,
+  AUTH_COOKIE,
+  CLIENT_COOKIE,
+} from "@/lib/admin/auth";
 
 /**
- * Two responsibilities:
+ * Three responsibilities:
  *  1. Protect /admin/* (except /admin/login) by verifying an HMAC-signed cookie.
- *  2. Forward the current pathname as `x-pathname` so server components
+ *  2. Protect /portal/* (except /portal/login) with the client session cookie.
+ *  3. Forward the current pathname as `x-pathname` so server components
  *     (e.g. MaintenanceGate) can branch on it.
  */
 export async function middleware(req: NextRequest) {
@@ -24,6 +30,19 @@ export async function middleware(req: NextRequest) {
       loginUrl.searchParams.set("from", pathname);
       const res = NextResponse.redirect(loginUrl);
       res.cookies.set(AUTH_COOKIE, "", { path: "/", maxAge: 0 });
+      return res;
+    }
+  }
+
+  if (pathname.startsWith("/portal") && pathname !== "/portal/login") {
+    const token = req.cookies.get(CLIENT_COOKIE)?.value;
+    const result = await verifyClientToken(token);
+    if (!result.ok) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/portal/login";
+      loginUrl.search = "";
+      const res = NextResponse.redirect(loginUrl);
+      res.cookies.set(CLIENT_COOKIE, "", { path: "/", maxAge: 0 });
       return res;
     }
   }

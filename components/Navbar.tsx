@@ -36,7 +36,7 @@ export default function Navbar() {
     };
   }, [open]);
 
-  if (pathname?.startsWith("/admin")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal")) return null;
 
   return (
     <>

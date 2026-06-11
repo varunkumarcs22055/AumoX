@@ -308,4 +308,90 @@ export const maintenanceDb = {
   },
 };
 
+// ---------- Client portal: clients ----------
+export type Client = {
+  id: string;
+  company: string;
+  name: string;          // contact person
+  email: string;         // login identifier (stored lowercase)
+  passwordHash: string;  // PBKDF2 — never returned to the browser
+  createdAt: string;
+  active: boolean;
+};
+
+const C_KEY = "clients";
+
+export const clientsDb = {
+  list: () => getValue<Client[]>(C_KEY, []),
+  async findByEmail(email: string): Promise<Client | undefined> {
+    const all = await clientsDb.list();
+    const e = email.trim().toLowerCase();
+    return all.find((c) => c.email === e);
+  },
+  async findById(id: string): Promise<Client | undefined> {
+    const all = await clientsDb.list();
+    return all.find((c) => c.id === id);
+  },
+  async upsert(client: Client) {
+    const all = await clientsDb.list();
+    const i = all.findIndex((c) => c.id === client.id);
+    if (i >= 0) all[i] = client; else all.unshift(client);
+    await setValue(C_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await clientsDb.list();
+    await setValue(C_KEY, all.filter((c) => c.id !== id));
+  },
+};
+
+// ---------- Client portal: projects ----------
+export type PhaseStatus = "pending" | "in-progress" | "completed";
+export type ProjectPhase = { name: string; status: PhaseStatus; note?: string };
+export type ProjectUpdate = {
+  id: string;
+  date: string; // ISO
+  title: string;
+  body?: string;
+};
+export type Project = {
+  id: string;
+  clientId: string;
+  name: string;
+  description?: string;
+  status: "active" | "on-hold" | "completed";
+  phases: ProjectPhase[];
+  updates: ProjectUpdate[];
+  startDate?: string;
+  targetDate?: string;
+};
+
+export const DEFAULT_PHASES: ProjectPhase[] = [
+  { name: "Discovery",   status: "pending" },
+  { name: "Strategy",    status: "pending" },
+  { name: "Design",      status: "pending" },
+  { name: "Development", status: "pending" },
+  { name: "Launch",      status: "pending" },
+  { name: "Support",     status: "pending" },
+];
+
+const P_KEY = "projects";
+
+export const projectsDb = {
+  list: () => getValue<Project[]>(P_KEY, []),
+  async listByClient(clientId: string): Promise<Project[]> {
+    const all = await projectsDb.list();
+    return all.filter((p) => p.clientId === clientId);
+  },
+  async upsert(project: Project) {
+    const all = await projectsDb.list();
+    const i = all.findIndex((p) => p.id === project.id);
+    if (i >= 0) all[i] = project; else all.unshift(project);
+    await setValue(P_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await projectsDb.list();
+    await setValue(P_KEY, all.filter((p) => p.id !== id));
+  },
+};
+
 export const newId = () => Math.random().toString(36).slice(2, 10);

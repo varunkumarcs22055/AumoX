@@ -42,6 +42,7 @@ const cols = [
       { href: "/insights", label: "Insights" },
       { href: "/partners", label: "Partners" },
       { href: "/contact", label: "Contact" },
+      { href: "/portal/login", label: "Client Portal" },
     ],
   },
 ];
@@ -131,7 +132,7 @@ function NewsletterForm() {
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal")) return null;
 
   return (
     <footer className="relative border-t border-line bg-bg-base">
