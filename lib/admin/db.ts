@@ -12,7 +12,7 @@
  */
 
 import { kv } from "@vercel/kv";
-import { put, list } from "@vercel/blob";
+import { put, list, del } from "@vercel/blob";
 
 // Storage priority: KV (if configured) → Vercel Blob (production default)
 // → in-memory Map (local dev only). Blob/KV are REQUIRED in production:
@@ -25,20 +25,45 @@ const BLOB_ENABLED = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 // Secret path segment so blob URLs (public-access) are unguessable.
 const BLOB_PREFIX = process.env.BLOB_DB_PREFIX || "db";
-const blobPath = (key: string) => `${BLOB_PREFIX}/${key}.json`;
-const blobUrlCache = new Map<string, string>();
+
+/**
+ * Versioned blob documents. Overwriting the SAME blob path serves stale
+ * content from the CDN for up to ~60s — unacceptable for read-after-write
+ * (admin saves, public page reads). Instead every write creates a NEW
+ * immutable path `${key}-v${timestamp}.json`; reads resolve the newest
+ * version (per-lambda cache or list()), so content under a URL never
+ * changes and the CDN can never be stale.
+ */
+const verPrefix = (key: string) => `${BLOB_PREFIX}/${key}-v`;
+const legacyPath = (key: string) => `${BLOB_PREFIX}/${key}.json`;
+const versionOf = (pathname: string): number => {
+  const m = pathname.match(/-v(\d+)\.json$/);
+  return m ? Number(m[1]) : 0;
+};
+const blobCache = new Map<string, { url: string; version: number }>();
 
 async function blobGet<T>(key: string): Promise<T | undefined> {
   try {
-    let url = blobUrlCache.get(key);
-    if (!url) {
-      const { blobs } = await list({ prefix: blobPath(key), limit: 1 });
-      if (blobs.length === 0) return undefined;
-      url = blobs[0].url;
-      blobUrlCache.set(key, url);
+    const cached = blobCache.get(key);
+    let best = cached;
+    try {
+      const { blobs } = await list({ prefix: verPrefix(key) });
+      for (const b of blobs) {
+        const v = versionOf(b.pathname);
+        if (!best || v > best.version) best = { url: b.url, version: v };
+      }
+    } catch (e) {
+      console.warn("[db] Blob list failed:", e);
     }
-    // Cache-busting query forces the blob CDN to revalidate — reads stay fresh.
-    const res = await fetch(`${url}?v=${Date.now()}`, { cache: "no-store" });
+    // Migration: fall back to the legacy un-versioned document
+    if (!best) {
+      const { blobs } = await list({ prefix: legacyPath(key), limit: 1 });
+      if (blobs.length === 0) return undefined;
+      best = { url: blobs[0].url, version: 0 };
+    }
+    blobCache.set(key, best);
+    const sep = best.url.includes("?") ? "&" : "?";
+    const res = await fetch(`${best.url}${sep}r=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) return undefined;
     return (await res.json()) as T;
   } catch (e) {
@@ -49,14 +74,25 @@ async function blobGet<T>(key: string): Promise<T | undefined> {
 
 async function blobSet<T>(key: string, value: T): Promise<boolean> {
   try {
-    const blob = await put(blobPath(key), JSON.stringify(value), {
+    const version = Date.now();
+    const blob = await put(`${verPrefix(key)}${version}.json`, JSON.stringify(value), {
       access: "public",
       addRandomSuffix: false,
-      allowOverwrite: true,
-      cacheControlMaxAge: 60,
       contentType: "application/json",
     });
-    blobUrlCache.set(key, blob.url);
+    blobCache.set(key, { url: blob.url, version });
+    // Best-effort cleanup: keep the 3 newest versions, delete the rest
+    try {
+      const { blobs } = await list({ prefix: verPrefix(key) });
+      const sorted = blobs
+        .map((b) => ({ url: b.url, v: versionOf(b.pathname) }))
+        .sort((a, b) => b.v - a.v);
+      for (const old of sorted.slice(3)) {
+        await del(old.url);
+      }
+    } catch {
+      /* cleanup is non-critical */
+    }
     return true;
   } catch (e) {
     console.warn("[db] Blob write failed:", e);
