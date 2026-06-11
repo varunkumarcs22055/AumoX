@@ -4,6 +4,9 @@ import {
   invoicesDb,
   clientsDb,
   projectsDb,
+  notificationsDb,
+  settingsDb,
+  nextDocNumber,
   newId,
   type Invoice,
   type InvoiceItem,
@@ -28,13 +31,6 @@ function sanitizeItems(input: unknown): InvoiceItem[] {
       rate: Math.max(0, Number(it.rate) || 0),
     }))
     .filter((it) => it.description.trim().length > 0);
-}
-
-async function nextInvoiceNumber(): Promise<string> {
-  const year = new Date().getFullYear();
-  const all = await invoicesDb.list();
-  const thisYear = all.filter((i) => i.number.includes(`-${year}-`));
-  return `INV-${year}-${String(thisYear.length + 1).padStart(3, "0")}`;
 }
 
 export async function GET() {
@@ -81,20 +77,31 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "At least one line item is required" }, { status: 400 });
   }
 
+  const settings = await settingsDb.get();
+  const defaultDue = new Date();
+  defaultDue.setDate(defaultDue.getDate() + settings.dueDays);
   const invoice: Invoice = {
     id: newId(),
-    number: await nextInvoiceNumber(),
+    number: await nextDocNumber("IN"),
     clientId: body.clientId,
     projectId: body.projectId || undefined,
     issueDate: body.issueDate || new Date().toISOString().slice(0, 10),
-    dueDate: body.dueDate || undefined,
+    dueDate: body.dueDate || defaultDue.toISOString().slice(0, 10),
     currency: (body.currency || "INR").slice(0, 8),
     items,
-    taxPercent: Math.max(0, Number(body.taxPercent) || 0),
-    notes: body.notes ? String(body.notes).slice(0, 1000) : undefined,
+    taxPercent: body.taxPercent !== undefined ? Math.max(0, Number(body.taxPercent) || 0) : settings.gstDefault,
+    notes: body.notes ? String(body.notes).slice(0, 1000) : settings.terms,
     status: body.status && STATUSES.includes(body.status) ? body.status : "draft",
   };
   await invoicesDb.upsert(invoice);
+  if (invoice.status === "sent") {
+    await notificationsDb.push({
+      audience: `client:${invoice.clientId}`,
+      type: "invoice",
+      message: `New invoice ${invoice.number} has been issued`,
+      link: "/portal",
+    });
+  }
   return NextResponse.json({ invoice });
 }
 

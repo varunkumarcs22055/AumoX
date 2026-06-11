@@ -14,6 +14,11 @@ import {
   PauseCircle,
   Mail,
   Receipt,
+  FileText,
+  Download,
+  Bell,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -40,11 +45,43 @@ type PortalInvoice = {
   items: { description: string; qty: number; rate: number }[];
   notes?: string;
 };
+type PortalQuotation = {
+  id: string;
+  number: string;
+  projectName?: string;
+  issueDate: string;
+  validUntil?: string;
+  currency: string;
+  items: { description: string; qty: number; rate: number }[];
+  taxPercent?: number;
+  discountPercent?: number;
+  terms?: string;
+  status: "sent" | "accepted" | "declined" | "expired";
+  total: number;
+};
+type PortalFile = { id: string; projectId: string; name: string; url: string; size: number; uploadedAt: string };
+type Notif = { id: string; message: string; read: boolean; createdAt: string };
 type Me = {
   client: { company: string; name: string; email: string };
   projects: Project[];
   invoices?: PortalInvoice[];
+  quotations?: PortalQuotation[];
+  files?: PortalFile[];
+  notifications?: Notif[];
+  bankDetails?: string;
 };
+
+const QUO_BADGE: Record<PortalQuotation["status"], string> = {
+  sent:     "border-sky-400/40 text-sky-300 bg-sky-400/10",
+  accepted: "border-green-400/40 text-green-300 bg-green-400/10",
+  declined: "border-red-400/40 text-red-400 bg-red-400/10",
+  expired:  "border-amber-400/40 text-amber-300 bg-amber-400/10",
+};
+
+function fmtSize(bytes: number) {
+  if (bytes > 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + " MB";
+  return Math.max(1, Math.round(bytes / 1024)) + " KB";
+}
 
 function moneySym(cur: string) {
   return cur === "INR" ? "₹" : cur === "USD" ? "$" : cur === "EUR" ? "€" : cur + " ";
@@ -107,6 +144,23 @@ export default function PortalPage() {
   async function logout() {
     await fetch("/api/portal/logout", { method: "POST" });
     router.push("/portal/login");
+  }
+
+  async function respondQuotation(q: PortalQuotation, action: "accept" | "decline") {
+    const verb = action === "accept" ? "Accept" : "Decline";
+    if (!confirm(`${verb} quotation ${q.number}?`)) return;
+    const res = await fetch("/api/portal/quotations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: q.id, action }),
+    });
+    if (!res.ok) {
+      const d = await res.json();
+      alert(d.error || "Action failed");
+    }
+    // refresh data
+    const me2 = await fetch("/api/portal/me", { cache: "no-store" }).then((r) => r.json());
+    setMe(me2);
   }
 
   if (loading || !me) {
@@ -300,6 +354,114 @@ export default function PortalPage() {
           </div>
         )}
 
+        {/* Alerts */}
+        {(me.notifications?.length ?? 0) > 0 && (
+          <div className="mt-12 card p-6 max-w-3xl">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400">
+              <Bell size={13} /> Recent activity
+            </div>
+            <ul className="mt-4 space-y-2.5">
+              {me.notifications!.slice(0, 6).map((n) => (
+                <li key={n.id} className={`text-sm font-light ${n.read ? "text-ink-400" : "text-ink-100"}`}>
+                  <span className="text-gold-400 mr-1.5">•</span>
+                  {n.message}
+                  <span className="text-ink-500 text-xs ml-2">{fmtDate(n.createdAt)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Quotations — accept or decline */}
+        {(me.quotations?.length ?? 0) > 0 && (
+          <div className="mt-12">
+            <div className="eyebrow">
+              <span className="h-px w-8 bg-gold-400" />
+              Quotations
+            </div>
+            <div className="mt-6 space-y-4 max-w-3xl">
+              {me.quotations!.map((q) => (
+                <div key={q.id} className="card p-6 gold-border">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="grid h-10 w-10 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 shrink-0">
+                      <FileText size={16} />
+                    </div>
+                    <div className="flex-1 min-w-[160px]">
+                      <div className="text-ink-100 font-light">{q.number}{q.projectName ? ` · ${q.projectName}` : ""}</div>
+                      <div className="text-xs text-ink-400 mt-0.5">
+                        Issued {fmtDate(q.issueDate)}{q.validUntil ? ` · valid till ${fmtDate(q.validUntil)}` : ""}
+                      </div>
+                    </div>
+                    <div className="font-display text-xl font-light gold-text shrink-0">
+                      {moneySym(q.currency)}{q.total.toLocaleString()}
+                    </div>
+                    <span className={`text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full border shrink-0 ${QUO_BADGE[q.status]}`}>
+                      {q.status === "sent" ? "Awaiting your response" : q.status}
+                    </span>
+                  </div>
+                  {/* Line items */}
+                  <div className="mt-4 pt-4 border-t border-line">
+                    <ul className="space-y-1.5">
+                      {q.items.map((it, i) => (
+                        <li key={i} className="flex justify-between text-sm font-light">
+                          <span className="text-ink-200">{it.description} × {it.qty}</span>
+                          <span className="text-ink-300">{moneySym(q.currency)}{(it.qty * it.rate).toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-2 text-xs text-ink-400">
+                      {(q.discountPercent || 0) > 0 ? `Discount ${q.discountPercent}% · ` : ""}
+                      {(q.taxPercent || 0) > 0 ? `GST ${q.taxPercent}%` : ""}
+                    </div>
+                    {q.terms && <p className="mt-3 text-xs text-ink-400 font-light leading-relaxed">{q.terms}</p>}
+                  </div>
+                  {q.status === "sent" && (
+                    <div className="mt-5 flex gap-3">
+                      <button onClick={() => respondQuotation(q, "accept")} className="btn-gold !py-2 !px-5 text-sm">
+                        <ThumbsUp size={14} /> Accept quotation
+                      </button>
+                      <button onClick={() => respondQuotation(q, "decline")} className="btn-ghost !py-2 !px-5 text-sm !text-red-400">
+                        <ThumbsDown size={14} /> Decline
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Deliverables / file vault */}
+        {(me.files?.length ?? 0) > 0 && (
+          <div className="mt-12">
+            <div className="eyebrow">
+              <span className="h-px w-8 bg-gold-400" />
+              Deliverables
+            </div>
+            <div className="mt-6 space-y-2.5 max-w-3xl">
+              {me.files!.map((f) => (
+                <a
+                  key={f.id}
+                  href={f.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="card p-4 flex items-center gap-4 group"
+                >
+                  <div className="grid h-10 w-10 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 shrink-0">
+                    <Download size={15} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-ink-100 font-light truncate group-hover:text-gold-300 transition-colors">{f.name}</div>
+                    <div className="text-xs text-ink-400 mt-0.5">
+                      {me.projects.find((p) => p.id === f.projectId)?.name ?? "Project"} · {fmtSize(f.size)} · {fmtDate(f.uploadedAt)}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Invoices */}
         {(me.invoices?.length ?? 0) > 0 && (
           <div className="mt-12">
@@ -329,6 +491,12 @@ export default function PortalPage() {
                 </div>
               ))}
             </div>
+            {me.bankDetails && me.invoices!.some((i) => i.status !== "paid") && (
+              <div className="mt-4 card p-5 max-w-3xl text-sm text-ink-300 font-light whitespace-pre-wrap">
+                <span className="block text-[10px] uppercase tracking-[0.25em] text-gold-400 mb-2">Payment details</span>
+                {me.bankDetails}
+              </div>
+            )}
           </div>
         )}
 

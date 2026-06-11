@@ -478,7 +478,8 @@ export type Task = {
   createdAt: string;
   title: string;
   projectId?: string;
-  assignee?: string;
+  assignee?: string;     // display name (legacy / free text)
+  assigneeId?: string;   // employee id — links the task to a staff login
   due?: string;          // YYYY-MM-DD
   status: TaskStatus;
 };
@@ -500,3 +501,321 @@ export const tasksDb = {
 };
 
 export const newId = () => Math.random().toString(36).slice(2, 10);
+
+/* ============================================================
+   AGENCY OS — company settings, document serials, employees/HR,
+   quotations, payments/ledger, notifications, file vault.
+   ============================================================ */
+
+// ---------- Company settings (affects only the NEXT document) ----------
+export type CompanySettings = {
+  prefix: string;        // serial prefix, e.g. "AMX"
+  gstDefault: number;    // default tax % on new docs
+  dueDays: number;       // default payment terms
+  terms?: string;        // printed on quotations/invoices
+  bankDetails?: string;  // shown to clients on unpaid invoices (bank/UPI)
+  annualLeave: number;   // leave allowance per employee per year
+};
+const SET_KEY = "company-settings";
+const DEFAULT_SETTINGS: CompanySettings = {
+  prefix: "AMX",
+  gstDefault: 18,
+  dueDays: 14,
+  terms: "50% advance, balance on delivery. Prices exclusive of GST.",
+  bankDetails: "",
+  annualLeave: 18,
+};
+export const settingsDb = {
+  get: () => getValue<CompanySettings>(SET_KEY, DEFAULT_SETTINGS),
+  set: (s: CompanySettings) => setValue(SET_KEY, s),
+};
+
+// ---------- Immutable document serials: {PREFIX}{YY}{MM}{TYPE}{SEQ} ----------
+// e.g. AMX2606IN001. Counters only ever increment — issued numbers never change.
+const CTR_KEY = "doc-counters";
+export async function nextDocNumber(type: "IN" | "QT" | "PS"): Promise<string> {
+  const s = await settingsDb.get();
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const counters = await getValue<Record<string, number>>(CTR_KEY, {});
+  const key = `${yy}${mm}${type}`;
+  const seq = (counters[key] || 0) + 1;
+  counters[key] = seq;
+  await setValue(CTR_KEY, counters);
+  return `${s.prefix}${yy}${mm}${type}${String(seq).padStart(3, "0")}`;
+}
+
+// ---------- Employees (staff app users) ----------
+export type Employee = {
+  id: string;
+  name: string;
+  email: string;         // login (lowercase)
+  passwordHash: string;
+  designation?: string;  // e.g. "Full-Stack Engineer"
+  joinedAt: string;      // YYYY-MM-DD
+  salaryMonthly?: number;
+  active: boolean;
+};
+const E_KEY = "employees";
+export const employeesDb = {
+  list: () => getValue<Employee[]>(E_KEY, []),
+  async findByEmail(email: string) {
+    const all = await employeesDb.list();
+    return all.find((e) => e.email === email.trim().toLowerCase());
+  },
+  async findById(id: string) {
+    const all = await employeesDb.list();
+    return all.find((e) => e.id === id);
+  },
+  async upsert(e: Employee) {
+    const all = await employeesDb.list();
+    const i = all.findIndex((x) => x.id === e.id);
+    if (i >= 0) all[i] = e; else all.unshift(e);
+    await setValue(E_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await employeesDb.list();
+    await setValue(E_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Attendance (clock in / clock out) ----------
+export type AttendanceRow = {
+  id: string;
+  employeeId: string;
+  date: string;          // YYYY-MM-DD
+  inAt?: string;         // ISO
+  outAt?: string;        // ISO
+  mode: "office" | "wfh";
+};
+const ATT_KEY = "attendance";
+export const attendanceDb = {
+  list: () => getValue<AttendanceRow[]>(ATT_KEY, []),
+  async today(employeeId: string): Promise<AttendanceRow | undefined> {
+    const all = await attendanceDb.list();
+    const today = new Date().toISOString().slice(0, 10);
+    return all.find((a) => a.employeeId === employeeId && a.date === today);
+  },
+  async upsert(row: AttendanceRow) {
+    const all = await attendanceDb.list();
+    const i = all.findIndex((a) => a.id === row.id);
+    if (i >= 0) all[i] = row; else all.unshift(row);
+    await setValue(ATT_KEY, all.slice(0, 5000));
+  },
+};
+
+// ---------- Leave requests ----------
+export type LeaveStatus = "pending" | "approved" | "rejected";
+export type LeaveRequest = {
+  id: string;
+  employeeId: string;
+  from: string;          // YYYY-MM-DD
+  to: string;
+  days: number;
+  reason?: string;
+  status: LeaveStatus;
+  requestedAt: string;
+};
+const LV_KEY = "leaves";
+export const leavesDb = {
+  list: () => getValue<LeaveRequest[]>(LV_KEY, []),
+  async upsert(l: LeaveRequest) {
+    const all = await leavesDb.list();
+    const i = all.findIndex((x) => x.id === l.id);
+    if (i >= 0) all[i] = l; else all.unshift(l);
+    await setValue(LV_KEY, all);
+  },
+};
+
+// ---------- Payroll (payslips) ----------
+export type Payslip = {
+  id: string;
+  number: string;        // AMX2606PS001
+  employeeId: string;
+  month: string;         // YYYY-MM
+  gross: number;
+  deductions: { label: string; amount: number }[];
+  net: number;
+  generatedAt: string;
+  notes?: string;
+};
+const PSL_KEY = "payslips";
+export const payslipsDb = {
+  list: () => getValue<Payslip[]>(PSL_KEY, []),
+  async listByEmployee(employeeId: string) {
+    const all = await payslipsDb.list();
+    return all.filter((p) => p.employeeId === employeeId);
+  },
+  async upsert(p: Payslip) {
+    const all = await payslipsDb.list();
+    const i = all.findIndex((x) => x.id === p.id);
+    if (i >= 0) all[i] = p; else all.unshift(p);
+    await setValue(PSL_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await payslipsDb.list();
+    await setValue(PSL_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Issued assets (ID cards, certificates, equipment) ----------
+export type IssuedAsset = {
+  id: string;
+  employeeId: string;
+  name: string;          // "Employee ID Card", "MacBook Air"
+  type: string;          // "document" | "equipment" | "certificate"
+  url?: string;          // optional file in the vault
+  issuedAt: string;
+};
+const AST_KEY = "assets";
+export const assetsDb = {
+  list: () => getValue<IssuedAsset[]>(AST_KEY, []),
+  async listByEmployee(employeeId: string) {
+    const all = await assetsDb.list();
+    return all.filter((a) => a.employeeId === employeeId);
+  },
+  async upsert(a: IssuedAsset) {
+    const all = await assetsDb.list();
+    const i = all.findIndex((x) => x.id === a.id);
+    if (i >= 0) all[i] = a; else all.unshift(a);
+    await setValue(AST_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await assetsDb.list();
+    await setValue(AST_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Quotations (Lead → Client → Quotation → Invoice) ----------
+export type QuotationStatus = "draft" | "sent" | "accepted" | "declined" | "expired";
+export type Quotation = {
+  id: string;
+  number: string;        // AMX2606QT001
+  clientId: string;
+  projectName?: string;
+  issueDate: string;
+  validUntil?: string;
+  currency: string;
+  items: InvoiceItem[];
+  taxPercent?: number;
+  discountPercent?: number;
+  terms?: string;
+  status: QuotationStatus;
+  respondedAt?: string;
+  invoiceId?: string;    // set when converted
+};
+export function quotationTotal(q: Quotation): number {
+  const sub = q.items.reduce((s, it) => s + (it.qty || 0) * (it.rate || 0), 0);
+  const afterDiscount = sub * (1 - (q.discountPercent || 0) / 100);
+  return Math.round(afterDiscount * (1 + (q.taxPercent || 0) / 100) * 100) / 100;
+}
+const Q2_KEY = "quotations";
+export const quotationsDb = {
+  list: () => getValue<Quotation[]>(Q2_KEY, []),
+  async listByClient(clientId: string) {
+    const all = await quotationsDb.list();
+    return all.filter((q) => q.clientId === clientId && q.status !== "draft");
+  },
+  async upsert(q: Quotation) {
+    const all = await quotationsDb.list();
+    const i = all.findIndex((x) => x.id === q.id);
+    if (i >= 0) all[i] = q; else all.unshift(q);
+    await setValue(Q2_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await quotationsDb.list();
+    await setValue(Q2_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Payments → ledger ----------
+export type Payment = {
+  id: string;
+  invoiceId: string;
+  clientId: string;
+  date: string;          // YYYY-MM-DD
+  amount: number;
+  currency: string;
+  method: string;        // "Bank transfer" | "UPI" | "Razorpay" | "Cash" | …
+  reference?: string;
+};
+const PAY_KEY = "payments";
+export const paymentsDb = {
+  list: () => getValue<Payment[]>(PAY_KEY, []),
+  async listByInvoice(invoiceId: string) {
+    const all = await paymentsDb.list();
+    return all.filter((p) => p.invoiceId === invoiceId);
+  },
+  async upsert(p: Payment) {
+    const all = await paymentsDb.list();
+    const i = all.findIndex((x) => x.id === p.id);
+    if (i >= 0) all[i] = p; else all.unshift(p);
+    await setValue(PAY_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await paymentsDb.list();
+    await setValue(PAY_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Notifications (event feed per audience) ----------
+export type Notification = {
+  id: string;
+  audience: string;      // "admin" | `staff:${id}` | `client:${id}`
+  type: string;          // "lead" | "quotation" | "payment" | "leave" | "task" | "update" | …
+  message: string;
+  link?: string;
+  read: boolean;
+  createdAt: string;
+};
+const N_KEY = "notifications";
+export const notificationsDb = {
+  list: () => getValue<Notification[]>(N_KEY, []),
+  async listFor(audience: string) {
+    const all = await notificationsDb.list();
+    return all.filter((n) => n.audience === audience).slice(0, 50);
+  },
+  async push(n: Omit<Notification, "id" | "read" | "createdAt">) {
+    const all = await notificationsDb.list();
+    all.unshift({ ...n, id: newId(), read: false, createdAt: new Date().toISOString() });
+    await setValue(N_KEY, all.slice(0, 500));
+  },
+  async markAllRead(audience: string) {
+    const all = await notificationsDb.list();
+    await setValue(
+      N_KEY,
+      all.map((n) => (n.audience === audience ? { ...n, read: true } : n))
+    );
+  },
+};
+
+// ---------- Project file vault (deliverables) ----------
+export type ProjectFile = {
+  id: string;
+  projectId: string;
+  name: string;
+  url: string;           // Vercel Blob URL
+  size: number;          // bytes
+  contentType: string;
+  uploadedAt: string;
+  uploadedBy: string;    // "AUMOXO Team"
+};
+const F_KEY = "project-files";
+export const filesDb = {
+  list: () => getValue<ProjectFile[]>(F_KEY, []),
+  async listByProject(projectId: string) {
+    const all = await filesDb.list();
+    return all.filter((f) => f.projectId === projectId);
+  },
+  async upsert(f: ProjectFile) {
+    const all = await filesDb.list();
+    const i = all.findIndex((x) => x.id === f.id);
+    if (i >= 0) all[i] = f; else all.unshift(f);
+    await setValue(F_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await filesDb.list();
+    await setValue(F_KEY, all.filter((x) => x.id !== id));
+  },
+};

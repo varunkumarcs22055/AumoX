@@ -18,7 +18,10 @@ export default async function MaintenanceGate({
   const pathname = h.get("x-pathname") || "/";
   // Admin stays reachable to lift maintenance; the client portal is a
   // logged-in app — clients keep access to their project status.
-  const isExempt = pathname.startsWith("/admin") || pathname.startsWith("/portal");
+  const isExempt =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/portal") ||
+    pathname.startsWith("/staff");
 
   const m = await maintenanceDb
     .get()

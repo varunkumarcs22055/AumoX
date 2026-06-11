@@ -176,6 +176,62 @@ export async function verifyClientToken(
   return { ok: true, clientId: session.sub };
 }
 
+/* ============================================================
+   STAFF (EMPLOYEE) AUTH — third audience for the staff app.
+   ============================================================ */
+
+export const STAFF_COOKIE = "aumox_staff_session";
+const STAFF_TTL_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
+export const STAFF_TTL_SECONDS = Math.floor(STAFF_TTL_MS / 1000);
+
+export type StaffSession = { iat: number; exp: number; sub: string; role: "staff" };
+
+export async function createStaffToken(
+  employeeId: string,
+  ttlMs = STAFF_TTL_MS
+): Promise<string> {
+  const now = Date.now();
+  const payload: StaffSession = { iat: now, exp: now + ttlMs, sub: employeeId, role: "staff" };
+  const payloadB64 = b64urlFromString(JSON.stringify(payload));
+  const key = await getKey();
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payloadB64));
+  return `${payloadB64}.${b64urlFromBytes(sig)}`;
+}
+
+export async function verifyStaffToken(
+  token: string | undefined | null
+): Promise<{ ok: true; employeeId: string } | { ok: false; reason: string }> {
+  if (!token || typeof token !== "string") return { ok: false, reason: "missing" };
+  const parts = token.split(".");
+  if (parts.length !== 2) return { ok: false, reason: "malformed" };
+  const [payloadB64, sigB64] = parts;
+
+  let providedSig: Uint8Array;
+  try {
+    providedSig = b64urlToBytes(sigB64);
+  } catch {
+    return { ok: false, reason: "decode_failed" };
+  }
+  const key = await getKey();
+  const expectedSig = new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, enc.encode(payloadB64))
+  );
+  if (!timingSafeEqualBytes(expectedSig, providedSig))
+    return { ok: false, reason: "sig_mismatch" };
+
+  let session: StaffSession;
+  try {
+    session = JSON.parse(stringFromB64url(payloadB64));
+  } catch {
+    return { ok: false, reason: "payload_parse" };
+  }
+  if (session.role !== "staff" || !session.sub)
+    return { ok: false, reason: "wrong_audience" };
+  if (!session.exp || session.exp < Date.now())
+    return { ok: false, reason: "expired" };
+  return { ok: true, employeeId: session.sub };
+}
+
 /* ---------- Password hashing (PBKDF2-SHA256, Web Crypto) ---------- */
 
 const PBKDF2_ITERATIONS = 100_000;

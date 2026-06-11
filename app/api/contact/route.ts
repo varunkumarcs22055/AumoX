@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
-import { queriesDb } from "@/lib/admin/db";
+import { queriesDb, notificationsDb } from "@/lib/admin/db";
 
 const schema = z.object({
   name: z.string().min(2).max(120),
@@ -78,6 +78,18 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[AUMOXO contact] DB save failed:", err);
     // Continue anyway — email is still useful
+  }
+
+  // Event feed: new lead lands in the admin alerts
+  try {
+    await notificationsDb.push({
+      audience: "admin",
+      type: "lead",
+      message: `New inquiry from ${data.name}${data.company ? ` (${data.company})` : ""} — ${data.service}`,
+      link: "/admin/queries",
+    });
+  } catch (err) {
+    console.error("[AUMOXO contact] notification failed:", err);
   }
 
   const to = process.env.CONTACT_EMAIL_TO ?? "hello@aumoxo.tech";

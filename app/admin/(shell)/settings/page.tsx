@@ -10,22 +10,54 @@ type SiteStats = {
   uptime: number;
 };
 
+type CompanySettings = {
+  prefix: string;
+  gstDefault: number;
+  dueDays: number;
+  terms?: string;
+  bankDetails?: string;
+  annualLeave: number;
+};
+
 export default function SettingsAdmin() {
   const [stats, setStats] = useState<SiteStats>({ countries: 0, clients: 0, engineers: 0, uptime: 0 });
+  const [company, setCompany] = useState<CompanySettings>({ prefix: "AMX", gstDefault: 18, dueDays: 14, terms: "", bankDetails: "", annualLeave: 18 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [companySaving, setCompanySaving] = useState(false);
+  const [companySaved, setCompanySaved] = useState(false);
 
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/settings", { cache: "no-store" });
+      const [res, cRes] = await Promise.all([
+        fetch("/api/admin/settings", { cache: "no-store" }),
+        fetch("/api/admin/company", { cache: "no-store" }),
+      ]);
       const data = await res.json();
       if (data.stats) setStats(data.stats);
+      const cData = await cRes.json();
+      if (cData.settings) setCompany(cData.settings);
     } finally { setLoading(false); }
   }
 
   useEffect(() => { load(); }, []);
+
+  async function saveCompany() {
+    setCompanySaving(true);
+    try {
+      const res = await fetch("/api/admin/company", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(company),
+      });
+      const data = await res.json();
+      if (data.settings) setCompany(data.settings);
+      setCompanySaved(true);
+      setTimeout(() => setCompanySaved(false), 1800);
+    } finally { setCompanySaving(false); }
+  }
 
   async function save() {
     setSaving(true);
@@ -58,6 +90,41 @@ export default function SettingsAdmin() {
           <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">Settings</div>
           <h1 className="mt-2 font-display text-4xl font-extralight text-ink-100">Site Settings</h1>
           <p className="mt-2 text-ink-300 font-light">Tune the headline numbers shown across the site. Saved to the live database.</p>
+        </div>
+      </div>
+
+      {/* Company / document settings — affect only the NEXT documents */}
+      <div className="mt-10 card p-7 gold-border">
+        <h2 className="font-display text-xl font-light text-ink-100">Company &amp; documents</h2>
+        <p className="text-sm text-ink-300 mt-1 font-light">
+          Defaults for quotations, invoices and HR. Changing these never alters
+          already-issued document numbers.
+        </p>
+        <div className="mt-6 grid sm:grid-cols-3 gap-5">
+          <Field label="Serial prefix (e.g. AMX2606IN001)">
+            <input className="input font-mono uppercase" maxLength={5} value={company.prefix} onChange={(e) => setCompany({ ...company, prefix: e.target.value.toUpperCase() })} />
+          </Field>
+          <Field label="Default GST / tax %">
+            <input type="number" min={0} max={50} className="input" value={company.gstDefault} onChange={(e) => setCompany({ ...company, gstDefault: Number(e.target.value) })} />
+          </Field>
+          <Field label="Invoice due (days)">
+            <input type="number" min={0} max={180} className="input" value={company.dueDays} onChange={(e) => setCompany({ ...company, dueDays: Number(e.target.value) })} />
+          </Field>
+          <Field label="Annual leave per employee (days)">
+            <input type="number" min={0} max={60} className="input" value={company.annualLeave} onChange={(e) => setCompany({ ...company, annualLeave: Number(e.target.value) })} />
+          </Field>
+          <Field label="Default terms (on quotes/invoices)">
+            <input className="input" value={company.terms ?? ""} onChange={(e) => setCompany({ ...company, terms: e.target.value })} />
+          </Field>
+          <Field label="Bank / UPI details (shown to clients)">
+            <input className="input" placeholder="A/C 1234… IFSC… / yourupi@bank" value={company.bankDetails ?? ""} onChange={(e) => setCompany({ ...company, bankDetails: e.target.value })} />
+          </Field>
+        </div>
+        <div className="mt-6 flex items-center gap-3">
+          <button onClick={saveCompany} disabled={companySaving} className="btn-gold text-sm !py-2 !px-4 disabled:opacity-60">
+            {companySaving ? <><Loader2 size={16} className="animate-spin" /> Saving…</> : <><Check size={16} /> Save company settings</>}
+          </button>
+          {companySaved && <span className="text-sm text-green-400">Saved ✓</span>}
         </div>
       </div>
 

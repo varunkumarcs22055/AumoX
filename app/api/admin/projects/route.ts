@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import {
   projectsDb,
   clientsDb,
+  notificationsDb,
   newId,
   DEFAULT_PHASES,
   type Project,
@@ -76,6 +77,14 @@ export async function POST(req: Request) {
       updated.updates = updated.updates.filter((u) => u.id !== body.removeUpdateId);
     }
     await projectsDb.upsert(updated);
+    if (body.addUpdate?.title?.trim()) {
+      await notificationsDb.push({
+        audience: `client:${updated.clientId}`,
+        type: "update",
+        message: `${updated.name}: ${body.addUpdate.title.trim().slice(0, 120)}`,
+        link: "/portal",
+      });
+    }
     return NextResponse.json({ project: updated });
   }
 

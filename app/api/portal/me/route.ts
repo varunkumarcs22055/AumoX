@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { clientsDb, projectsDb, invoicesDb, invoiceTotal } from "@/lib/admin/db";
+import {
+  clientsDb,
+  projectsDb,
+  invoicesDb,
+  quotationsDb,
+  filesDb,
+  notificationsDb,
+  settingsDb,
+  invoiceTotal,
+  quotationTotal,
+} from "@/lib/admin/db";
 import { verifyClientToken, CLIENT_COOKIE } from "@/lib/admin/auth";
 
 /**
@@ -17,10 +27,17 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [projects, invoices] = await Promise.all([
+  const [projects, invoices, quotations, allFiles, notifications, settings] = await Promise.all([
     projectsDb.listByClient(client.id),
     invoicesDb.listByClient(client.id), // drafts excluded
+    quotationsDb.listByClient(client.id), // drafts excluded
+    filesDb.list(),
+    notificationsDb.listFor(`client:${client.id}`),
+    settingsDb.get(),
   ]);
+
+  const projectIds = new Set(projects.map((p) => p.id));
+  const files = allFiles.filter((f) => projectIds.has(f.projectId));
 
   return NextResponse.json({
     client: { company: client.company, name: client.name, email: client.email },
@@ -36,5 +53,29 @@ export async function GET() {
       items: i.items,
       notes: i.notes,
     })),
+    quotations: quotations.map((q) => ({
+      id: q.id,
+      number: q.number,
+      projectName: q.projectName,
+      issueDate: q.issueDate,
+      validUntil: q.validUntil,
+      currency: q.currency,
+      items: q.items,
+      taxPercent: q.taxPercent,
+      discountPercent: q.discountPercent,
+      terms: q.terms,
+      status: q.status,
+      total: quotationTotal(q),
+    })),
+    files: files.map((f) => ({
+      id: f.id,
+      projectId: f.projectId,
+      name: f.name,
+      url: f.url,
+      size: f.size,
+      uploadedAt: f.uploadedAt,
+    })),
+    notifications,
+    bankDetails: settings.bankDetails || "",
   });
 }

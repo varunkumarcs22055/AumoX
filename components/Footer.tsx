@@ -132,7 +132,7 @@ function NewsletterForm() {
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal") || pathname?.startsWith("/staff")) return null;
 
   return (
     <footer className="relative border-t border-line bg-bg-base">

@@ -3,8 +3,10 @@ import type { NextRequest } from "next/server";
 import {
   verifySessionToken,
   verifyClientToken,
+  verifyStaffToken,
   AUTH_COOKIE,
   CLIENT_COOKIE,
+  STAFF_COOKIE,
 } from "@/lib/admin/auth";
 
 /**
@@ -43,6 +45,19 @@ export async function middleware(req: NextRequest) {
       loginUrl.search = "";
       const res = NextResponse.redirect(loginUrl);
       res.cookies.set(CLIENT_COOKIE, "", { path: "/", maxAge: 0 });
+      return res;
+    }
+  }
+
+  if (pathname.startsWith("/staff") && pathname !== "/staff/login") {
+    const token = req.cookies.get(STAFF_COOKIE)?.value;
+    const result = await verifyStaffToken(token);
+    if (!result.ok) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/staff/login";
+      loginUrl.search = "";
+      const res = NextResponse.redirect(loginUrl);
+      res.cookies.set(STAFF_COOKIE, "", { path: "/", maxAge: 0 });
       return res;
     }
   }

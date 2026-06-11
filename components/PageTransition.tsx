@@ -17,7 +17,7 @@ export default function PageTransition({
   const pathname = usePathname();
   // Admin/portal shells use sticky/fixed positioning, which a transformed
   // wrapper would break — skip the transition there.
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal")) return <>{children}</>;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal") || pathname?.startsWith("/staff")) return <>{children}</>;
   return (
     <div key={pathname} className="page-transition">
       {children}

@@ -98,7 +98,7 @@ export default function Chatbot() {
     seedGreeting();
   }
 
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal") || pathname?.startsWith("/staff")) return null;
 
   return (
     <>
