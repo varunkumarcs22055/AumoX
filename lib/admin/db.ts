@@ -394,4 +394,109 @@ export const projectsDb = {
   },
 };
 
+// ---------- CRM: leads pipeline ----------
+export type LeadStage = "new" | "contacted" | "qualified" | "proposal" | "won" | "lost";
+export type Lead = {
+  id: string;
+  createdAt: string;
+  name: string;          // contact person
+  company?: string;
+  email?: string;
+  phone?: string;
+  source?: string;       // Website, Referral, LinkedIn, …
+  service?: string;      // what they're interested in
+  value?: number;        // expected deal value
+  currency?: string;     // "INR" | "USD" | …
+  stage: LeadStage;
+  notes?: string;
+  nextFollowUp?: string; // date (YYYY-MM-DD)
+};
+
+const L_KEY = "leads";
+
+export const leadsDb = {
+  list: () => getValue<Lead[]>(L_KEY, []),
+  async upsert(lead: Lead) {
+    const all = await leadsDb.list();
+    const i = all.findIndex((l) => l.id === lead.id);
+    if (i >= 0) all[i] = lead; else all.unshift(lead);
+    await setValue(L_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await leadsDb.list();
+    await setValue(L_KEY, all.filter((l) => l.id !== id));
+  },
+};
+
+// ---------- ERP: invoices ----------
+export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
+export type InvoiceItem = { description: string; qty: number; rate: number };
+export type Invoice = {
+  id: string;
+  number: string;        // e.g. INV-2026-001
+  clientId: string;
+  projectId?: string;
+  issueDate: string;     // YYYY-MM-DD
+  dueDate?: string;
+  currency: string;      // "INR" | "USD" | …
+  items: InvoiceItem[];
+  taxPercent?: number;
+  notes?: string;
+  status: InvoiceStatus;
+};
+
+export function invoiceTotal(inv: Invoice): number {
+  const sub = inv.items.reduce((s, it) => s + (it.qty || 0) * (it.rate || 0), 0);
+  return Math.round(sub * (1 + (inv.taxPercent || 0) / 100) * 100) / 100;
+}
+
+const INV_KEY = "invoices";
+
+export const invoicesDb = {
+  list: () => getValue<Invoice[]>(INV_KEY, []),
+  async listByClient(clientId: string): Promise<Invoice[]> {
+    const all = await invoicesDb.list();
+    // Clients only ever see issued invoices — drafts stay internal
+    return all.filter((i) => i.clientId === clientId && i.status !== "draft");
+  },
+  async upsert(inv: Invoice) {
+    const all = await invoicesDb.list();
+    const i = all.findIndex((x) => x.id === inv.id);
+    if (i >= 0) all[i] = inv; else all.unshift(inv);
+    await setValue(INV_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await invoicesDb.list();
+    await setValue(INV_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- ERP: internal tasks ----------
+export type TaskStatus = "todo" | "in-progress" | "done";
+export type Task = {
+  id: string;
+  createdAt: string;
+  title: string;
+  projectId?: string;
+  assignee?: string;
+  due?: string;          // YYYY-MM-DD
+  status: TaskStatus;
+};
+
+const T_KEY = "tasks";
+
+export const tasksDb = {
+  list: () => getValue<Task[]>(T_KEY, []),
+  async upsert(task: Task) {
+    const all = await tasksDb.list();
+    const i = all.findIndex((t) => t.id === task.id);
+    if (i >= 0) all[i] = task; else all.unshift(task);
+    await setValue(T_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await tasksDb.list();
+    await setValue(T_KEY, all.filter((t) => t.id !== id));
+  },
+};
+
 export const newId = () => Math.random().toString(36).slice(2, 10);

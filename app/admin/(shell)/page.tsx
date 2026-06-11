@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, Inbox, Users, FolderKanban, type LucideIcon } from "lucide-react";
+import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, Inbox, Users, FolderKanban, TrendingUp, Receipt, ListChecks, type LucideIcon } from "lucide-react";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 
 export default function AdminDashboard() {
@@ -64,6 +64,27 @@ export default function AdminDashboard() {
           stat={`${counts.queriesUnread} unread · ${counts.queriesTotal} total`}
           desc="Read, reply to and manage every contact form submission your site receives."
           highlight={counts.queriesUnread > 0}
+        />
+        <DashCard
+          href="/admin/leads"
+          icon={TrendingUp}
+          title="CRM · Leads"
+          stat="Pipeline & deals"
+          desc="Track opportunities from first contact to won — stages, value, follow-ups."
+        />
+        <DashCard
+          href="/admin/invoices"
+          icon={Receipt}
+          title="ERP · Invoices"
+          stat="Billing"
+          desc="Issue invoices, track paid/outstanding. Clients see them in the portal."
+        />
+        <DashCard
+          href="/admin/tasks"
+          icon={ListChecks}
+          title="ERP · Tasks"
+          stat="Team board"
+          desc="Internal to-do board for the team across projects."
         />
         <DashCard
           href="/admin/clients"

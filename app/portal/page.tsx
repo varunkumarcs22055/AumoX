@@ -13,6 +13,7 @@ import {
   Sparkles,
   PauseCircle,
   Mail,
+  Receipt,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -28,9 +29,31 @@ type Project = {
   startDate?: string;
   targetDate?: string;
 };
+type PortalInvoice = {
+  id: string;
+  number: string;
+  issueDate: string;
+  dueDate?: string;
+  currency: string;
+  status: "sent" | "paid" | "overdue";
+  total: number;
+  items: { description: string; qty: number; rate: number }[];
+  notes?: string;
+};
 type Me = {
   client: { company: string; name: string; email: string };
   projects: Project[];
+  invoices?: PortalInvoice[];
+};
+
+function moneySym(cur: string) {
+  return cur === "INR" ? "₹" : cur === "USD" ? "$" : cur === "EUR" ? "€" : cur + " ";
+}
+
+const INV_BADGE: Record<PortalInvoice["status"], string> = {
+  sent:    "border-sky-400/40 text-sky-300 bg-sky-400/10",
+  paid:    "border-green-400/40 text-green-300 bg-green-400/10",
+  overdue: "border-red-400/40 text-red-400 bg-red-400/10",
 };
 
 function fmtDate(iso?: string) {
@@ -274,6 +297,38 @@ export default function PortalPage() {
                 </section>
               );
             })}
+          </div>
+        )}
+
+        {/* Invoices */}
+        {(me.invoices?.length ?? 0) > 0 && (
+          <div className="mt-12">
+            <div className="eyebrow">
+              <span className="h-px w-8 bg-gold-400" />
+              Invoices
+            </div>
+            <div className="mt-6 space-y-3 max-w-3xl">
+              {me.invoices!.map((inv) => (
+                <div key={inv.id} className="card p-5 flex flex-wrap items-center gap-4">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 shrink-0">
+                    <Receipt size={16} />
+                  </div>
+                  <div className="flex-1 min-w-[160px]">
+                    <div className="text-ink-100 font-light">{inv.number}</div>
+                    <div className="text-xs text-ink-400 mt-0.5">
+                      Issued {fmtDate(inv.issueDate)}
+                      {inv.dueDate ? ` · Due ${fmtDate(inv.dueDate)}` : ""}
+                    </div>
+                  </div>
+                  <div className="font-display text-xl font-light gold-text shrink-0">
+                    {moneySym(inv.currency)}{inv.total.toLocaleString()}
+                  </div>
+                  <span className={`text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full border shrink-0 ${INV_BADGE[inv.status]}`}>
+                    {inv.status === "sent" ? "Awaiting payment" : inv.status}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

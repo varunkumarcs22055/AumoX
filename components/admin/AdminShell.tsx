@@ -15,14 +15,20 @@ import {
   ExternalLink,
   Users,
   FolderKanban,
+  TrendingUp,
+  Receipt,
+  ListChecks,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
 const links = [
   { href: "/admin",           label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/queries",   label: "Inbox",     icon: Inbox },
+  { href: "/admin/leads",     label: "Leads",     icon: TrendingUp },
   { href: "/admin/clients",   label: "Clients",   icon: Users },
   { href: "/admin/projects",  label: "Projects",  icon: FolderKanban },
+  { href: "/admin/invoices",  label: "Invoices",  icon: Receipt },
+  { href: "/admin/tasks",     label: "Tasks",     icon: ListChecks },
   { href: "/admin/careers",   label: "Careers",   icon: Briefcase },
   { href: "/admin/insights",  label: "Insights",  icon: BookOpen },
   { href: "/admin/settings",  label: "Settings",  icon: Settings },
