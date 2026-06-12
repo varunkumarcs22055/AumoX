@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import { MapPin, ArrowUpRight, Sparkles, Rocket, Users, GraduationCap, Globe2, HeartHandshake } from "lucide-react";
 import Reveal from "@/components/anim/Reveal";
 import { jobsDb } from "@/lib/admin/db";
@@ -26,9 +27,45 @@ const perks = [
 export default async function CareersPage() {
   const allJobs = await jobsDb.list();
   const jobs = allJobs.filter((j) => j.active);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aumoxo.tech";
+
+  // JobPosting structured data — surfaces openings in Google's job search.
+  const jobsLd = jobs.map((j) => ({
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: j.title,
+    description:
+      j.description ||
+      `${j.title} role on the ${j.team} team at AUMOXO. ${j.type}, ${j.level} level.`,
+    datePosted: new Date().toISOString().slice(0, 10),
+    employmentType: j.type.toUpperCase().replace(/[^A-Z]/g, "_"),
+    hiringOrganization: {
+      "@type": "Organization",
+      name: "AUMOXO",
+      sameAs: siteUrl,
+      logo: `${siteUrl}/logo-mark.png`,
+    },
+    jobLocationType: /remote/i.test(j.location) ? "TELECOMMUTE" : undefined,
+    applicantLocationRequirements: /remote/i.test(j.location)
+      ? { "@type": "Country", name: "India" }
+      : undefined,
+    jobLocation: {
+      "@type": "Place",
+      address: { "@type": "PostalAddress", addressLocality: j.location, addressCountry: "IN" },
+    },
+    directApply: true,
+    url: `${siteUrl}/careers`,
+  }));
 
   return (
     <>
+      <BreadcrumbsLd items={[{ name: "Careers", path: "/careers" }]} />
+      {jobsLd.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jobsLd) }}
+        />
+      )}
       {/* HERO */}
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import Reveal from "@/components/anim/Reveal";
 import { ArrowUpRight, Handshake, Award, Globe, Shield } from "lucide-react";
 
@@ -36,6 +37,7 @@ const tiers = [
 export default function PartnersPage() {
   return (
     <>
+      <BreadcrumbsLd items={[{ name: "Partners", path: "/partners" }]} />
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />
         <div className="container-x relative">

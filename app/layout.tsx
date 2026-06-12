@@ -8,6 +8,7 @@ import SiteParticles from "@/components/SiteParticles";
 import JsonLd from "@/components/JsonLd";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import PageTransition from "@/components/PageTransition";
+import ScrollProgress from "@/components/ScrollProgress";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
@@ -69,14 +70,7 @@ export const metadata: Metadata = {
       "Enterprise-grade software, AI solutions, CRM platforms and automation systems engineered for businesses that want to move faster.",
     url: siteUrl,
     siteName: "AUMOXO",
-    images: [
-      {
-        url: "/logo.jpeg",
-        width: 1024,
-        height: 1024,
-        alt: "AUMOXO — Think Infinite",
-      },
-    ],
+    // og:image comes from app/opengraph-image.tsx (branded 1200x630 card)
     locale: "en_US",
     type: "website",
   },
@@ -85,7 +79,6 @@ export const metadata: Metadata = {
     title: "AUMOXO — AI, Automation & Custom Software",
     description:
       "AI solutions, CRM platforms, automation systems and digital products for businesses that move fast.",
-    images: ["/logo.jpeg"],
     creator: "@aumoxo",
   },
   alternates: {
@@ -140,6 +133,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-bg-base text-ink-100 font-sans">
         <ThemeProvider>
           <MaintenanceGate>
+            <ScrollProgress />
             <Navbar />
             <main className="min-h-screen">
               <PageTransition>{children}</PageTransition>

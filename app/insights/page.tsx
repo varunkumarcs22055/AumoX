@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import { ArrowUpRight, Clock, ExternalLink } from "lucide-react";
 import Reveal from "@/components/anim/Reveal";
 import { insightsDb } from "@/lib/admin/db";
@@ -26,8 +27,28 @@ export default async function InsightsPage() {
   const all = await insightsDb.list();
   const items = all.filter((i) => i.published);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aumoxo.tech";
   return (
     <>
+      <BreadcrumbsLd items={[{ name: "Insights", path: "/insights" }]} />
+      {items.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              name: "AUMOXO Insights",
+              itemListElement: items.map((a, i) => ({
+                "@type": "ListItem",
+                position: i + 1,
+                name: a.title,
+                url: a.url || `${siteUrl}/insights`,
+              })),
+            }),
+          }}
+        />
+      )}
       {/* HERO */}
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />

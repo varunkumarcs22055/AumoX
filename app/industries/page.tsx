@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import {
   ArrowUpRight,
   Rocket,
@@ -74,6 +75,7 @@ const industries = [
 export default function IndustriesPage() {
   return (
     <>
+      <BreadcrumbsLd items={[{ name: "Industries", path: "/industries" }]} />
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />
         <div className="container-x relative">

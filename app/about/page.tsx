@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import { ArrowUpRight, Target, Eye, Shield, Sparkles, Users, Compass } from "lucide-react";
 import Logo from "@/components/Logo";
 import TeamAvatar from "@/components/TeamAvatar";
@@ -54,6 +55,7 @@ const assurance = [
 export default function AboutPage() {
   return (
     <>
+      <BreadcrumbsLd items={[{ name: "About", path: "/about" }]} />
       {/* HERO */}
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />

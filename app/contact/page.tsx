@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import ContactForm from "./ContactForm";
 import Reveal from "@/components/anim/Reveal";
 import { Mail, MapPin, Phone, Clock, ArrowUpRight } from "lucide-react";
@@ -24,6 +25,7 @@ export default async function ContactPage({
 
   return (
     <>
+      <BreadcrumbsLd items={[{ name: "Contact", path: "/contact" }]} />
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />
         <div className="container-x relative">

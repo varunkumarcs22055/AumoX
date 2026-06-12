@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import Reveal from "@/components/anim/Reveal";
 import {
   ArrowUpRight,
@@ -127,6 +128,7 @@ const process = [
 export default function ServicesPage() {
   return (
     <>
+      <BreadcrumbsLd items={[{ name: "Services", path: "/services" }]} />
       {/* HERO */}
       <section className="relative overflow-hidden hero-gradient pt-32 lg:pt-44 pb-20">
         <div className="absolute inset-0 grid-overlay opacity-60" />

@@ -4,7 +4,36 @@ import Marquee from "@/components/Marquee";
 import Reveal from "@/components/anim/Reveal";
 import HeroEntrance, { SplitWords } from "@/components/anim/HeroEntrance";
 import MagneticLink from "@/components/anim/MagneticLink";
+import FAQ, { type FAQItem } from "@/components/FAQ";
 import { insightsDb } from "@/lib/admin/db";
+
+// Shared between the visible accordion and the FAQPage rich-result schema.
+const faqs: FAQItem[] = [
+  {
+    q: "What services does AUMOXO provide?",
+    a: "AUMOXO builds AI solutions, custom CRM platforms, business automation systems, enterprise software, web and mobile applications, SaaS products and UI/UX design — and provides technology consulting for businesses planning their digital roadmap.",
+  },
+  {
+    q: "How much does a custom software or CRM project cost?",
+    a: "It depends on scope, but most AUMOXO projects start from focused MVP builds and scale up to full enterprise platforms. After a short discovery call we give you a clear fixed quote with line items, GST and timelines — no surprises mid-project.",
+  },
+  {
+    q: "How long does it take to build a web application or CRM?",
+    a: "A focused MVP typically ships in 3–6 weeks. Full CRM platforms or multi-module enterprise systems usually take 2–4 months. You watch progress live, phase by phase, in your own client portal.",
+  },
+  {
+    q: "Does AUMOXO provide support after launch?",
+    a: "Yes — every project includes AUMOXO Growth Assurance: 6 months of complimentary post-launch support covering bug fixes, security updates, performance monitoring, technical assistance and minor improvements.",
+  },
+  {
+    q: "Can AUMOXO integrate AI into my existing business?",
+    a: "Yes. We build AI agents, chatbots and automation that plug into the tools you already use — websites, WhatsApp, CRMs and internal systems — trained on your business knowledge with proper guardrails.",
+  },
+  {
+    q: "How do I track my project's progress with AUMOXO?",
+    a: "Every client gets a private portal at aumoxo.tech with a live phase tracker (Discovery → Strategy → Design → Development → Launch → Support), team updates, deliverable downloads, quotations and invoices in one place.",
+  },
+];
 import {
   ArrowUpRight,
   Globe,
@@ -451,6 +480,47 @@ export default async function HomePage() {
             ))}
           </Reveal>
         </div>
+      </section>
+
+      {/* ========== FAQ — visible answers + FAQPage rich-result schema ========== */}
+      <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
+        <div className="container-x">
+          <div className="grid lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20">
+            <div>
+              <div className="eyebrow">
+                <span className="h-px w-8 bg-gold-400" />
+                FAQ
+              </div>
+              <h2 className="section-title mt-5">Questions, answered.</h2>
+              <p className="section-sub">
+                The things businesses ask us before starting a project.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 mt-6 text-gold-300 hover:text-gold-200 transition-colors font-medium"
+              >
+                Ask something else <ArrowUpRight size={16} />
+              </Link>
+            </div>
+            <Reveal kind="fade-up">
+              <FAQ items={faqs} />
+            </Reveal>
+          </div>
+        </div>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: faqs.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            }),
+          }}
+        />
       </section>
 
       {/* ========== CTA ========== */}
