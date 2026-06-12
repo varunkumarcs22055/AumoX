@@ -1,8 +1,20 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createSessionToken, AUTH_COOKIE, AUTH_TTL_SECONDS } from "@/lib/admin/auth";
+import {
+  createSessionToken,
+  AUTH_COOKIE,
+  AUTH_TTL_SECONDS,
+  SUBADMIN_TTL_MS,
+  verifyPassword,
+} from "@/lib/admin/auth";
+import { adminsDb } from "@/lib/admin/db";
 
-const schema = z.object({ password: z.string().min(1).max(200) });
+// Two ways in: master password alone (super admin / owner), or
+// email + password for a sub-admin account created by the owner.
+const schema = z.object({
+  password: z.string().min(1).max(200),
+  email: z.string().email().max(160).optional().or(z.literal("")),
+});
 
 // IP-based rate limit (in-memory, per Node process)
 // 5 attempts per 15-minute window. Locks the IP out for the rest of the window
@@ -55,19 +67,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Password required" }, { status: 400 });
   }
 
-  const expected = process.env.ADMIN_PASSWORD || "aumox-admin";
-  // Constant-time compare — no timing side-channel
-  if (!safeEqualStrings(parsed.data.password, expected)) {
-    return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+  // Identical error for every failure mode — leaks nothing about accounts
+  const fail = () => NextResponse.json({ error: "Incorrect credentials" }, { status: 401 });
+
+  let token: string;
+  let maxAge = AUTH_TTL_SECONDS;
+  let who: { role: "super" | "admin"; name?: string };
+
+  if (parsed.data.email) {
+    // Sub-admin login (account created by the owner)
+    const account = await adminsDb.findByEmail(parsed.data.email);
+    if (!account || !account.active) return fail();
+    if (!(await verifyPassword(parsed.data.password, account.passwordHash))) return fail();
+    token = await createSessionToken(SUBADMIN_TTL_MS, { role: "admin", sub: account.id });
+    maxAge = Math.floor(SUBADMIN_TTL_MS / 1000);
+    who = { role: "admin", name: account.name };
+  } else {
+    // Owner login — master password, constant-time compare
+    const expected = process.env.ADMIN_PASSWORD || "aumox-admin";
+    if (!safeEqualStrings(parsed.data.password, expected)) return fail();
+    token = await createSessionToken(undefined, { role: "super" });
+    who = { role: "super" };
   }
 
-  const token = await createSessionToken();
-  const res = NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true, ...who });
   res.cookies.set(AUTH_COOKIE, token, {
     httpOnly: true,
     sameSite: "strict", // hardened: no CSRF possible from another origin
     path: "/",
-    maxAge: AUTH_TTL_SECONDS,
+    maxAge,
     secure: process.env.NODE_ENV === "production",
   });
   return res;

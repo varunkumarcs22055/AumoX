@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -19,8 +19,12 @@ import {
   Bell,
   ThumbsUp,
   ThumbsDown,
+  Printer,
+  Send,
+  Lock,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import { printDocument } from "@/lib/print-doc";
 
 type Phase = { name: string; status: "pending" | "in-progress" | "completed"; note?: string };
 type Update = { id: string; date: string; title: string; body?: string };
@@ -43,6 +47,7 @@ type PortalInvoice = {
   status: "sent" | "paid" | "overdue";
   total: number;
   items: { description: string; qty: number; rate: number }[];
+  taxPercent?: number;
   notes?: string;
 };
 type PortalQuotation = {
@@ -123,10 +128,27 @@ const STATUS_BADGE: Record<Project["status"], { label: string; cls: string }> = 
   completed: { label: "Completed", cls: "border-gold-400/40 text-gold-300 bg-gold-400/10" },
 };
 
+type ThreadMsg = { id: string; from: "client" | "team"; body: string; at: string };
+
+function fmtTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  } catch {
+    return iso;
+  }
+}
+
 export default function PortalPage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
+  const [thread, setThread] = useState<ThreadMsg[]>([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const threadEndRef = useRef<HTMLDivElement>(null);
+  const [pwForm, setPwForm] = useState({ current: "", next: "" });
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pwSaving, setPwSaving] = useState(false);
 
   useEffect(() => {
     fetch("/api/portal/me", { cache: "no-store" })
@@ -139,7 +161,74 @@ export default function PortalPage() {
       })
       .then((d) => d && setMe(d))
       .finally(() => setLoading(false));
+    fetch("/api/portal/messages", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.messages && setThread(d.messages));
   }, [router]);
+
+  useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [thread]);
+
+  async function sendMessage() {
+    if (!draft.trim()) return;
+    setSending(true);
+    try {
+      const res = await fetch("/api/portal/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: draft }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setThread(data.messages ?? []);
+        setDraft("");
+      } else {
+        alert(data.error ?? "Failed to send.");
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function changePassword() {
+    setPwMsg(null);
+    if (!pwForm.current || pwForm.next.length < 8) {
+      setPwMsg({ ok: false, text: "Enter your current password and a new one (8+ characters)." });
+      return;
+    }
+    setPwSaving(true);
+    try {
+      const res = await fetch("/api/portal/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pwForm),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPwMsg({ ok: false, text: data.error ?? "Failed to update password." });
+      } else {
+        setPwMsg({ ok: true, text: "Password updated." });
+        setPwForm({ current: "", next: "" });
+      }
+    } finally {
+      setPwSaving(false);
+    }
+  }
+
+  function printInvoice(inv: PortalInvoice) {
+    printDocument({
+      kind: "INVOICE",
+      number: inv.number,
+      issueDate: inv.issueDate,
+      dueDate: inv.dueDate,
+      status: inv.status,
+      billTo: { company: me!.client.company, name: me!.client.name, email: me!.client.email },
+      currency: inv.currency,
+      items: inv.items,
+      taxPercent: inv.taxPercent,
+      notes: inv.notes,
+      bankDetails: me?.bankDetails,
+    });
+  }
 
   async function logout() {
     await fetch("/api/portal/logout", { method: "POST" });
@@ -488,6 +577,14 @@ export default function PortalPage() {
                   <span className={`text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full border shrink-0 ${INV_BADGE[inv.status]}`}>
                     {inv.status === "sent" ? "Awaiting payment" : inv.status}
                   </span>
+                  <button
+                    onClick={() => printInvoice(inv)}
+                    className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10 shrink-0"
+                    aria-label="Download / print invoice"
+                    title="Download as PDF"
+                  >
+                    <Printer size={16} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -500,22 +597,83 @@ export default function PortalPage() {
           </div>
         )}
 
-        {/* Support card */}
-        <div className="mt-12 card p-8 gold-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 max-w-3xl">
-          <div className="flex items-start gap-4">
-            <div className="grid h-11 w-11 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 shrink-0">
-              <MessageSquare size={18} />
+        {/* Messages — direct thread with the team */}
+        <div className="mt-12 max-w-3xl">
+          <div className="eyebrow">
+            <span className="h-px w-8 bg-gold-400" />
+            Messages
+          </div>
+          <div className="mt-6 card gold-border overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-line flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="grid h-9 w-9 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 shrink-0">
+                  <MessageSquare size={16} />
+                </div>
+                <div>
+                  <div className="text-sm text-ink-100 font-light">Your AUMOXO team</div>
+                  <div className="text-xs text-ink-400">Replies within one working day</div>
+                </div>
+              </div>
+              <a href="mailto:hello@aumoxo.tech" className="text-xs text-ink-400 hover:text-gold-300 transition-colors inline-flex items-center gap-1.5">
+                <Mail size={13} /> hello@aumoxo.tech
+              </a>
             </div>
-            <div>
-              <h3 className="text-ink-100 font-light">Questions about your project?</h3>
-              <p className="mt-1 text-sm text-ink-300 font-light">
-                Your project lead replies within one working day.
-              </p>
+            <div className="p-5 space-y-3 max-h-[380px] overflow-y-auto">
+              {thread.length === 0 ? (
+                <p className="text-sm text-ink-400 font-light text-center py-6">
+                  No messages yet — ask us anything about your project.
+                </p>
+              ) : thread.map((m) => (
+                <div key={m.id} className={`flex ${m.from === "client" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm font-light leading-relaxed ${
+                    m.from === "client"
+                      ? "bg-gold-400/15 border border-gold-400/30 text-ink-100"
+                      : "bg-bg-elevated border border-line text-ink-200"
+                  }`}>
+                    <p className="whitespace-pre-wrap">{m.body}</p>
+                    <div className="mt-1 text-[10px] text-ink-400">
+                      {m.from === "team" ? "AUMOXO · " : ""}{fmtTime(m.at)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={threadEndRef} />
+            </div>
+            <div className="p-4 border-t border-line flex gap-2">
+              <textarea
+                className="input !py-2.5 flex-1 resize-none"
+                rows={1}
+                placeholder="Write a message to the team…"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              />
+              <button onClick={sendMessage} disabled={sending || !draft.trim()} className="btn-gold !py-2.5 !px-4 text-sm disabled:opacity-50">
+                {sending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+              </button>
             </div>
           </div>
-          <a href="mailto:hello@aumoxo.tech" className="btn-gold !py-2.5 !px-5 text-sm shrink-0">
-            <Mail size={15} /> Contact us
-          </a>
+        </div>
+
+        {/* Account security */}
+        <div className="mt-12 card p-6 max-w-3xl">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400">
+            <Lock size={13} /> Account security
+          </div>
+          <div className="mt-4 grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+            <label className="block">
+              <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Current password</span>
+              <input type="password" className="input !py-2" value={pwForm.current} onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })} autoComplete="current-password" />
+            </label>
+            <label className="block">
+              <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">New password (8+ chars)</span>
+              <input type="password" className="input !py-2" value={pwForm.next} onChange={(e) => setPwForm({ ...pwForm, next: e.target.value })} autoComplete="new-password" />
+            </label>
+            <button onClick={changePassword} disabled={pwSaving} className="btn-gold text-sm !py-2.5 !px-5 disabled:opacity-60">
+              {pwSaving ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />} Update
+            </button>
+          </div>
+          {pwMsg && <p className={`mt-3 text-sm ${pwMsg.ok ? "text-green-300" : "text-red-400"}`}>{pwMsg.text}</p>}
         </div>
       </main>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2, Loader2, Landmark, Check } from "lucide-react";
+import { Trash2, Loader2, Landmark, Check, Wallet } from "lucide-react";
 
 type Invoice = {
   id: string; number: string; clientId: string; issueDate: string; dueDate?: string;
@@ -12,6 +12,12 @@ type Payment = {
   amount: number; currency: string; method: string; reference?: string;
 };
 type ClientLite = { id: string; company: string };
+type Expense = {
+  id: string; date: string; category: string; description: string;
+  amount: number; currency: string; vendor?: string; reference?: string;
+};
+
+const EXPENSE_CATEGORIES = ["Salaries", "Software & tools", "Infrastructure", "Marketing", "Travel", "Office", "Professional fees", "Other"];
 
 const sym = (c: string) => (c === "INR" ? "₹" : c === "USD" ? "$" : c === "EUR" ? "€" : c + " ");
 function totalOf(inv: Invoice) {
@@ -28,19 +34,68 @@ export default function FinanceAdmin() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ invoiceId: "", amount: "", method: "Bank transfer", reference: "", date: new Date().toISOString().slice(0, 10) });
   const [msg, setMsg] = useState("");
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expSaving, setExpSaving] = useState(false);
+  const [expMsg, setExpMsg] = useState("");
+  const [expForm, setExpForm] = useState({
+    date: new Date().toISOString().slice(0, 10),
+    category: "Software & tools",
+    description: "",
+    amount: "",
+    vendor: "",
+    reference: "",
+  });
 
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/payments", { cache: "no-store" });
+      const [res, expRes] = await Promise.all([
+        fetch("/api/admin/payments", { cache: "no-store" }),
+        fetch("/api/admin/expenses", { cache: "no-store" }),
+      ]);
       const data = await res.json();
+      const expData = await expRes.json();
       setInvoices(data.invoices ?? []);
       setPayments(data.payments ?? []);
       setClients(data.clients ?? []);
       setTotals(data.totals ?? { billed: 0, collected: 0, outstanding: 0 });
+      setExpenses(expData.expenses ?? []);
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, []);
+
+  const totalSpent = expenses.reduce((s, e) => s + e.amount, 0);
+  const net = totals.collected - totalSpent;
+
+  async function recordExpense() {
+    setExpMsg("");
+    if (!expForm.description.trim() || !expForm.amount || Number(expForm.amount) <= 0) {
+      setExpMsg("Add a description and a positive amount.");
+      return;
+    }
+    setExpSaving(true);
+    try {
+      const res = await fetch("/api/admin/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...expForm, amount: Number(expForm.amount), currency: "INR" }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setExpMsg(data.error ?? "Failed."); return; }
+      setExpenses(data.expenses ?? []);
+      setExpForm({ ...expForm, description: "", amount: "", vendor: "", reference: "" });
+    } finally { setExpSaving(false); }
+  }
+
+  async function removeExpense(e: Expense) {
+    if (!confirm(`Delete this ₹${e.amount.toLocaleString()} expense?`)) return;
+    await fetch("/api/admin/expenses", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: e.id }),
+    });
+    setExpenses((all) => all.filter((x) => x.id !== e.id));
+  }
 
   const clientName = (id: string) => clients.find((c) => c.id === id)?.company ?? "Unknown";
   const invNumber = (id: string) => invoices.find((i) => i.id === id)?.number ?? "—";
@@ -87,18 +142,26 @@ export default function FinanceAdmin() {
       </div>
 
       {/* KPIs */}
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <div className="card p-6">
           <div className="text-[10px] uppercase tracking-[0.25em] text-ink-400">Billed (issued)</div>
-          <div className="mt-2 font-display text-3xl font-extralight text-ink-100">₹{totals.billed.toLocaleString()}</div>
+          <div className="mt-2 font-display text-2xl font-extralight text-ink-100">₹{totals.billed.toLocaleString()}</div>
         </div>
-        <div className="card p-6 gold-border">
+        <div className="card p-6">
           <div className="text-[10px] uppercase tracking-[0.25em] text-ink-400">Collected</div>
-          <div className="mt-2 font-display text-3xl font-extralight gold-text">₹{totals.collected.toLocaleString()}</div>
+          <div className="mt-2 font-display text-2xl font-extralight text-ink-100">₹{totals.collected.toLocaleString()}</div>
         </div>
         <div className="card p-6">
           <div className="text-[10px] uppercase tracking-[0.25em] text-ink-400">Outstanding</div>
-          <div className="mt-2 font-display text-3xl font-extralight text-ink-100">₹{totals.outstanding.toLocaleString()}</div>
+          <div className="mt-2 font-display text-2xl font-extralight text-ink-100">₹{totals.outstanding.toLocaleString()}</div>
+        </div>
+        <div className="card p-6">
+          <div className="text-[10px] uppercase tracking-[0.25em] text-ink-400">Expenses</div>
+          <div className="mt-2 font-display text-2xl font-extralight text-red-400">₹{totalSpent.toLocaleString()}</div>
+        </div>
+        <div className="card p-6 gold-border">
+          <div className="text-[10px] uppercase tracking-[0.25em] text-ink-400">Net (cash)</div>
+          <div className={`mt-2 font-display text-2xl font-extralight ${net >= 0 ? "gold-text" : "text-red-400"}`}>₹{net.toLocaleString()}</div>
         </div>
       </div>
 
@@ -135,6 +198,43 @@ export default function FinanceAdmin() {
           </button>
         </div>
         {msg && <p className="mt-3 text-sm text-red-400">{msg}</p>}
+      </div>
+
+      {/* Record expense */}
+      <div className="mt-6 card p-5">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-4">
+          <Wallet size={13} /> Record an expense
+        </div>
+        <div className="grid md:grid-cols-[1fr_1.6fr_1fr_1fr_1fr_1fr_auto] gap-3 items-end">
+          <Field label="Date"><input type="date" className="input !py-2" value={expForm.date} onChange={(e) => setExpForm({ ...expForm, date: e.target.value })} /></Field>
+          <Field label="Description"><input className="input !py-2" placeholder="e.g. Vercel Pro subscription" value={expForm.description} onChange={(e) => setExpForm({ ...expForm, description: e.target.value })} /></Field>
+          <Field label="Category">
+            <select className="input !py-2" value={expForm.category} onChange={(e) => setExpForm({ ...expForm, category: e.target.value })}>
+              {EXPENSE_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Amount (₹)"><input type="number" min={0} className="input !py-2" value={expForm.amount} onChange={(e) => setExpForm({ ...expForm, amount: e.target.value })} /></Field>
+          <Field label="Vendor"><input className="input !py-2" placeholder="optional" value={expForm.vendor} onChange={(e) => setExpForm({ ...expForm, vendor: e.target.value })} /></Field>
+          <Field label="Reference"><input className="input !py-2" placeholder="bill / txn id" value={expForm.reference} onChange={(e) => setExpForm({ ...expForm, reference: e.target.value })} /></Field>
+          <button onClick={recordExpense} disabled={expSaving} className="btn-gold text-sm !py-2.5 !px-4 disabled:opacity-60">
+            {expSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Add
+          </button>
+        </div>
+        {expMsg && <p className="mt-3 text-sm text-red-400">{expMsg}</p>}
+        {expenses.length > 0 && (
+          <div className="mt-5 space-y-2">
+            {expenses.map((e) => (
+              <div key={e.id} className="flex items-center gap-3 border-t border-line pt-2">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-ink-100 font-light truncate">{e.description}{e.vendor ? ` · ${e.vendor}` : ""}</div>
+                  <div className="text-xs text-ink-400 mt-0.5">{e.date} · {e.category}{e.reference ? ` · ${e.reference}` : ""}</div>
+                </div>
+                <div className="text-sm text-red-400 shrink-0">−₹{e.amount.toLocaleString()}</div>
+                <button onClick={() => removeExpense(e)} className="p-1.5 rounded text-red-400 hover:bg-red-400/10 shrink-0"><Trash2 size={14} /></button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Ledger */}

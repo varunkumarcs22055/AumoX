@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { put } from "@vercel/blob";
 import { filesDb, projectsDb, notificationsDb, newId } from "@/lib/admin/db";
-import { verifySessionToken, AUTH_COOKIE } from "@/lib/admin/auth";
+import { requireAdmin } from "@/lib/admin/guard";
 
 async function isAuthed() {
-  const c = await cookies();
-  return (await verifySessionToken(c.get(AUTH_COOKIE)?.value)).ok;
+  return (await requireAdmin()).ok;
 }
 
 const MAX_BYTES = 4 * 1024 * 1024; // server uploads are body-limited on Vercel

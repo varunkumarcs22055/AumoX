@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import {
   employeesDb,
   attendanceDb,
@@ -10,11 +9,10 @@ import {
   nextDocNumber,
   newId,
 } from "@/lib/admin/db";
-import { verifySessionToken, AUTH_COOKIE } from "@/lib/admin/auth";
+import { requireAdmin } from "@/lib/admin/guard";
 
 async function isAuthed() {
-  const c = await cookies();
-  return (await verifySessionToken(c.get(AUTH_COOKIE)?.value)).ok;
+  return (await requireAdmin()).ok;
 }
 
 export async function GET() {

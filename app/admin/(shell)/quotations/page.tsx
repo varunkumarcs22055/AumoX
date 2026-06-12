@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Check, X, Loader2, FileText, ArrowRight } from "lucide-react";
+import { Plus, Trash2, Check, X, Loader2, FileText, ArrowRight, Printer } from "lucide-react";
+import { printDocument } from "@/lib/print-doc";
 
 type QStatus = "draft" | "sent" | "accepted" | "declined" | "expired";
 type Item = { description: string; qty: number; rate: number };
@@ -53,6 +54,23 @@ export default function QuotationsAdmin() {
   useEffect(() => { load(); }, []);
 
   const clientName = (id: string) => clients.find((c) => c.id === id)?.company ?? "Unknown";
+
+  function print(q: Quotation) {
+    printDocument({
+      kind: "QUOTATION",
+      number: q.number,
+      issueDate: q.issueDate,
+      validUntil: q.validUntil,
+      status: q.status,
+      billTo: { company: clientName(q.clientId) },
+      projectName: q.projectName,
+      currency: q.currency,
+      items: q.items,
+      taxPercent: q.taxPercent,
+      discountPercent: q.discountPercent,
+      notes: q.terms,
+    });
+  }
 
   function setItem(idx: number, patch: Partial<Item>) {
     setForm((f) => ({ ...f, items: f.items.map((it, i) => (i === idx ? { ...it, ...patch } : it)) }));
@@ -208,6 +226,7 @@ export default function QuotationsAdmin() {
             </div>
             <span className={`text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border shrink-0 ${STATUS_CLS[q.status]}`}>{q.status}</span>
             <div className="flex items-center gap-1 shrink-0">
+              <button onClick={() => print(q)} className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10" aria-label="Print / PDF" title="Print or save as PDF"><Printer size={15} /></button>
               {q.status === "accepted" && !q.invoiceId && (
                 <button onClick={() => convert(q)} disabled={saving} className="btn-gold text-xs !py-1.5 !px-3">
                   <ArrowRight size={12} /> To invoice

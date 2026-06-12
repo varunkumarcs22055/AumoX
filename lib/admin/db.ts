@@ -826,6 +826,111 @@ export const notificationsDb = {
   },
 };
 
+// ---------- Admin users (sub-admins created by the main/super admin) ----------
+// The super admin logs in with the master password (env) and manages these.
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;         // login (lowercase)
+  passwordHash: string;
+  createdAt: string;
+  active: boolean;
+};
+const ADM_KEY = "admin-users";
+export const adminsDb = {
+  list: () => getValue<AdminUser[]>(ADM_KEY, []),
+  async findByEmail(email: string) {
+    const all = await adminsDb.list();
+    return all.find((a) => a.email === email.trim().toLowerCase());
+  },
+  async findById(id: string) {
+    const all = await adminsDb.list();
+    return all.find((a) => a.id === id);
+  },
+  async upsert(a: AdminUser) {
+    const all = await adminsDb.list();
+    const i = all.findIndex((x) => x.id === a.id);
+    if (i >= 0) all[i] = a; else all.unshift(a);
+    await setValue(ADM_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await adminsDb.list();
+    await setValue(ADM_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Expenses (money out — completes the ledger) ----------
+export type Expense = {
+  id: string;
+  date: string;          // YYYY-MM-DD
+  category: string;      // "Salaries" | "Software" | "Infrastructure" | "Marketing" | …
+  description: string;
+  amount: number;
+  currency: string;
+  vendor?: string;
+  reference?: string;    // bill / txn id
+};
+const EXP_KEY = "expenses";
+export const expensesDb = {
+  list: () => getValue<Expense[]>(EXP_KEY, []),
+  async upsert(e: Expense) {
+    const all = await expensesDb.list();
+    const i = all.findIndex((x) => x.id === e.id);
+    if (i >= 0) all[i] = e; else all.unshift(e);
+    await setValue(EXP_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await expensesDb.list();
+    await setValue(EXP_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Messages (client ↔ team conversation, one thread per client) ----------
+export type Message = {
+  id: string;
+  clientId: string;
+  from: "client" | "team";
+  body: string;
+  at: string;            // ISO
+  readByClient: boolean;
+  readByAdmin: boolean;
+};
+const MSG_KEY = "messages";
+export const messagesDb = {
+  list: () => getValue<Message[]>(MSG_KEY, []),
+  async listByClient(clientId: string) {
+    const all = await messagesDb.list();
+    return all
+      .filter((m) => m.clientId === clientId)
+      .sort((a, b) => a.at.localeCompare(b.at));
+  },
+  async push(m: Omit<Message, "id" | "at" | "readByClient" | "readByAdmin">) {
+    const all = await messagesDb.list();
+    const msg: Message = {
+      ...m,
+      id: newId(),
+      at: new Date().toISOString(),
+      // sender has implicitly read their own message
+      readByClient: m.from === "client",
+      readByAdmin: m.from === "team",
+    };
+    all.unshift(msg);
+    await setValue(MSG_KEY, all.slice(0, 2000));
+    return msg;
+  },
+  async markRead(clientId: string, reader: "client" | "admin") {
+    const all = await messagesDb.list();
+    let changed = false;
+    const next = all.map((m) => {
+      if (m.clientId !== clientId) return m;
+      if (reader === "client" && !m.readByClient) { changed = true; return { ...m, readByClient: true }; }
+      if (reader === "admin" && !m.readByAdmin) { changed = true; return { ...m, readByAdmin: true }; }
+      return m;
+    });
+    if (changed) await setValue(MSG_KEY, next);
+  },
+};
+
 // ---------- Project file vault (deliverables) ----------
 export type ProjectFile = {
   id: string;

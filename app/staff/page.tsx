@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2, LogOut, Clock, CalendarDays, ArrowRight, ArrowLeft,
-  Bell, Receipt, BadgeCheck, Briefcase, Send, Printer,
+  Bell, Receipt, BadgeCheck, Briefcase, Send, Printer, Lock,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -40,6 +40,34 @@ export default function StaffPage() {
   const [mode, setMode] = useState<"office" | "wfh">("office");
   const [leaveDraft, setLeaveDraft] = useState({ from: "", to: "", reason: "" });
   const [msg, setMsg] = useState("");
+  const [pwForm, setPwForm] = useState({ current: "", next: "" });
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pwSaving, setPwSaving] = useState(false);
+
+  async function changePassword() {
+    setPwMsg(null);
+    if (!pwForm.current || pwForm.next.length < 8) {
+      setPwMsg({ ok: false, text: "Enter your current password and a new one (8+ characters)." });
+      return;
+    }
+    setPwSaving(true);
+    try {
+      const res = await fetch("/api/staff/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pwForm),
+      });
+      const d = await res.json();
+      if (!res.ok) {
+        setPwMsg({ ok: false, text: d.error ?? "Failed to update password." });
+      } else {
+        setPwMsg({ ok: true, text: "Password updated." });
+        setPwForm({ current: "", next: "" });
+      }
+    } finally {
+      setPwSaving(false);
+    }
+  }
 
   const load = useCallback(() => {
     fetch("/api/staff/me", { cache: "no-store" })
@@ -347,6 +375,27 @@ export default function StaffPage() {
               ))}
             </ul>
           </div>
+        </div>
+
+        {/* Account security */}
+        <div className="card p-7 max-w-3xl">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400">
+            <Lock size={13} /> Account security
+          </div>
+          <div className="mt-4 grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+            <label className="block">
+              <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Current password</span>
+              <input type="password" className="input !py-2" value={pwForm.current} onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })} autoComplete="current-password" />
+            </label>
+            <label className="block">
+              <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">New password (8+ chars)</span>
+              <input type="password" className="input !py-2" value={pwForm.next} onChange={(e) => setPwForm({ ...pwForm, next: e.target.value })} autoComplete="new-password" />
+            </label>
+            <button onClick={changePassword} disabled={pwSaving} className="btn-gold text-sm !py-2.5 !px-5 disabled:opacity-60">
+              {pwSaving ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />} Update
+            </button>
+          </div>
+          {pwMsg && <p className={`mt-3 text-sm ${pwMsg.ok ? "text-green-300" : "text-red-400"}`}>{pwMsg.text}</p>}
         </div>
 
         <div className="text-xs text-ink-500 font-light flex items-center gap-2">

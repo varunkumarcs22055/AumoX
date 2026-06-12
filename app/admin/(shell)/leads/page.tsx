@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Trash2, Check, X, Loader2, Edit2, Mail, Phone, CalendarClock, TrendingUp,
+  Plus, Trash2, Check, X, Loader2, Edit2, Mail, Phone, CalendarClock, TrendingUp, UserPlus, Copy,
 } from "lucide-react";
 
 type LeadStage = "new" | "contacted" | "qualified" | "proposal" | "won" | "lost";
@@ -63,6 +63,8 @@ export default function LeadsAdmin() {
   const [editing, setEditing] = useState<Lead>(emptyLead());
   const [filter, setFilter] = useState<LeadStage | "all">("all");
   const [error, setError] = useState("");
+  const [converting, setConverting] = useState("");
+  const [creds, setCreds] = useState<{ company: string; email: string; password: string } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -117,6 +119,29 @@ export default function LeadsAdmin() {
     });
   }
 
+  async function convert(l: Lead) {
+    if (!l.email) { alert("Add an email to this lead first — it becomes the client login."); return; }
+    if (!confirm(`Convert "${l.name}" into a client account? A portal login will be created for ${l.email}.`)) return;
+    setConverting(l.id);
+    try {
+      const res = await fetch("/api/admin/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: l.id, action: "convert" }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? "Conversion failed."); return; }
+      setLeads(data.leads ?? []);
+      if (data.alreadyClient) {
+        alert("This lead is already a client — marked as won.");
+      } else if (data.password) {
+        setCreds({ company: data.client.company, email: data.client.email, password: data.password });
+      }
+    } finally {
+      setConverting("");
+    }
+  }
+
   async function remove(l: Lead) {
     if (!confirm(`Delete lead "${l.name}"?`)) return;
     await fetch("/api/admin/leads", {
@@ -134,8 +159,8 @@ export default function LeadsAdmin() {
           <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">CRM</div>
           <h1 className="mt-2 font-display text-4xl font-extralight text-ink-100">Leads Pipeline</h1>
           <p className="mt-2 text-ink-300 font-light">
-            Track every opportunity from first contact to won. When a lead is won,
-            create their account on the Clients page.
+            Track every opportunity from first contact to won. Use the green
+            convert button to turn a lead into a client with a portal login in one click.
           </p>
         </div>
         <button onClick={() => { setEditing(emptyLead()); setError(""); setShowForm(true); }} className="btn-gold text-sm !py-2 !px-4">
@@ -150,6 +175,32 @@ export default function LeadsAdmin() {
         <Stat label="Won deals" value={String(pipeline.wonCount)} />
         <Stat label="Won value" value={money(pipeline.wonValue)} gold />
       </div>
+
+      {/* Credentials shown exactly once after a conversion */}
+      {creds && (
+        <div className="mt-8 card p-6 gold-border">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400">
+            <UserPlus size={13} /> Client account created — share these credentials securely
+          </div>
+          <p className="mt-2 text-xs text-ink-400 font-light">
+            This password is shown only once. The client signs in at aumoxo.tech/portal/login.
+          </p>
+          <div className="mt-4 grid sm:grid-cols-3 gap-3 text-sm">
+            <div><span className="text-ink-400 text-xs block">Company</span><span className="text-ink-100">{creds.company}</span></div>
+            <div><span className="text-ink-400 text-xs block">Login email</span><span className="text-ink-100">{creds.email}</span></div>
+            <div><span className="text-ink-400 text-xs block">Password</span><span className="text-gold-300 font-mono">{creds.password}</span></div>
+          </div>
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={() => navigator.clipboard?.writeText(`Portal: https://aumoxo.tech/portal/login\nEmail: ${creds.email}\nPassword: ${creds.password}`)}
+              className="btn-gold text-xs !py-2 !px-4"
+            >
+              <Copy size={13} /> Copy credentials
+            </button>
+            <button onClick={() => setCreds(null)} className="btn-ghost text-xs !py-2 !px-4">Done</button>
+          </div>
+        </div>
+      )}
 
       {/* Lead form */}
       {showForm && (
@@ -266,6 +317,17 @@ export default function LeadsAdmin() {
                   >
                     {STAGES.map((s) => <option key={s.v} value={s.v}>{s.label}</option>)}
                   </select>
+                  {!["won", "lost"].includes(l.stage) && (
+                    <button
+                      onClick={() => convert(l)}
+                      disabled={converting === l.id}
+                      className="p-2 rounded-lg text-green-300 hover:bg-green-400/10 disabled:opacity-50"
+                      aria-label="Convert to client"
+                      title="Convert to client — creates a portal login"
+                    >
+                      {converting === l.id ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+                    </button>
+                  )}
                   <button onClick={() => { setEditing(l); setError(""); setShowForm(true); }} className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10" aria-label="Edit"><Edit2 size={15} /></button>
                   <button onClick={() => remove(l)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10" aria-label="Delete"><Trash2 size={15} /></button>
                 </div>

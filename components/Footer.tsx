@@ -42,7 +42,6 @@ const cols = [
       { href: "/insights", label: "Insights" },
       { href: "/partners", label: "Partners" },
       { href: "/contact", label: "Contact" },
-      { href: "/portal/login", label: "Client Portal" },
     ],
   },
 ];

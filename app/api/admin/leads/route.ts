@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { leadsDb, newId, type Lead, type LeadStage } from "@/lib/admin/db";
-import { verifySessionToken, AUTH_COOKIE } from "@/lib/admin/auth";
+import { leadsDb, clientsDb, newId, type Lead, type LeadStage, type Client } from "@/lib/admin/db";
+import { hashPassword } from "@/lib/admin/auth";
+import { requireAdmin } from "@/lib/admin/guard";
 
 async function isAuthed() {
-  const c = await cookies();
-  return (await verifySessionToken(c.get(AUTH_COOKIE)?.value)).ok;
+  return (await requireAdmin()).ok;
 }
 
 const STAGES: LeadStage[] = ["new", "contacted", "qualified", "proposal", "won", "lost"];
@@ -15,9 +14,51 @@ export async function GET() {
   return NextResponse.json({ leads: await leadsDb.list() });
 }
 
+// Human-friendly generated password, e.g. "Nova-Crest-4821#"
+function genPassword() {
+  const words = ["Nova", "Crest", "Atlas", "Orion", "Vega", "Zephyr", "Aurum", "Delta", "Lyra", "Sage"];
+  const pick = () => words[Math.floor(Math.random() * words.length)];
+  return `${pick()}-${pick()}-${Math.floor(1000 + Math.random() * 9000)}#`;
+}
+
 export async function POST(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = (await req.json()) as Partial<Lead>;
+  const body = (await req.json()) as Partial<Lead> & { action?: "convert" };
+
+  // One-click conversion: lead → client login (the CRM → ERP handoff)
+  if (body.action === "convert" && body.id) {
+    const all = await leadsDb.list();
+    const lead = all.find((l) => l.id === body.id);
+    if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    if (!lead.email) {
+      return NextResponse.json({ error: "Add an email to this lead first — it becomes the client login." }, { status: 400 });
+    }
+    const existing = await clientsDb.findByEmail(lead.email);
+    if (existing) {
+      // Already a client — just mark the lead won
+      await leadsDb.upsert({ ...lead, stage: "won" });
+      return NextResponse.json({ converted: true, alreadyClient: true, clientId: existing.id, leads: await leadsDb.list() });
+    }
+    const password = genPassword();
+    const client: Client = {
+      id: newId(),
+      company: (lead.company || lead.name).slice(0, 160),
+      name: lead.name,
+      email: lead.email,
+      passwordHash: await hashPassword(password),
+      createdAt: new Date().toISOString(),
+      active: true,
+    };
+    await clientsDb.upsert(client);
+    await leadsDb.upsert({ ...lead, stage: "won" });
+    // Password is returned exactly once — share it with the client securely
+    return NextResponse.json({
+      converted: true,
+      client: { id: client.id, company: client.company, email: client.email },
+      password,
+      leads: await leadsDb.list(),
+    });
+  }
 
   if (!body.name?.trim()) {
     return NextResponse.json({ error: "Lead name is required" }, { status: 400 });

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, RotateCcw, Info, Loader2 } from "lucide-react";
+import { Check, RotateCcw, Info, Loader2, ShieldCheck, KeyRound, Trash2, Copy, UserPlus } from "lucide-react";
+
+type AdminAccount = { id: string; name: string; email: string; createdAt: string; active: boolean };
 
 type SiteStats = {
   countries: number;
@@ -27,22 +29,87 @@ export default function SettingsAdmin() {
   const [saved, setSaved] = useState(false);
   const [companySaving, setCompanySaving] = useState(false);
   const [companySaved, setCompanySaved] = useState(false);
+  const [role, setRole] = useState<"super" | "admin" | "">("");
+  const [admins, setAdmins] = useState<AdminAccount[]>([]);
+  const [adminForm, setAdminForm] = useState({ name: "", email: "" });
+  const [adminBusy, setAdminBusy] = useState(false);
+  const [adminMsg, setAdminMsg] = useState("");
+  const [adminCreds, setAdminCreds] = useState<{ name: string; email: string; password: string } | null>(null);
 
   async function load() {
     setLoading(true);
     try {
-      const [res, cRes] = await Promise.all([
+      const [res, cRes, meRes] = await Promise.all([
         fetch("/api/admin/settings", { cache: "no-store" }),
         fetch("/api/admin/company", { cache: "no-store" }),
+        fetch("/api/admin/me", { cache: "no-store" }),
       ]);
       const data = await res.json();
       if (data.stats) setStats(data.stats);
       const cData = await cRes.json();
       if (cData.settings) setCompany(cData.settings);
+      const meData = await meRes.json();
+      setRole(meData.role ?? "");
+      if (meData.role === "super") {
+        const aRes = await fetch("/api/admin/admins", { cache: "no-store" });
+        const aData = await aRes.json();
+        setAdmins(aData.admins ?? []);
+      }
     } finally { setLoading(false); }
   }
 
   useEffect(() => { load(); }, []);
+
+  async function createAdmin() {
+    setAdminMsg("");
+    if (!adminForm.name.trim() || !adminForm.email.trim()) {
+      setAdminMsg("Name and email are required.");
+      return;
+    }
+    setAdminBusy(true);
+    try {
+      const res = await fetch("/api/admin/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(adminForm),
+      });
+      const data = await res.json();
+      if (!res.ok) { setAdminMsg(data.error ?? "Failed."); return; }
+      setAdmins((all) => [data.admin, ...all]);
+      setAdminCreds({ name: data.admin.name, email: data.admin.email, password: data.password });
+      setAdminForm({ name: "", email: "" });
+    } finally { setAdminBusy(false); }
+  }
+
+  async function toggleAdmin(a: AdminAccount) {
+    const res = await fetch("/api/admin/admins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: a.id, active: !a.active }),
+    });
+    if (res.ok) setAdmins((all) => all.map((x) => (x.id === a.id ? { ...x, active: !a.active } : x)));
+  }
+
+  async function resetAdminPassword(a: AdminAccount) {
+    if (!confirm(`Generate a new password for ${a.name}? Their old one stops working immediately.`)) return;
+    const res = await fetch("/api/admin/admins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: a.id, resetPassword: true }),
+    });
+    const data = await res.json();
+    if (res.ok && data.password) setAdminCreds({ name: a.name, email: a.email, password: data.password });
+  }
+
+  async function removeAdmin(a: AdminAccount) {
+    if (!confirm(`Remove admin account for ${a.name}? They lose access immediately.`)) return;
+    await fetch("/api/admin/admins", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: a.id }),
+    });
+    setAdmins((all) => all.filter((x) => x.id !== a.id));
+  }
 
   async function saveCompany() {
     setCompanySaving(true);
@@ -92,6 +159,76 @@ export default function SettingsAdmin() {
           <p className="mt-2 text-ink-300 font-light">Tune the headline numbers shown across the site. Saved to the live database.</p>
         </div>
       </div>
+
+      {/* Admin accounts — visible only to the main (super) admin */}
+      {role === "super" && (
+        <div className="mt-10 card p-7 gold-border">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} className="text-gold-400" />
+            <h2 className="font-display text-xl font-light text-ink-100">Admin accounts</h2>
+          </div>
+          <p className="text-sm text-ink-300 mt-1 font-light">
+            You are the main admin (master password). Create accounts for trusted
+            team members — they get full panel access except this section. Deactivate
+            or remove one and they&apos;re locked out instantly.
+          </p>
+
+          {adminCreds && (
+            <div className="mt-5 rounded-xl border border-gold-400/40 bg-gold-400/5 p-5">
+              <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">
+                Credentials for {adminCreds.name} — shown only once
+              </div>
+              <div className="mt-3 grid sm:grid-cols-2 gap-3 text-sm">
+                <div><span className="text-ink-400 text-xs block">Login email</span><span className="text-ink-100">{adminCreds.email}</span></div>
+                <div><span className="text-ink-400 text-xs block">Password</span><span className="text-gold-300 font-mono">{adminCreds.password}</span></div>
+              </div>
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => navigator.clipboard?.writeText(`Admin login: https://aumoxo.tech/admin/login\nEmail: ${adminCreds.email}\nPassword: ${adminCreds.password}`)}
+                  className="btn-gold text-xs !py-2 !px-4"
+                >
+                  <Copy size={13} /> Copy
+                </button>
+                <button onClick={() => setAdminCreds(null)} className="btn-ghost text-xs !py-2 !px-4">Done</button>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+            <Field label="Name">
+              <input className="input !py-2" value={adminForm.name} onChange={(e) => setAdminForm({ ...adminForm, name: e.target.value })} placeholder="Aditya Singh" />
+            </Field>
+            <Field label="Login email">
+              <input type="email" className="input !py-2" value={adminForm.email} onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })} placeholder="aditya@aumoxo.tech" />
+            </Field>
+            <button onClick={createAdmin} disabled={adminBusy} className="btn-gold text-sm !py-2.5 !px-4 disabled:opacity-60">
+              {adminBusy ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />} Create admin
+            </button>
+          </div>
+          {adminMsg && <p className="mt-3 text-sm text-red-400">{adminMsg}</p>}
+
+          {admins.length > 0 && (
+            <div className="mt-6 space-y-2">
+              {admins.map((a) => (
+                <div key={a.id} className="flex flex-wrap items-center gap-3 border-t border-line pt-3">
+                  <div className="flex-1 min-w-[180px]">
+                    <div className="text-sm text-ink-100 font-light">{a.name}</div>
+                    <div className="text-xs text-ink-400">{a.email}</div>
+                  </div>
+                  <span className={`text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${a.active ? "border-green-400/40 text-green-300" : "border-red-400/40 text-red-400"}`}>
+                    {a.active ? "Active" : "Disabled"}
+                  </span>
+                  <button onClick={() => toggleAdmin(a)} className="btn-ghost text-xs !py-1.5 !px-3">
+                    {a.active ? "Disable" : "Enable"}
+                  </button>
+                  <button onClick={() => resetAdminPassword(a)} className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10" title="Reset password"><KeyRound size={14} /></button>
+                  <button onClick={() => removeAdmin(a)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10" title="Remove"><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Company / document settings — affect only the NEXT documents */}
       <div className="mt-10 card p-7 gold-border">

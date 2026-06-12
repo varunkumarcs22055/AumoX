@@ -47,6 +47,16 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  // Panels are reached by typing the route directly — no buttons on the site.
+  // Short memorable aliases: /client → portal, /emp → staff.
+  async redirects() {
+    return [
+      { source: "/client", destination: "/portal", permanent: false },
+      { source: "/client/:path*", destination: "/portal/:path*", permanent: false },
+      { source: "/emp", destination: "/staff", permanent: false },
+      { source: "/emp/:path*", destination: "/staff/:path*", permanent: false },
+    ];
+  },
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },

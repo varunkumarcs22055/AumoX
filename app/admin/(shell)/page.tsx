@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, Inbox, Users, FolderKanban, TrendingUp, Receipt, ListChecks, type LucideIcon } from "lucide-react";
+import { Briefcase, BookOpen, Settings, ArrowUpRight, Database, AlertCircle, Inbox, Users, FolderKanban, TrendingUp, Receipt, ListChecks, MessageSquare, BarChart3, type LucideIcon } from "lucide-react";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 
 export default function AdminDashboard() {
@@ -66,11 +66,25 @@ export default function AdminDashboard() {
           highlight={counts.queriesUnread > 0}
         />
         <DashCard
+          href="/admin/messages"
+          icon={MessageSquare}
+          title="Messages · Clients"
+          stat="Conversations"
+          desc="Private thread with every client — replies land in their portal instantly."
+        />
+        <DashCard
           href="/admin/leads"
           icon={TrendingUp}
           title="CRM · Leads"
           stat="Pipeline & deals"
-          desc="Track opportunities from first contact to won — stages, value, follow-ups."
+          desc="Track opportunities from first contact to won — one-click convert to client."
+        />
+        <DashCard
+          href="/admin/reports"
+          icon={BarChart3}
+          title="Reports · Analytics"
+          stat="Business intelligence"
+          desc="Revenue trend, lead funnel, receivables aging, project mix and payroll."
         />
         <DashCard
           href="/admin/invoices"

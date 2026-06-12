@@ -68,16 +68,26 @@ async function getKey(): Promise<CryptoKey> {
   );
 }
 
-export type Session = { iat: number; exp: number };
+// role: "super" = the owner (master password); "admin" = a sub-admin account
+// (sub of adminsDb). Tokens minted before roles existed have no role field —
+// they could only have come from the master password, so they read as super.
+export type Session = { iat: number; exp: number; role?: "super" | "admin"; sub?: string };
 
-export async function createSessionToken(ttlMs = SESSION_TTL_MS): Promise<string> {
+export async function createSessionToken(
+  ttlMs = SESSION_TTL_MS,
+  claims?: { role: "super" | "admin"; sub?: string }
+): Promise<string> {
   const now = Date.now();
-  const payload: Session = { iat: now, exp: now + ttlMs };
+  const payload: Session = { iat: now, exp: now + ttlMs, ...(claims ?? { role: "super" }) };
   const payloadB64 = b64urlFromString(JSON.stringify(payload));
   const key = await getKey();
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payloadB64));
   return `${payloadB64}.${b64urlFromBytes(sig)}`;
 }
+
+// Sub-admin sessions are deliberately shorter than the owner's 7 days —
+// deactivation locks them out on the next request, expiry caps the rest.
+export const SUBADMIN_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 
 export async function verifySessionToken(
   token: string | undefined | null

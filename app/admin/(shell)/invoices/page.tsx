@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Check, X, Loader2, Receipt } from "lucide-react";
+import { Plus, Trash2, Check, X, Loader2, Receipt, Printer } from "lucide-react";
+import { printDocument } from "@/lib/print-doc";
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 type Item = { description: string; qty: number; rate: number };
@@ -55,19 +56,43 @@ export default function InvoicesAdmin() {
     items: [{ description: "", qty: 1, rate: 0 }] as Item[],
   });
 
+  const [bankDetails, setBankDetails] = useState("");
+
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/invoices", { cache: "no-store" });
+      const [res, companyRes] = await Promise.all([
+        fetch("/api/admin/invoices", { cache: "no-store" }),
+        fetch("/api/admin/company", { cache: "no-store" }),
+      ]);
       const data = await res.json();
+      const company = await companyRes.json();
       setInvoices(data.invoices ?? []);
       setClients(data.clients ?? []);
       setProjects(data.projects ?? []);
+      setBankDetails(company.settings?.bankDetails ?? "");
     } finally {
       setLoading(false);
     }
   }
   useEffect(() => { load(); }, []);
+
+  function print(inv: Invoice) {
+    printDocument({
+      kind: "INVOICE",
+      number: inv.number,
+      issueDate: inv.issueDate,
+      dueDate: inv.dueDate,
+      status: inv.status,
+      billTo: { company: clientName(inv.clientId) },
+      projectName: projects.find((p) => p.id === inv.projectId)?.name,
+      currency: inv.currency,
+      items: inv.items,
+      taxPercent: inv.taxPercent,
+      notes: inv.notes,
+      bankDetails,
+    });
+  }
 
   const totals = useMemo(() => {
     const issued = invoices.filter((i) => i.status !== "draft");
@@ -273,6 +298,7 @@ export default function InvoicesAdmin() {
               {inv.status}
             </span>
             <div className="flex items-center gap-1 shrink-0">
+              <button onClick={() => print(inv)} className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10" aria-label="Print / PDF" title="Print or save as PDF"><Printer size={15} /></button>
               <select className="input !py-1.5 !px-2 text-xs !w-auto" value={inv.status} onChange={(e) => setStatus(inv, e.target.value as InvoiceStatus)}>
                 {(["draft", "sent", "paid", "overdue"] as const).map((s) => <option key={s} value={s}>{s}</option>)}
               </select>

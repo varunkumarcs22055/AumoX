@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import {
   tasksDb,
   projectsDb,
@@ -9,11 +8,10 @@ import {
   type Task,
   type TaskStatus,
 } from "@/lib/admin/db";
-import { verifySessionToken, AUTH_COOKIE } from "@/lib/admin/auth";
+import { requireAdmin } from "@/lib/admin/guard";
 
 async function isAuthed() {
-  const c = await cookies();
-  return (await verifySessionToken(c.get(AUTH_COOKIE)?.value)).ok;
+  return (await requireAdmin()).ok;
 }
 
 const STATUSES: TaskStatus[] = ["todo", "in-progress", "done"];

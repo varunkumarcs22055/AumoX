@@ -21,12 +21,15 @@ import {
   FileText,
   Landmark,
   UserCog,
+  MessageSquare,
+  BarChart3,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
 const links = [
   { href: "/admin",            label: "Dashboard",  icon: LayoutDashboard },
   { href: "/admin/queries",    label: "Inbox",      icon: Inbox },
+  { href: "/admin/messages",   label: "Messages",   icon: MessageSquare },
   { href: "/admin/leads",      label: "Leads",      icon: TrendingUp },
   { href: "/admin/quotations", label: "Quotations", icon: FileText },
   { href: "/admin/clients",    label: "Clients",    icon: Users },
@@ -34,6 +37,7 @@ const links = [
   { href: "/admin/tasks",      label: "Tasks",      icon: ListChecks },
   { href: "/admin/invoices",   label: "Invoices",   icon: Receipt },
   { href: "/admin/finance",    label: "Finance",    icon: Landmark },
+  { href: "/admin/reports",    label: "Reports",    icon: BarChart3 },
   { href: "/admin/team",       label: "Team / HR",  icon: UserCog },
   { href: "/admin/careers",    label: "Careers",    icon: Briefcase },
   { href: "/admin/insights",   label: "Insights",   icon: BookOpen },
@@ -71,7 +75,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </button>
         </div>
 
-        <nav className="mt-10 flex flex-col gap-1">
+        <nav className="mt-8 flex flex-col gap-1 overflow-y-auto pr-1 -mr-1">
           {links.map((l) => {
             const Icon = l.icon;
             const active = pathname === l.href;

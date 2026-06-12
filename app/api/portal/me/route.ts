@@ -51,6 +51,7 @@ export async function GET() {
       status: i.status,
       total: invoiceTotal(i),
       items: i.items,
+      taxPercent: i.taxPercent,
       notes: i.notes,
     })),
     quotations: quotations.map((q) => ({

@@ -2,12 +2,13 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, AlertCircle, Loader2 } from "lucide-react";
+import { Lock, AlertCircle, Loader2, Mail } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
 function LoginInner() {
   const router = useRouter();
   const search = useSearchParams();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ function LoginInner() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, email: email.trim() || undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -49,6 +50,22 @@ function LoginInner() {
         </p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-5">
+          <label className="block">
+            <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">
+              Admin email <span className="text-ink-500 normal-case tracking-normal">(owner: leave empty)</span>
+            </span>
+            <div className="relative">
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gold-400/70" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input pl-11"
+                placeholder="Only for team admin accounts"
+                autoComplete="username"
+              />
+            </div>
+          </label>
           <label className="block">
             <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Password</span>
             <div className="relative">
