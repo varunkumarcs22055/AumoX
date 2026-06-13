@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { quotationsDb, clientsDb, notificationsDb } from "@/lib/admin/db";
 import { verifyClientToken, CLIENT_COOKIE } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 /** Client accepts or declines a quotation from their portal. */
 export async function POST(req: Request) {
@@ -40,5 +41,6 @@ export async function POST(req: Request) {
     message: `${client.company} ${status} quotation ${q.number}`,
     link: "/admin/quotations",
   });
+  await logActorAction("client", client.company, status, "quotation", `${client.company} ${status} quotation ${q.number}`);
   return NextResponse.json({ ok: true, status });
 }

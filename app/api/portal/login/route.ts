@@ -7,6 +7,7 @@ import {
   CLIENT_COOKIE,
   CLIENT_TTL_SECONDS,
 } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 const schema = z.object({
   email: z.string().email(),
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
   if (!(await verifyPassword(parsed.data.password, client.passwordHash))) return fail();
 
   const token = await createClientToken(client.id);
+  await logActorAction("client", client.company, "login", "session", `Client ${client.company} signed in to the portal`);
   const res = NextResponse.json({
     ok: true,
     client: { company: client.company, name: client.name },

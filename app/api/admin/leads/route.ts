@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { leadsDb, clientsDb, newId, type Lead, type LeadStage, type Client } from "@/lib/admin/db";
 import { hashPassword } from "@/lib/admin/auth";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
     if (existing) {
       // Already a client — just mark the lead won
       await leadsDb.upsert({ ...lead, stage: "won" });
+      await logAdminAction("convert", "lead", `Marked lead "${lead.name}" won (already a client)`);
       return NextResponse.json({ converted: true, alreadyClient: true, clientId: existing.id, leads: await leadsDb.list() });
     }
     const password = genPassword();
@@ -51,6 +53,7 @@ export async function POST(req: Request) {
     };
     await clientsDb.upsert(client);
     await leadsDb.upsert({ ...lead, stage: "won" });
+    await logAdminAction("convert", "lead", `Converted lead "${lead.name}" → client ${client.company} (${client.email})`);
     // Password is returned exactly once — share it with the client securely
     return NextResponse.json({
       converted: true,
@@ -79,7 +82,9 @@ export async function POST(req: Request) {
     notes: body.notes?.slice(0, 2000),
     nextFollowUp: body.nextFollowUp?.slice(0, 10),
   };
+  const isUpdate = Boolean(body.id);
   await leadsDb.upsert(lead);
+  await logAdminAction(isUpdate ? "update" : "create", "lead", `${isUpdate ? "Updated" : "Added"} lead "${lead.name}"${lead.company ? ` · ${lead.company}` : ""} (stage: ${lead.stage})`);
   return NextResponse.json({ lead, leads: await leadsDb.list() });
 }
 
@@ -87,6 +92,9 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const all = await leadsDb.list();
+  const existing = all.find((l) => l.id === id);
   await leadsDb.remove(id);
+  await logAdminAction("delete", "lead", `Deleted lead "${existing?.name ?? id}"`);
   return NextResponse.json({ ok: true });
 }

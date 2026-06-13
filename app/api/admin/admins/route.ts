@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { adminsDb, newId, type AdminUser } from "@/lib/admin/db";
 import { hashPassword } from "@/lib/admin/auth";
 import { requireSuper } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 // Only the main (super) admin — the one with the master password —
 // can see, create, disable or remove other admin accounts.
@@ -48,6 +49,12 @@ export async function POST(req: Request) {
       updated.passwordHash = await hashPassword(password);
     }
     await adminsDb.upsert(updated);
+    const what =
+      body.resetPassword ? `Reset password for admin ${updated.name}`
+      : body.active === false ? `Disabled admin ${updated.name}`
+      : body.active === true ? `Enabled admin ${updated.name}`
+      : `Updated admin ${updated.name}`;
+    await logAdminAction("admin", "admin-account", what);
     return NextResponse.json({ admin: pub(updated), ...(password ? { password } : {}) });
   }
 
@@ -69,6 +76,7 @@ export async function POST(req: Request) {
     active: true,
   };
   await adminsDb.upsert(admin);
+  await logAdminAction("create", "admin-account", `Created admin account ${admin.name} (${admin.email})`);
   return NextResponse.json({ admin: pub(admin), password });
 }
 
@@ -76,6 +84,8 @@ export async function DELETE(req: Request) {
   if (!(await requireSuper()).ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = await adminsDb.findById(id);
   await adminsDb.remove(id);
+  await logAdminAction("delete", "admin-account", `Removed admin account ${existing?.name ?? id}`);
   return NextResponse.json({ ok: true });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { filesDb, projectsDb, notificationsDb, newId } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
     message: `New deliverable uploaded to ${project.name}: ${safeName}`,
     link: "/portal",
   });
+  await logAdminAction("upload", "file", `Uploaded "${safeName}" to project "${project.name}"`);
   return NextResponse.json({ file: record });
 }
 
@@ -77,6 +79,8 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = (await filesDb.list()).find((f) => f.id === id);
   await filesDb.remove(id);
+  await logAdminAction("delete", "file", `Deleted deliverable ${existing?.name ?? id}`);
   return NextResponse.json({ ok: true });
 }

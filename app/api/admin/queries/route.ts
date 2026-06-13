@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { queriesDb } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -26,5 +27,6 @@ export async function DELETE(req: Request) {
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "Bad request" }, { status: 400 });
   await queriesDb.remove(id);
+  await logAdminAction("delete", "query", `Deleted an inbox enquiry`);
   return NextResponse.json({ ok: true });
 }

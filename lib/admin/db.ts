@@ -859,6 +859,28 @@ export const adminsDb = {
   },
 };
 
+// ---------- Audit log (append-only activity trail; super-admin only) ----------
+export type AuditActor = "super" | "admin" | "client" | "staff" | "visitor" | "system";
+export type AuditEntry = {
+  id: string;
+  at: string;            // ISO timestamp
+  actorType: AuditActor;
+  actorName: string;     // "Owner", sub-admin name, client company, employee name…
+  action: string;        // create | update | delete | login | convert | payment | …
+  entity: string;        // client | project | invoice | quotation | leave | …
+  detail?: string;       // human sentence — "what was done and how"
+};
+const AUDIT_KEY = "audit-log";
+export const auditDb = {
+  list: () => getValue<AuditEntry[]>(AUDIT_KEY, []),
+  async push(e: Omit<AuditEntry, "id" | "at">) {
+    const all = await auditDb.list();
+    all.unshift({ ...e, id: newId(), at: new Date().toISOString() });
+    // Keep the most recent 3000 events — plenty of history, bounded storage.
+    await setValue(AUDIT_KEY, all.slice(0, 3000));
+  },
+};
+
 // ---------- Expenses (money out — completes the ledger) ----------
 export type Expense = {
   id: string;

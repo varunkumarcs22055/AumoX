@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { settingsDb, type CompanySettings } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -25,5 +26,6 @@ export async function POST(req: Request) {
     annualLeave: Math.min(60, Math.max(0, Number(body.annualLeave ?? current.annualLeave) || 0)),
   };
   await settingsDb.set(updated);
+  await logAdminAction("update", "settings", `Updated company settings (prefix ${updated.prefix}, GST ${updated.gstDefault}%, due ${updated.dueDays}d, leave ${updated.annualLeave}d)`);
   return NextResponse.json({ settings: updated });
 }

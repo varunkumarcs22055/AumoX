@@ -9,6 +9,7 @@ import {
   type Payment,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -58,7 +59,8 @@ export async function POST(req: Request) {
 
   // Ledger logic: paid in full → invoice flips to paid
   const paidSoFar = (await paymentsDb.listByInvoice(invoice.id)).reduce((s, p) => s + p.amount, 0);
-  if (paidSoFar >= invoiceTotal(invoice) - 0.01 && invoice.status !== "paid") {
+  const settled = paidSoFar >= invoiceTotal(invoice) - 0.01 && invoice.status !== "paid";
+  if (settled) {
     await invoicesDb.upsert({ ...invoice, status: "paid" });
   }
   await notificationsDb.push({
@@ -67,6 +69,7 @@ export async function POST(req: Request) {
     message: `Payment of ${payment.currency} ${payment.amount.toLocaleString()} recorded for ${invoice.number}`,
     link: "/portal",
   });
+  await logAdminAction("payment", "payment", `Recorded ${payment.currency} ${payment.amount.toLocaleString()} (${payment.method}) against ${invoice.number}${settled ? " — invoice now PAID" : ""}`);
   return NextResponse.json({ payment });
 }
 
@@ -74,6 +77,8 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = (await paymentsDb.list()).find((p) => p.id === id);
   await paymentsDb.remove(id);
+  await logAdminAction("delete", "payment", `Deleted payment${existing ? ` ${existing.currency} ${existing.amount.toLocaleString()}` : ` ${id}`}`);
   return NextResponse.json({ ok: true });
 }

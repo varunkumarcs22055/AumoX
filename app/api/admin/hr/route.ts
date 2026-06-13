@@ -10,9 +10,14 @@ import {
   newId,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
+}
+
+async function empName(id: string) {
+  return (await employeesDb.findById(id))?.name ?? id;
 }
 
 export async function GET() {
@@ -73,6 +78,7 @@ export async function POST(req: Request) {
       message: `Your leave (${leave.from} → ${leave.to}) was ${status}`,
       link: "/staff",
     });
+    await logAdminAction("leave", "leave", `${status === "approved" ? "Approved" : "Rejected"} ${await empName(leave.employeeId)}'s leave ${leave.from} → ${leave.to} (${leave.days}d)`);
     return NextResponse.json({ ok: true });
   }
 
@@ -106,11 +112,13 @@ export async function POST(req: Request) {
       message: `Payslip ${slip.number} for ${slip.month} is available`,
       link: "/staff",
     });
+    await logAdminAction("payroll", "payslip", `Generated payslip ${slip.number} for ${emp.name} (${slip.month}) — net ₹${slip.net.toLocaleString()}`);
     return NextResponse.json({ payslip: slip });
   }
   if (body.action === "payslip-delete") {
     if (!body.id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
     await payslipsDb.remove(body.id);
+    await logAdminAction("delete", "payslip", `Deleted payslip ${body.id}`);
     return NextResponse.json({ ok: true });
   }
 
@@ -134,11 +142,13 @@ export async function POST(req: Request) {
       message: `Issued to you: ${asset.name}`,
       link: "/staff",
     });
+    await logAdminAction("asset", "asset", `Issued "${asset.name}" to ${await empName(body.employeeId)}`);
     return NextResponse.json({ asset });
   }
   if (body.action === "asset-delete") {
     if (!body.id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
     await assetsDb.remove(body.id);
+    await logAdminAction("delete", "asset", `Removed issued asset ${body.id}`);
     return NextResponse.json({ ok: true });
   }
 

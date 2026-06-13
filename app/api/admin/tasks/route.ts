@@ -9,6 +9,7 @@ import {
   type TaskStatus,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -61,6 +62,11 @@ export async function POST(req: Request) {
       link: "/staff",
     });
   }
+  await logAdminAction(
+    isNew ? "create" : "update",
+    "task",
+    `${isNew ? "Created" : "Updated"} task "${task.title}"${task.assignee ? ` → ${task.assignee}` : ""} (${task.status})`
+  );
   return NextResponse.json({ task, tasks: await tasksDb.list() });
 }
 
@@ -68,6 +74,8 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = (await tasksDb.list()).find((t) => t.id === id);
   await tasksDb.remove(id);
+  await logAdminAction("delete", "task", `Deleted task "${existing?.title ?? id}"`);
   return NextResponse.json({ ok: true });
 }

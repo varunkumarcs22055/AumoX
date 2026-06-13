@@ -8,6 +8,7 @@ import {
   verifyPassword,
 } from "@/lib/admin/auth";
 import { adminsDb } from "@/lib/admin/db";
+import { logActorAction } from "@/lib/admin/audit";
 
 // Two ways in: master password alone (super admin / owner), or
 // email + password for a sub-admin account created by the owner.
@@ -89,6 +90,14 @@ export async function POST(req: Request) {
     token = await createSessionToken(undefined, { role: "super" });
     who = { role: "super" };
   }
+
+  await logActorAction(
+    who.role,
+    who.role === "admin" ? who.name || "Admin" : "Owner",
+    "login",
+    "session",
+    `${who.role === "admin" ? `Sub-admin ${who.name}` : "Owner"} signed in to the admin panel`
+  );
 
   const res = NextResponse.json({ ok: true, ...who });
   res.cookies.set(AUTH_COOKIE, token, {

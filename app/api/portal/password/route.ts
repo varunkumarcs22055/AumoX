@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { clientsDb } from "@/lib/admin/db";
 import { verifyClientToken, CLIENT_COOKIE, verifyPassword, hashPassword } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 /** Client changes their own password (requires the current one). */
 export async function POST(req: Request) {
@@ -21,5 +22,6 @@ export async function POST(req: Request) {
   }
 
   await clientsDb.upsert({ ...client, passwordHash: await hashPassword(next) });
+  await logActorAction("client", client.company, "password", "session", `${client.company} changed their portal password`);
   return NextResponse.json({ ok: true });
 }

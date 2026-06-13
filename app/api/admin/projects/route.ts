@@ -10,6 +10,7 @@ import {
   type PhaseStatus,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -82,6 +83,9 @@ export async function POST(req: Request) {
         message: `${updated.name}: ${body.addUpdate.title.trim().slice(0, 120)}`,
         link: "/portal",
       });
+      await logAdminAction("update", "project", `Posted update on "${updated.name}": ${body.addUpdate.title.trim().slice(0, 80)}`);
+    } else {
+      await logAdminAction("update", "project", `Updated project "${updated.name}" (status: ${updated.status})`);
     }
     return NextResponse.json({ project: updated });
   }
@@ -105,6 +109,7 @@ export async function POST(req: Request) {
     targetDate: body.targetDate,
   };
   await projectsDb.upsert(project);
+  await logAdminAction("create", "project", `Created project "${project.name}" for ${client.company}`);
   return NextResponse.json({ project });
 }
 
@@ -112,6 +117,9 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const all = await projectsDb.list();
+  const existing = all.find((p) => p.id === id);
   await projectsDb.remove(id);
+  await logAdminAction("delete", "project", `Deleted project "${existing?.name ?? id}"`);
   return NextResponse.json({ ok: true });
 }

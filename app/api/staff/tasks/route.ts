@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { tasksDb, employeesDb, type TaskStatus } from "@/lib/admin/db";
 import { verifyStaffToken, STAFF_COOKIE } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 const STATUSES: TaskStatus[] = ["todo", "in-progress", "done"];
 
@@ -27,5 +28,6 @@ export async function POST(req: Request) {
   if (!mine) return NextResponse.json({ error: "Not your task" }, { status: 403 });
 
   await tasksDb.upsert({ ...task, status: body.status });
+  await logActorAction("staff", emp.name, "task-status", "task", `${emp.name} moved task "${task.title}" → ${body.status}`);
   return NextResponse.json({ ok: true });
 }

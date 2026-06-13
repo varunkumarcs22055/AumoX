@@ -7,6 +7,7 @@ import {
   STAFF_COOKIE,
   STAFF_TTL_SECONDS,
 } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 const schema = z.object({
   email: z.string().email(),
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
   if (!(await verifyPassword(parsed.data.password, emp.passwordHash))) return fail();
 
   const token = await createStaffToken(emp.id);
+  await logActorAction("staff", emp.name, "login", "session", `${emp.name} signed in to the staff workspace`);
   const res = NextResponse.json({ ok: true, employee: { name: emp.name } });
   res.cookies.set(STAFF_COOKIE, token, {
     httpOnly: true,

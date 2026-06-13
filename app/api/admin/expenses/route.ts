@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { expensesDb, newId, type Expense } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
     reference: body.reference?.slice(0, 120),
   };
   await expensesDb.upsert(expense);
+  await logAdminAction(body.id ? "update" : "create", "expense", `Recorded ${expense.category} expense ${expense.currency} ${expense.amount.toLocaleString()} — ${expense.description}`);
   return NextResponse.json({ expense, expenses: await expensesDb.list() });
 }
 
@@ -42,6 +44,8 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = (await expensesDb.list()).find((e) => e.id === id);
   await expensesDb.remove(id);
+  await logAdminAction("delete", "expense", `Deleted expense${existing ? ` ${existing.currency} ${existing.amount.toLocaleString()} — ${existing.description}` : ` ${id}`}`);
   return NextResponse.json({ ok: true });
 }

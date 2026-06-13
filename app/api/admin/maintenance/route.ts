@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { maintenanceDb } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -32,5 +33,6 @@ export async function POST(req: Request) {
       { status: 502 }
     );
   }
+  await logAdminAction("maintenance", "site", `Maintenance mode ${next.enabled ? "ENABLED" : "disabled"}`);
   return NextResponse.json({ maintenance: next });
 }

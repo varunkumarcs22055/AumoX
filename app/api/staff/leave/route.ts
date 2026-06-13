@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { leavesDb, employeesDb, notificationsDb, newId } from "@/lib/admin/db";
 import { verifyStaffToken, STAFF_COOKIE } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 /** Employee submits a leave request (pending → admin approves/rejects). */
 export async function POST(req: Request) {
@@ -40,5 +41,6 @@ export async function POST(req: Request) {
     message: `${emp.name} requested ${days} day${days > 1 ? "s" : ""} leave (${body.from} → ${body.to})`,
     link: "/admin/hr",
   });
+  await logActorAction("staff", emp.name, "leave-request", "leave", `${emp.name} requested ${days} day(s) leave (${body.from} → ${body.to})`);
   return NextResponse.json({ leave });
 }

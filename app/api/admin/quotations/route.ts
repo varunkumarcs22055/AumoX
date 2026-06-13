@@ -13,6 +13,7 @@ import {
   type InvoiceItem,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -81,6 +82,7 @@ export async function POST(req: Request) {
       message: `Invoice ${invoice.number} has been issued from quotation ${q.number}`,
       link: "/portal",
     });
+    await logAdminAction("convert", "quotation", `Converted quotation ${q.number} → invoice ${invoice.number}`);
     return NextResponse.json({ invoice, quotation: { ...q, invoiceId: invoice.id } });
   }
 
@@ -110,6 +112,13 @@ export async function POST(req: Request) {
         link: "/portal",
       });
     }
+    await logAdminAction(
+      body.status && body.status !== existing.status ? "status" : "update",
+      "quotation",
+      body.status && body.status !== existing.status
+        ? `Quotation ${updated.number}: ${existing.status} → ${updated.status}`
+        : `Edited quotation ${updated.number}`
+    );
     return NextResponse.json({ quotation: updated });
   }
 
@@ -143,6 +152,7 @@ export async function POST(req: Request) {
     message: `New quotation ${quotation.number} (${quotation.currency} ${quotationTotal(quotation).toLocaleString()}) is awaiting your review`,
     link: "/portal",
   });
+  await logAdminAction("create", "quotation", `Created quotation ${quotation.number} for ${client.company} — ${quotation.currency} ${quotationTotal(quotation).toLocaleString()}`);
   return NextResponse.json({ quotation });
 }
 
@@ -150,6 +160,8 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = (await quotationsDb.list()).find((q) => q.id === id);
   await quotationsDb.remove(id);
+  await logAdminAction("delete", "quotation", `Deleted quotation ${existing?.number ?? id}`);
   return NextResponse.json({ ok: true });
 }

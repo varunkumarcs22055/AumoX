@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { clientsDb, projectsDb, newId, type Client } from "@/lib/admin/db";
 import { hashPassword } from "@/lib/admin/auth";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       ...(body.password ? { passwordHash: await hashPassword(body.password) } : {}),
     };
     await clientsDb.upsert(updated);
+    await logAdminAction("update", "client", `Updated client ${updated.company}${body.password ? " (password reset)" : ""}`);
     return NextResponse.json({ client: pub(updated) });
   }
 
@@ -72,6 +74,7 @@ export async function POST(req: Request) {
     active: body.active ?? true,
   };
   await clientsDb.upsert(client);
+  await logAdminAction("create", "client", `Created client ${client.company} (${client.email})`);
   return NextResponse.json({ client: pub(client) });
 }
 
@@ -79,11 +82,14 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = await clientsDb.findById(id);
   await clientsDb.remove(id);
   // Remove the client's projects too — orphaned projects are invisible anyway
   const projects = await projectsDb.list();
-  for (const p of projects.filter((p) => p.clientId === id)) {
+  const removedProjects = projects.filter((p) => p.clientId === id);
+  for (const p of removedProjects) {
     await projectsDb.remove(p.id);
   }
+  await logAdminAction("delete", "client", `Deleted client ${existing?.company ?? id}${removedProjects.length ? ` and ${removedProjects.length} project(s)` : ""}`);
   return NextResponse.json({ ok: true });
 }

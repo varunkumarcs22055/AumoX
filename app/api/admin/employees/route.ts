@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { employeesDb, newId, type Employee } from "@/lib/admin/db";
 import { hashPassword } from "@/lib/admin/auth";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
       ...(body.password ? { passwordHash: await hashPassword(body.password) } : {}),
     };
     await employeesDb.upsert(updated);
+    await logAdminAction("update", "employee", `Updated employee ${updated.name}${body.password ? " (password reset)" : ""}${body.active === false ? " — deactivated" : ""}`);
     return NextResponse.json({ employee: pub(updated) });
   }
 
@@ -75,6 +77,7 @@ export async function POST(req: Request) {
     active: true,
   };
   await employeesDb.upsert(employee);
+  await logAdminAction("create", "employee", `Added employee ${employee.name}${employee.designation ? ` (${employee.designation})` : ""}`);
   return NextResponse.json({ employee: pub(employee) });
 }
 
@@ -82,6 +85,8 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = await employeesDb.findById(id);
   await employeesDb.remove(id);
+  await logAdminAction("delete", "employee", `Removed employee ${existing?.name ?? id}`);
   return NextResponse.json({ ok: true });
 }

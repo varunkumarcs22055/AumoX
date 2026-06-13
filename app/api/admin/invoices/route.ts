@@ -12,6 +12,7 @@ import {
   type InvoiceStatus,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -63,6 +64,13 @@ export async function POST(req: Request) {
       ...(body.taxPercent !== undefined ? { taxPercent: Math.max(0, Number(body.taxPercent) || 0) } : {}),
     };
     await invoicesDb.upsert(updated);
+    await logAdminAction(
+      body.status && body.status !== existing.status ? "status" : "update",
+      "invoice",
+      body.status && body.status !== existing.status
+        ? `Invoice ${updated.number}: ${existing.status} → ${updated.status}`
+        : `Edited invoice ${updated.number}`
+    );
     return NextResponse.json({ invoice: updated });
   }
 
@@ -100,6 +108,7 @@ export async function POST(req: Request) {
       link: "/portal",
     });
   }
+  await logAdminAction("create", "invoice", `Created invoice ${invoice.number} for ${client.company} (${invoice.status})`);
   return NextResponse.json({ invoice });
 }
 
@@ -107,6 +116,8 @@ export async function DELETE(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = (await req.json()) as { id?: string };
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const existing = (await invoicesDb.list()).find((i) => i.id === id);
   await invoicesDb.remove(id);
+  await logAdminAction("delete", "invoice", `Deleted invoice ${existing?.number ?? id}`);
   return NextResponse.json({ ok: true });
 }

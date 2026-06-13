@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
 import { queriesDb, notificationsDb } from "@/lib/admin/db";
+import { logActorAction } from "@/lib/admin/audit";
 
 const schema = z.object({
   name: z.string().min(2).max(120),
@@ -91,6 +92,8 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[AUMOXO contact] notification failed:", err);
   }
+
+  await logActorAction("visitor", data.name, "enquiry", "query", `New website enquiry — ${data.service}${data.company ? ` · ${data.company}` : ""}`);
 
   const to = process.env.CONTACT_EMAIL_TO ?? "hello@aumoxo.tech";
   const from = process.env.CONTACT_EMAIL_FROM ?? "onboarding@resend.dev";

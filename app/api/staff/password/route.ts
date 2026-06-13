@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { employeesDb } from "@/lib/admin/db";
 import { verifyStaffToken, STAFF_COOKIE, verifyPassword, hashPassword } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 /** Staff change their own password (requires the current one). */
 export async function POST(req: Request) {
@@ -21,5 +22,6 @@ export async function POST(req: Request) {
   }
 
   await employeesDb.upsert({ ...employee, passwordHash: await hashPassword(next) });
+  await logActorAction("staff", employee.name, "password", "session", `${employee.name} changed their password`);
   return NextResponse.json({ ok: true });
 }

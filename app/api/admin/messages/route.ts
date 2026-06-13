@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { messagesDb, clientsDb, notificationsDb } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
+import { logAdminAction } from "@/lib/admin/audit";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -68,5 +69,6 @@ export async function POST(req: Request) {
     message: `New message from the AUMOXO team: ${msg.body.slice(0, 80)}`,
     link: "/portal",
   });
+  await logAdminAction("message", "message", `Replied to ${client.company}: ${msg.body.slice(0, 80)}`);
   return NextResponse.json({ message: msg, messages: await messagesDb.listByClient(clientId) });
 }

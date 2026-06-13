@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { attendanceDb, employeesDb, newId } from "@/lib/admin/db";
 import { verifyStaffToken, STAFF_COOKIE } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 /** Clock in / clock out — one row per employee per day. */
 export async function POST(req: Request) {
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
       mode: body.mode === "wfh" ? ("wfh" as const) : ("office" as const),
     };
     await attendanceDb.upsert({ ...row, inAt: now, mode: body.mode === "wfh" ? "wfh" : "office" });
+    await logActorAction("staff", emp.name, "clock-in", "attendance", `${emp.name} clocked in (${body.mode === "wfh" ? "WFH" : "office"})`);
     return NextResponse.json({ ok: true, row: await attendanceDb.today(emp.id) });
   }
 
@@ -38,6 +40,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Already clocked out today" }, { status: 400 });
     }
     await attendanceDb.upsert({ ...existing, outAt: now });
+    await logActorAction("staff", emp.name, "clock-out", "attendance", `${emp.name} clocked out`);
     return NextResponse.json({ ok: true, row: await attendanceDb.today(emp.id) });
   }
 

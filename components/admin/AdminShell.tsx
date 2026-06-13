@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Inbox,
@@ -23,6 +23,7 @@ import {
   UserCog,
   MessageSquare,
   BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -44,10 +45,23 @@ const links = [
   { href: "/admin/settings",   label: "Settings",   icon: Settings },
 ];
 
+// Visible only to the main (super) admin.
+const superLink = { href: "/admin/activity", label: "Activity log", icon: ShieldCheck };
+
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [isSuper, setIsSuper] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/me", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setIsSuper(d?.role === "super"))
+      .catch(() => {});
+  }, []);
+
+  const navLinks = isSuper ? [...links, superLink] : links;
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -76,7 +90,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </div>
 
         <nav className="mt-8 flex flex-col gap-1 overflow-y-auto pr-1 -mr-1">
-          {links.map((l) => {
+          {navLinks.map((l) => {
             const Icon = l.icon;
             const active = pathname === l.href;
             return (

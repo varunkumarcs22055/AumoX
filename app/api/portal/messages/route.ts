@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { messagesDb, clientsDb, notificationsDb } from "@/lib/admin/db";
 import { verifyClientToken, CLIENT_COOKIE } from "@/lib/admin/auth";
+import { logActorAction } from "@/lib/admin/audit";
 
 async function getClient() {
   const c = await cookies();
@@ -40,5 +41,6 @@ export async function POST(req: Request) {
     message: `New message from ${client.company}: ${msg.body.slice(0, 80)}`,
     link: "/admin/messages",
   });
+  await logActorAction("client", client.company, "message", "message", `${client.company} sent a message: ${msg.body.slice(0, 80)}`);
   return NextResponse.json({ message: msg, messages: await messagesDb.listByClient(client.id) });
 }
