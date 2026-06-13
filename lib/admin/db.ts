@@ -42,6 +42,14 @@ const versionOf = (pathname: string): number => {
 };
 const blobCache = new Map<string, { url: string; version: number }>();
 
+// Per-lambda short-TTL value cache. Collapses bursts of reads (a single
+// force-dynamic page render reads several stores; e2e runs hammer them) into
+// one blob round-trip per key per TTL window, slashing Blob "operations" usage.
+// Writes refresh the entry (read-your-writes within the lambda); a fresh lambda
+// has no cache and always reads live, so cross-function consistency is intact.
+const valueCache = new Map<string, { value: unknown; at: number }>();
+const VALUE_TTL_MS = 5000;
+
 async function blobGet<T>(key: string): Promise<T | undefined> {
   try {
     const cached = blobCache.get(key);
@@ -81,17 +89,21 @@ async function blobSet<T>(key: string, value: T): Promise<boolean> {
       contentType: "application/json",
     });
     blobCache.set(key, { url: blob.url, version });
-    // Best-effort cleanup: keep the 3 newest versions, delete the rest
-    try {
-      const { blobs } = await list({ prefix: verPrefix(key) });
-      const sorted = blobs
-        .map((b) => ({ url: b.url, v: versionOf(b.pathname) }))
-        .sort((a, b) => b.v - a.v);
-      for (const old of sorted.slice(3)) {
-        await del(old.url);
+    // Best-effort cleanup: keep the 3 newest versions, delete the rest.
+    // Run only ~1 in 5 writes — the list()+del() calls are themselves billed
+    // operations, so sampling keeps storage tidy without doubling write cost.
+    if (Math.random() < 0.2) {
+      try {
+        const { blobs } = await list({ prefix: verPrefix(key) });
+        const sorted = blobs
+          .map((b) => ({ url: b.url, v: versionOf(b.pathname) }))
+          .sort((a, b) => b.v - a.v);
+        for (const old of sorted.slice(3)) {
+          await del(old.url);
+        }
+      } catch {
+        /* cleanup is non-critical */
       }
-    } catch {
-      /* cleanup is non-critical */
     }
     return true;
   } catch (e) {
@@ -110,7 +122,12 @@ async function getValue<T>(key: string, fallback: T): Promise<T> {
     }
   }
   if (BLOB_ENABLED) {
+    const cached = valueCache.get(key);
+    if (cached && Date.now() - cached.at < VALUE_TTL_MS) {
+      return (cached.value as T) ?? fallback;
+    }
     const v = await blobGet<T>(key);
+    valueCache.set(key, { value: v, at: Date.now() });
     return v ?? fallback;
   }
   return (mem.get(key) as T) ?? fallback;
@@ -126,7 +143,10 @@ async function setValue<T>(key: string, value: T): Promise<void> {
     }
   }
   if (BLOB_ENABLED) {
-    if (await blobSet(key, value)) return;
+    if (await blobSet(key, value)) {
+      valueCache.set(key, { value, at: Date.now() }); // read-your-writes
+      return;
+    }
   }
   mem.set(key, value);
 }
@@ -909,8 +929,9 @@ export const auditDb = {
   async push(e: Omit<AuditEntry, "id" | "at">) {
     const all = await auditDb.list();
     all.unshift({ ...e, id: newId(), at: new Date().toISOString() });
-    // Keep the most recent 3000 events — plenty of history, bounded storage.
-    await setValue(AUDIT_KEY, all.slice(0, 3000));
+    // Keep the most recent 600 events. The whole array is rewritten on every
+    // action, so a tighter cap keeps each write small (cheaper storage ops).
+    await setValue(AUDIT_KEY, all.slice(0, 600));
   },
 };
 
