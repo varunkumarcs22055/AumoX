@@ -38,6 +38,9 @@ export default function Navbar() {
 
   if (pathname?.startsWith("/admin") || pathname?.startsWith("/portal") || pathname?.startsWith("/staff")) return null;
 
+  // A nav item is active on its own page and any nested route beneath it.
+  const isActive = (href: string) => pathname === href || pathname?.startsWith(href + "/");
+
   return (
     <>
       <header
@@ -56,7 +59,12 @@ export default function Navbar() {
 
           <nav className="hidden lg:flex items-center gap-5 xl:gap-8">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="nav-link whitespace-nowrap">
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={isActive(l.href) ? "page" : undefined}
+                className={`nav-link whitespace-nowrap ${isActive(l.href) ? "is-active" : ""}`}
+              >
                 {l.label}
               </Link>
             ))}
@@ -117,8 +125,12 @@ export default function Navbar() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="py-4 text-xl font-light text-ink-100 border-b border-line hover:text-gold-300 transition-colors"
+                aria-current={isActive(l.href) ? "page" : undefined}
+                className={`py-4 text-xl font-light border-b border-line transition-colors flex items-center gap-3 ${
+                  isActive(l.href) ? "text-gold-300" : "text-ink-100 hover:text-gold-300"
+                }`}
               >
+                {isActive(l.href) && <span className="h-4 w-0.5 bg-gold-400 rounded-full" />}
                 {l.label}
               </Link>
             ))}

@@ -102,13 +102,13 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Floating toggle — bottom-right on mobile, middle-right on desktop */}
+      {/* Floating toggle — anchored bottom-right on every breakpoint */}
       <button
         onClick={() => {
           setOpen((v) => !v);
           setHasGreeting(false);
         }}
-        className={`fixed right-6 bottom-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 z-[70] grid h-14 w-14 place-items-center rounded-full text-black shadow-[0_12px_32px_rgba(212,175,55,0.5)] transition-transform hover:scale-110 ${
+        className={`fixed right-6 bottom-6 z-[70] grid h-14 w-14 place-items-center rounded-full text-black shadow-[0_12px_32px_rgba(212,175,55,0.5)] transition-transform hover:scale-110 active:scale-95 ${
           hasGreeting && !open ? "animate-pulse-glow" : ""
         }`}
         style={{
@@ -119,15 +119,14 @@ export default function Chatbot() {
         {open ? <X size={22} /> : <MessageCircle size={22} />}
       </button>
 
-      {/* Panel */}
-      {/* Positioning wrapper — mobile bottom-right, desktop middle-right (centered) */}
+      {/* Panel — opens upward from the bubble, bottom-right on all sizes */}
       <div
-        className="fixed z-[69] bottom-24 right-6 lg:bottom-auto lg:top-1/2 lg:right-24 lg:-translate-y-1/2"
+        className="fixed z-[69] bottom-24 right-6"
         style={{ pointerEvents: open ? "auto" : "none" }}
       >
         {/* Scaling/opacity wrapper — handles open/close animation independently */}
         <div
-          className="flex flex-col overflow-hidden rounded-2xl border border-line bg-bg-surface shadow-2xl transition-[opacity,transform] duration-300 ease-out w-[380px] h-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-9rem)] lg:max-h-[calc(100vh-3rem)] origin-bottom-right lg:origin-right"
+          className="flex flex-col overflow-hidden rounded-2xl border border-line bg-bg-surface shadow-2xl transition-[opacity,transform] duration-300 ease-out w-[380px] h-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-9rem)] origin-bottom-right"
           style={{
             transform: open ? "scale(1)" : "scale(0.92)",
             opacity: open ? 1 : 0,

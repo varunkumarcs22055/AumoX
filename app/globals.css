@@ -161,6 +161,7 @@
   .card {
     @apply relative rounded-2xl bg-bg-surface border transition-all;
     border-color: rgb(var(--line) / 0.2);
+    isolation: isolate; /* contains the -1 spotlight layer within the card */
   }
   .card:hover {
     border-color: rgb(var(--line) / 0.5);
@@ -187,6 +188,10 @@
     transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
   }
   .nav-link:hover::after { transform: scaleX(1); }
+  /* Active route — same gold + underline treatment as hover, but persistent */
+  .nav-link.is-active { color: rgb(var(--line-strong)); }
+  .dark .nav-link.is-active { color: #E5C76B; }
+  .nav-link.is-active::after { transform: scaleX(1); }
 
   .input {
     @apply w-full bg-bg-surface rounded-lg px-4 py-3 text-ink-100 placeholder:text-ink-400 outline-none transition-colors;
@@ -280,6 +285,80 @@ a, button {
 /* Border + bg-line helpers across themes */
 .border-line { border-color: rgb(var(--line) / 0.2) !important; }
 .bg-line { background-color: rgb(var(--line) / 0.2); }
+
+/* ============================================================
+   PREMIUM MICRO-ANIMATIONS — all GPU-cheap (transform / opacity /
+   background-position only), so they stay buttery on low-end devices.
+   ============================================================ */
+
+/* Gold CTA: a light sheen sweeps across on hover */
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+}
+.btn-gold::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.btn-gold:hover::after { left: 130%; }
+
+/* Animated gradient flow on gold headings — opt-in so body gold stays crisp */
+.gold-text.shimmer-text {
+  background-size: 220% auto;
+  animation: gradient-x 6s ease infinite;
+}
+
+/* Reusable lift — for tiles/links that aren't .card */
+.lift-on-hover { transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s cubic-bezier(0.22,1,0.36,1); will-change: transform; }
+.lift-on-hover:hover { transform: translateY(-4px); }
+
+/* Card image zoom — wrap an <img>/bg in .zoom-wrap */
+.zoom-wrap { overflow: hidden; }
+.zoom-wrap img, .zoom-wrap .zoom-target {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.group:hover .zoom-wrap img,
+.zoom-wrap:hover img,
+.group:hover .zoom-target { transform: scale(1.06); }
+
+/* Icon pop — small gold chips/icons spring on parent hover */
+.group:hover .icon-pop { transform: translateY(-2px) scale(1.08); }
+.icon-pop { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* Premium card spotlight — a soft gold glow tracks the cursor on every .card.
+   Driven by --spx / --spy CSS vars set by CardSpotlight (one rAF-throttled
+   listener). Uses ::after at z-index -1 so it sits above the card surface but
+   behind content, and never collides with .gold-border's ::before ring. */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(240px circle at var(--spx, 50%) var(--spy, 50%), rgba(212,175,55,0.12), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+.card:hover::after { opacity: 1; }
+:root:not(.dark) .card::after {
+  background: radial-gradient(240px circle at var(--spx, 50%) var(--spy, 50%), rgba(184,134,11,0.10), transparent 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-gold::after { left: -120%; }
+  .gold-text.shimmer-text { animation: none; }
+  .card::after { display: none; }
+}
 
 /* SiteParticles overlay — different blend per theme so particles look natural on both.
    Light: multiply darkens slightly → particles read as soft warm glints, no eye-strain.

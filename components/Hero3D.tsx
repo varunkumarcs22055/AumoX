@@ -200,15 +200,17 @@ export default function Hero3D() {
       />
 
       {/* ORBIT SYSTEM — only shown on xl+ screens where there's true right-side
-          space next to the (narrowed) text column. Vertically centered with
-          equal top/bottom space, never overlaps text. */}
+          space next to the (narrowed) text column. Anchored to the VIEWPORT
+          (42vh) rather than the section's center — the hero section is taller
+          than one screen, so a section-relative 50% pushed the orbit's lower
+          half below the fold. 42vh keeps the whole logo visible on load. */}
       <div
         className="hero-orbit-soft absolute hidden xl:block"
         style={{
-          top: "50%",
+          top: "42vh",
           right: "2%",
-          width: "min(30vw, 56vh, 400px)",
-          height: "min(30vw, 56vh, 400px)",
+          width: "min(30vw, 52vh, 400px)",
+          height: "min(30vw, 52vh, 400px)",
           transform: "translate3d(var(--mx), calc(var(--my) - 50%), 0)",
           willChange: "transform",
         }}

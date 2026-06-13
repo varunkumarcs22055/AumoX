@@ -66,6 +66,7 @@ type PortalQuotation = {
 };
 type PortalFile = { id: string; projectId: string; name: string; url: string; size: number; uploadedAt: string };
 type Notif = { id: string; message: string; read: boolean; createdAt: string };
+type PortalTask = { id: string; projectId: string; title: string; status: "todo" | "in-progress" | "done"; due?: string };
 type Me = {
   client: { company: string; name: string; email: string };
   projects: Project[];
@@ -73,6 +74,7 @@ type Me = {
   quotations?: PortalQuotation[];
   files?: PortalFile[];
   notifications?: Notif[];
+  tasks?: PortalTask[];
   bankDetails?: string;
 };
 
@@ -410,6 +412,50 @@ export default function PortalPage() {
                       ))}
                     </ol>
                   </div>
+
+                  {/* Work items — granular tasks the team is delivering */}
+                  {(() => {
+                    const projectTasks = (me.tasks ?? []).filter((t) => t.projectId === p.id);
+                    if (projectTasks.length === 0) return null;
+                    const order = { "in-progress": 0, todo: 1, done: 2 } as const;
+                    const sorted = [...projectTasks].sort((a, b) => order[a.status] - order[b.status]);
+                    const done = projectTasks.filter((t) => t.status === "done").length;
+                    return (
+                      <div className="p-8 lg:p-10 border-b border-line">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">
+                            Work items
+                          </div>
+                          <div className="text-xs text-ink-400">{done}/{projectTasks.length} done</div>
+                        </div>
+                        <ul className="space-y-2.5">
+                          {sorted.map((t) => (
+                            <li key={t.id} className="flex items-center gap-3">
+                              {t.status === "done" ? (
+                                <CheckCircle2 size={16} className="text-gold-400 shrink-0" />
+                              ) : t.status === "in-progress" ? (
+                                <span className="relative grid place-items-center h-4 w-4 shrink-0">
+                                  <span className="absolute h-full w-full rounded-full border border-gold-400 animate-ping-slow" />
+                                  <span className="h-2 w-2 rounded-full bg-gold-400" />
+                                </span>
+                              ) : (
+                                <Circle size={16} className="text-ink-500 shrink-0" />
+                              )}
+                              <span className={`text-sm font-light flex-1 ${t.status === "done" ? "text-ink-400 line-through" : t.status === "in-progress" ? "text-gold-300" : "text-ink-200"}`}>
+                                {t.title}
+                              </span>
+                              {t.status === "in-progress" && (
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-gold-400 shrink-0">In progress</span>
+                              )}
+                              {t.due && t.status !== "done" && (
+                                <span className="text-[11px] text-ink-400 shrink-0">{fmtDate(t.due)}</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })()}
 
                   {/* Updates timeline */}
                   <div className="p-8 lg:p-10">

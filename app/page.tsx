@@ -81,7 +81,7 @@ export default async function HomePage() {
             >
               <SplitWords text="Engineering the Next" />
               <br />
-              <SplitWords text="Decade of" /> <SplitWords text="Enterprise." className="gold-text font-light" />
+              <SplitWords text="Decade of" /> <SplitWords text="Enterprise." className="gold-text shimmer-text font-light" />
             </h1>
             <p data-anim="subtitle" className="mt-8 max-w-2xl text-lg md:text-xl text-ink-300 font-light leading-relaxed">
               AUMOXO develops enterprise-grade software, AI solutions, automation

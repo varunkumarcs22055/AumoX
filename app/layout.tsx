@@ -9,6 +9,9 @@ import JsonLd from "@/components/JsonLd";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import PageTransition from "@/components/PageTransition";
 import ScrollProgress from "@/components/ScrollProgress";
+import ScrollToTop from "@/components/ScrollToTop";
+import SmoothScroll from "@/components/SmoothScroll";
+import CardSpotlight from "@/components/CardSpotlight";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
@@ -133,6 +136,8 @@ export default function RootLayout({
       <body className="min-h-screen bg-bg-base text-ink-100 font-sans">
         <ThemeProvider>
           <MaintenanceGate>
+            <SmoothScroll />
+            <CardSpotlight />
             <ScrollProgress />
             <Navbar />
             <main className="min-h-screen">
@@ -140,6 +145,7 @@ export default function RootLayout({
             </main>
             <Footer />
             <SiteParticles />
+            <ScrollToTop />
             <Chatbot />
           </MaintenanceGate>
         </ThemeProvider>

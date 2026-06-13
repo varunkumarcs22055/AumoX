@@ -69,6 +69,18 @@ const config: Config = {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "ping-slow": {
+          "0%": { transform: "scale(1)", opacity: "0.5" },
+          "75%,100%": { transform: "scale(1.6)", opacity: "0" },
+        },
+        float: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "gradient-x": {
+          "0%,100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.7s ease-out forwards",
@@ -76,6 +88,9 @@ const config: Config = {
         shimmer: "shimmer 3s linear infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         marquee: "marquee 40s linear infinite",
+        "ping-slow": "ping-slow 2.4s cubic-bezier(0,0,0.2,1) infinite",
+        float: "float 6s ease-in-out infinite",
+        "gradient-x": "gradient-x 6s ease infinite",
       },
       backgroundImage: {
         "gold-gradient": "linear-gradient(135deg, #E5C76B 0%, #D4AF37 50%, #B8941F 100%)",
