@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
 import { filesDb, projectsDb, notificationsDb, newId } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
 import { logAdminAction } from "@/lib/admin/audit";
+import { uploadFile, deleteFileByUrl } from "@/lib/admin/storage";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -49,16 +49,19 @@ export async function POST(req: Request) {
   }
 
   const safeName = file.name.replace(/[^\w.\-() ]+/g, "_").slice(0, 120);
-  const blob = await put(`deliverables/${projectId}/${newId()}-${safeName}`, file, {
-    access: "public",
-    contentType: file.type,
-  });
+  let uploaded;
+  try {
+    uploaded = await uploadFile(`${projectId}/${newId()}-${safeName}`, file, file.type);
+  } catch (e) {
+    console.error("[files] upload failed:", e);
+    return NextResponse.json({ error: "Upload failed. Check storage configuration." }, { status: 502 });
+  }
 
   const record = {
     id: newId(),
     projectId,
     name: safeName,
-    url: blob.url,
+    url: uploaded.url,
     size: file.size,
     contentType: file.type,
     uploadedAt: new Date().toISOString(),
@@ -81,6 +84,7 @@ export async function DELETE(req: Request) {
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
   const existing = (await filesDb.list()).find((f) => f.id === id);
   await filesDb.remove(id);
+  if (existing?.url) await deleteFileByUrl(existing.url);
   await logAdminAction("delete", "file", `Deleted deliverable ${existing?.name ?? id}`);
   return NextResponse.json({ ok: true });
 }
