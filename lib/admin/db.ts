@@ -13,10 +13,11 @@
 
 import { kv } from "@vercel/kv";
 import { put, list, del } from "@vercel/blob";
+import { PG_ENABLED, pgGet, pgSet } from "./pg";
 
-// Storage priority: KV (if configured) → Vercel Blob (production default)
-// → in-memory Map (local dev only). Blob/KV are REQUIRED in production:
-// serverless functions don't share memory, so without shared storage the
+// Storage priority: Postgres (Neon/Supabase — durable primary) → Vercel KV →
+// Vercel Blob → in-memory Map (local dev only). A shared store is REQUIRED in
+// production: serverless functions don't share memory, so without it the
 // admin's writes are invisible to public page renders.
 const mem = new Map<string, unknown>();
 const KV_ENABLED =
@@ -113,6 +114,14 @@ async function blobSet<T>(key: string, value: T): Promise<boolean> {
 }
 
 async function getValue<T>(key: string, fallback: T): Promise<T> {
+  if (PG_ENABLED) {
+    try {
+      // Postgres is strongly consistent and cheap — always read fresh.
+      return (await pgGet<T>(key)) ?? fallback;
+    } catch (e) {
+      console.warn("[db] Postgres get failed:", e);
+    }
+  }
   if (KV_ENABLED) {
     try {
       const v = await kv.get<T>(key);
@@ -134,6 +143,14 @@ async function getValue<T>(key: string, fallback: T): Promise<T> {
 }
 
 async function setValue<T>(key: string, value: T): Promise<void> {
+  if (PG_ENABLED) {
+    try {
+      await pgSet(key, value);
+      return;
+    } catch (e) {
+      console.warn("[db] Postgres set failed:", e);
+    }
+  }
   if (KV_ENABLED) {
     try {
       await kv.set(key, value);

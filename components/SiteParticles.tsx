@@ -38,7 +38,7 @@ export default function SiteParticles() {
       style={{ contain: "strict" }}
     >
       <ParticleField
-        count={130}
+        count={80}
         cursorRadius={140}
         cursorStrength={0.15}
         constellationRadius={170}

@@ -66,17 +66,21 @@ export default function ParticleField({
     const isSmall = window.innerWidth < 768;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Scale particle count down on small viewports / touch devices
+    // Scale particle count down on small viewports / touch devices, with a
+    // hard cap on phones so a high-DPR phone can't spawn a heavy field.
     let effectiveCount = count;
-    if (isSmall) effectiveCount = Math.round(count * 0.45);
-    else if (isTouch) effectiveCount = Math.round(count * 0.65);
+    if (isSmall) effectiveCount = Math.min(36, Math.round(count * 0.3));
+    else if (isTouch) effectiveCount = Math.round(count * 0.5);
 
     // Touch/mobile: drop expensive eye-candy
     const showConstellation = !isTouch && !isSmall && constellationRadius > 0;
     const showWandReal = !isTouch && !isSmall && showWand;
     const reactToCursor = !isTouch;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    // DPR 1 on phones halves the pixels filled every frame; 1.5 max elsewhere.
+    const dpr = Math.min(window.devicePixelRatio || 1, isSmall ? 1 : 1.5);
+    // Cap to ~30fps on mobile/touch — ambient motion doesn't need 60.
+    const frameInterval = isSmall || isTouch ? 33 : 0;
     let w = parent.clientWidth;
     let h = parent.clientHeight;
 
@@ -192,7 +196,10 @@ export default function ParticleField({
         if (p.y < -buf) p.y = h + buf;
         if (p.y > h + buf) p.y = -buf;
 
-        // Draw spark
+        // Draw spark — no per-particle shadowBlur (by far the most expensive
+        // canvas op; multiplied across every spark every frame it was the main
+        // cause of jank, especially on mobile GPUs). The ambient gold gradients
+        // behind the field already supply the glow.
         const color = PALETTE[p.hueIdx];
         ctx!.save();
         ctx!.translate(p.x, p.y);
@@ -201,9 +208,6 @@ export default function ParticleField({
         ctx!.globalAlpha = p.opacity;
         ctx!.lineWidth = p.width;
         ctx!.lineCap = "round";
-        // shadowBlur is expensive — keep but small
-        ctx!.shadowColor = color;
-        ctx!.shadowBlur = 4;
         ctx!.beginPath();
         ctx!.moveTo(-p.length / 2, 0);
         ctx!.lineTo(p.length / 2, 0);
@@ -217,7 +221,6 @@ export default function ParticleField({
         const cr2 = cr * cr;
         ctx!.save();
         ctx!.lineCap = "round";
-        ctx!.shadowColor = "#D4AF37";
         for (const p of particles) {
           const dx = p.x - mx;
           const dy = p.y - my;
@@ -227,7 +230,6 @@ export default function ParticleField({
             const t = 1 - d / cr;
             ctx!.globalAlpha = t * 0.45;
             ctx!.lineWidth = 0.5 + t * 0.9;
-            ctx!.shadowBlur = 4 + t * 5;
             ctx!.strokeStyle = t > 0.6 ? "#FAF1D6" : "#E5C76B";
             ctx!.beginPath();
             ctx!.moveTo(mx, my);
@@ -251,10 +253,14 @@ export default function ParticleField({
       }
     }
 
+    let lastDraw = 0;
     function tick(now: number = performance.now()) {
       if (!running) return;
-      drawFrame(now);
       raf = requestAnimationFrame(tick);
+      // Throttle to the target frame interval on mobile (0 = uncapped/60fps)
+      if (frameInterval && now - lastDraw < frameInterval) return;
+      lastDraw = now;
+      drawFrame(now);
     }
 
     if (reducedMotion) {

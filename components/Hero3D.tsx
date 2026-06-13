@@ -368,7 +368,7 @@ export default function Hero3D() {
       {/* Premium canvas particle field — ParticleField auto-scales count down on
           small screens / touch devices so mobile stays smooth */}
       <div className="hero-deco-soft is-particles absolute inset-0">
-        <ParticleField count={200} cursorRadius={110} cursorStrength={0.1} />
+        <ParticleField count={110} cursorRadius={110} cursorStrength={0.1} />
       </div>
 
       {/* Left-side vignette so foreground copy stays legible */}
