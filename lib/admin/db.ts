@@ -142,6 +142,24 @@ async function getValue<T>(key: string, fallback: T): Promise<T> {
   return (mem.get(key) as T) ?? fallback;
 }
 
+// Every persisted store key (maintenance lives in Edge Config, not here).
+export const ALL_STORE_KEYS = [
+  "queries", "jobs", "insights", "stats", "clients", "projects", "leads",
+  "invoices", "tasks", "company-settings", "doc-counters", "employees",
+  "attendance", "leaves", "payslips", "assets", "quotations", "payments",
+  "notifications", "admin-users", "audit-log", "expenses", "messages",
+  "project-files",
+] as const;
+
+/** Full snapshot of every store — powers the owner's backup export. */
+export async function exportAllStores(): Promise<Record<string, unknown>> {
+  const out: Record<string, unknown> = {};
+  for (const key of ALL_STORE_KEYS) {
+    out[key] = await getValue<unknown>(key, null);
+  }
+  return out;
+}
+
 async function setValue<T>(key: string, value: T): Promise<void> {
   if (PG_ENABLED) {
     try {

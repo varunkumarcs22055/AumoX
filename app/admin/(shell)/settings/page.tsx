@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, RotateCcw, Info, Loader2, ShieldCheck, KeyRound, Trash2, Copy, UserPlus } from "lucide-react";
+import { Check, RotateCcw, Info, Loader2, ShieldCheck, KeyRound, Trash2, Copy, UserPlus, Download, DatabaseBackup } from "lucide-react";
 
 type AdminAccount = { id: string; name: string; email: string; createdAt: string; active: boolean };
 
@@ -35,6 +35,26 @@ export default function SettingsAdmin() {
   const [adminBusy, setAdminBusy] = useState(false);
   const [adminMsg, setAdminMsg] = useState("");
   const [adminCreds, setAdminCreds] = useState<{ name: string; email: string; password: string } | null>(null);
+  const [backupBusy, setBackupBusy] = useState(false);
+
+  async function downloadBackup() {
+    setBackupBusy(true);
+    try {
+      const res = await fetch("/api/admin/export");
+      if (!res.ok) { alert("Export failed. Only the main admin can download the full backup."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `aumoxo-backup-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setBackupBusy(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -159,6 +179,28 @@ export default function SettingsAdmin() {
           <p className="mt-2 text-ink-300 font-light">Tune the headline numbers shown across the site. Saved to the live database.</p>
         </div>
       </div>
+
+      {/* Full data backup — main admin only */}
+      {role === "super" && (
+        <div className="mt-10 card p-7 gold-border">
+          <div className="flex items-center gap-2">
+            <DatabaseBackup size={18} className="text-gold-400" />
+            <h2 className="font-display text-xl font-light text-ink-100">Backup &amp; export</h2>
+          </div>
+          <p className="text-sm text-ink-300 mt-1 font-light">
+            Download a complete copy of the entire database — every client, project,
+            invoice, employee, attendance record and more — as a ZIP (JSON for exact
+            restore + CSV for Excel). Only you, the main admin, can do this. It may
+            take a few seconds.
+          </p>
+          <div className="mt-5 flex items-center gap-3 flex-wrap">
+            <button onClick={downloadBackup} disabled={backupBusy} className="btn-gold text-sm !py-2.5 !px-5 disabled:opacity-60">
+              {backupBusy ? <><Loader2 size={15} className="animate-spin" /> Preparing ZIP…</> : <><Download size={15} /> Download all data (ZIP)</>}
+            </button>
+            <span className="text-xs text-ink-400">Contains sensitive data — store it securely.</span>
+          </div>
+        </div>
+      )}
 
       {/* Admin accounts — visible only to the main (super) admin */}
       {role === "super" && (
