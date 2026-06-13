@@ -1,7 +1,11 @@
 import Link from "next/link";
 import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import Reveal from "@/components/anim/Reveal";
-import { ArrowUpRight, CheckCircle2, Sparkles, Briefcase, Workflow } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Sparkles, Briefcase, Workflow, ExternalLink } from "lucide-react";
+import { solutionsDb } from "@/lib/admin/db";
+
+// Managed from the admin (Solutions) — always render fresh.
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Solutions — AI Customer Support, CRM & Operations Automation",
@@ -70,7 +74,11 @@ const comingSoon = [
   { name: "AUMOXO Operations Hub", desc: "Workflow automation and team operations platform." },
 ];
 
-export default function SolutionsPage() {
+export default async function SolutionsPage() {
+  const work = (await solutionsDb.list())
+    .filter((s) => s.published)
+    .sort((a, b) => a.order - b.order);
+
   return (
     <>
       <BreadcrumbsLd items={[{ name: "Solutions", path: "/products" }]} />
@@ -93,6 +101,90 @@ export default function SolutionsPage() {
           </div>
         </div>
       </section>
+
+      {/* OUR WORK — admin-managed, with images & videos */}
+      {work.length > 0 && (
+        <section className="py-24 lg:py-32 border-b border-line">
+          <div className="container-x">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <div className="eyebrow justify-center">
+                <span className="h-px w-8 bg-gold-400" />
+                Our Work
+                <span className="h-px w-8 bg-gold-400" />
+              </div>
+              <h2 className="section-title mt-5">What we&apos;ve built.</h2>
+              <p className="section-sub mx-auto text-center">
+                Real products and systems we&apos;ve shipped for our clients.
+              </p>
+            </div>
+
+            <div className="space-y-20">
+              {work.map((s, idx) => (
+                <Reveal
+                  key={s.id}
+                  kind="fade-up"
+                  className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-center ${idx % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""}`}
+                >
+                  {/* Cover / lead media */}
+                  <div className="zoom-wrap rounded-2xl overflow-hidden border border-line gold-border">
+                    {s.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s.coverImage} alt={s.title} className="w-full aspect-[16/10] object-cover" />
+                    ) : s.media[0]?.type === "video" ? (
+                      <video src={s.media[0].url} className="w-full aspect-[16/10] object-cover" controls muted playsInline />
+                    ) : s.media[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s.media[0].url} alt={s.title} className="w-full aspect-[16/10] object-cover" />
+                    ) : (
+                      <div className="w-full aspect-[16/10] bg-gradient-to-br from-gold-400/15 to-bg-base" />
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{s.category}</div>
+                    <h3 className="mt-3 font-display text-3xl md:text-4xl font-extralight text-ink-100 tracking-tight">{s.title}</h3>
+                    {s.summary && <p className="mt-4 text-xl font-light text-ink-200 leading-snug">{s.summary}</p>}
+                    {s.description && <p className="mt-4 text-ink-300 font-light leading-relaxed whitespace-pre-wrap">{s.description}</p>}
+
+                    {s.tags.length > 0 && (
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {s.tags.map((t) => (
+                          <span key={t} className="text-[11px] uppercase tracking-[0.15em] text-ink-300 border border-line rounded-full px-3 py-1">{t}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Extra media gallery */}
+                    {s.media.length > (s.coverImage ? 0 : 1) && (
+                      <div className="mt-6 grid grid-cols-3 gap-3">
+                        {s.media.slice(s.coverImage ? 0 : 1).map((m, i) => (
+                          <div key={i} className="zoom-wrap rounded-lg overflow-hidden border border-line">
+                            {m.type === "video" ? (
+                              <video src={m.url} className="w-full aspect-square object-cover" controls muted playsInline />
+                            ) : (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={m.url} alt="" className="w-full aspect-square object-cover" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="mt-7 flex flex-wrap gap-3">
+                      {s.link && (
+                        <a href={s.link} target="_blank" rel="noopener noreferrer" className="btn-gold">
+                          View live <ExternalLink size={16} />
+                        </a>
+                      )}
+                      <Link href="/contact" className="btn-ghost">Build something like this</Link>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* SOLUTIONS */}
       <section className="py-24 lg:py-32">

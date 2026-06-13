@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Edit2, Trash2, Check, X, RotateCcw, Eye, EyeOff, Loader2 } from "lucide-react";
+import MediaUpload from "@/components/admin/MediaUpload";
 
 type Insight = {
   id: string;
@@ -12,6 +13,7 @@ type Insight = {
   readMin: number;
   author?: string;
   url?: string;
+  image?: string;
   published: boolean;
 };
 
@@ -139,6 +141,17 @@ export default function InsightsAdmin() {
             <Field label="Article link (Medium / Hashnode / LinkedIn…)" className="md:col-span-2">
               <input type="url" className="input" value={editing.url ?? ""} onChange={(e) => setEditing({ ...editing, url: e.target.value })} placeholder="https://medium.com/@aumoxo/your-article" />
             </Field>
+            <div className="md:col-span-2">
+              <MediaUpload
+                label="Cover image"
+                accept="image"
+                folder="aumoxo/insights"
+                value={editing.image}
+                valueType="image"
+                onChange={(url) => setEditing({ ...editing, image: url })}
+                onClear={() => setEditing({ ...editing, image: undefined })}
+              />
+            </div>
             <Field label="Published" className="md:col-span-2">
               <label className="flex items-center gap-3 mt-2">
                 <input type="checkbox" checked={editing.published} onChange={(e) => setEditing({ ...editing, published: e.target.checked })} className="h-5 w-5 accent-amber-500" />
@@ -165,6 +178,10 @@ export default function InsightsAdmin() {
           <div className="card p-10 text-center text-ink-400 md:col-span-2">No articles yet.</div>
         ) : items.map((i) => (
           <div key={i.id} className={`card p-6 flex flex-col ${i.published ? "" : "opacity-60"}`}>
+            {i.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={i.image} alt="" className="mb-4 -mt-1 h-32 w-full object-cover rounded-lg border border-line" />
+            )}
             <div className="flex items-start justify-between gap-3">
               <span className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{i.tag}</span>
               <button onClick={() => togglePublished(i)} className="text-ink-300 hover:text-gold-300" aria-label="Toggle published">

@@ -24,6 +24,7 @@ import {
   MessageSquare,
   BarChart3,
   ShieldCheck,
+  LayoutTemplate,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -41,6 +42,7 @@ const links = [
   { href: "/admin/reports",    label: "Reports",    icon: BarChart3 },
   { href: "/admin/team",       label: "Team / HR",  icon: UserCog },
   { href: "/admin/careers",    label: "Careers",    icon: Briefcase },
+  { href: "/admin/solutions",  label: "Solutions",  icon: LayoutTemplate },
   { href: "/admin/insights",   label: "Insights",   icon: BookOpen },
   { href: "/admin/settings",   label: "Settings",   icon: Settings },
 ];

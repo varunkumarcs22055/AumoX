@@ -148,7 +148,7 @@ export const ALL_STORE_KEYS = [
   "invoices", "tasks", "company-settings", "doc-counters", "employees",
   "attendance", "leaves", "payslips", "assets", "quotations", "payments",
   "notifications", "admin-users", "audit-log", "expenses", "messages",
-  "project-files",
+  "project-files", "solutions",
 ] as const;
 
 /** Full snapshot of every store — powers the owner's backup export. */
@@ -222,7 +222,26 @@ export type Insight = {
   author?: string;
   /** External article URL (Medium, Hashnode, LinkedIn, …) — cards link here */
   url?: string;
+  /** Cloudinary cover image URL */
+  image?: string;
   published: boolean;
+};
+
+// ---------- Solutions / Work showcase (images + videos) ----------
+export type SolutionMedia = { type: "image" | "video"; url: string };
+export type Solution = {
+  id: string;
+  title: string;
+  category: string;       // "AI" | "CRM" | "Web" | "Mobile" | "Automation" | "Design" | …
+  summary: string;        // one-liner
+  description: string;    // longer body
+  coverImage?: string;    // Cloudinary URL
+  media: SolutionMedia[]; // gallery of images + videos
+  tags: string[];
+  link?: string;          // live site / case study URL
+  order: number;          // lower = shown first
+  published: boolean;
+  createdAt: string;
 };
 
 export type SiteStats = {
@@ -318,6 +337,22 @@ export const insightsDb = {
     await setValue(I_KEY, all.filter((x) => x.id !== id));
   },
   async reset() { await setValue(I_KEY, DEFAULT_INSIGHTS); },
+};
+
+// ---------- Solutions / Work showcase ----------
+const SOL_KEY = "solutions";
+export const solutionsDb = {
+  list: () => getValue<Solution[]>(SOL_KEY, []),
+  async upsert(s: Solution) {
+    const all = await solutionsDb.list();
+    const i = all.findIndex((x) => x.id === s.id);
+    if (i >= 0) all[i] = s; else all.unshift(s);
+    await setValue(SOL_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await solutionsDb.list();
+    await setValue(SOL_KEY, all.filter((x) => x.id !== id));
+  },
 };
 
 // ---------- Stats ----------
