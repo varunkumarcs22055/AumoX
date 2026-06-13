@@ -8,9 +8,12 @@ import {
 type Employee = {
   id: string; name: string; email: string; designation?: string;
   joinedAt: string; salaryMonthly?: number; active: boolean;
+  shiftStart?: string; shiftEnd?: string;
 };
 type Leave = { id: string; employeeId: string; from: string; to: string; days: number; reason?: string; status: string; requestedAt: string };
-type Attendance = { id: string; employeeId: string; date: string; inAt?: string; outAt?: string; mode: string };
+type Session = { in: string; out?: string };
+type Brk = { type: string; start: string; end?: string };
+type Attendance = { id: string; employeeId: string; date: string; mode: string; sessions?: Session[]; breaks?: Brk[]; inAt?: string; outAt?: string };
 type Payslip = { id: string; number: string; employeeId: string; month: string; gross: number; net: number };
 type Asset = { id: string; employeeId: string; name: string; type: string; issuedAt: string };
 
@@ -25,6 +28,26 @@ function genPassword() {
   return pw;
 }
 const t = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—");
+const fmtShift = (hhmm?: string) => {
+  if (!hhmm) return null;
+  const [h, m] = hhmm.split(":").map(Number);
+  if (isNaN(h)) return hhmm;
+  return `${h % 12 || 12}:${String(m || 0).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+};
+const fmtDur = (ms: number) => {
+  if (ms <= 0) return "0m";
+  const mins = Math.round(ms / 60000), h = Math.floor(mins / 60), m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+};
+function attTotals(a: Attendance) {
+  const now = Date.now();
+  const dur = (x: string, y?: string) => Math.max(0, (y ? new Date(y).getTime() : now) - new Date(x).getTime());
+  const sessions = a.sessions ?? (a.inAt ? [{ in: a.inAt, out: a.outAt }] : []);
+  const breaks = a.breaks ?? [];
+  const grossMs = sessions.reduce((s, x) => s + dur(x.in, x.out), 0);
+  const breakMs = breaks.reduce((s, x) => s + dur(x.start, x.end), 0);
+  return { sessions, breaks, grossMs, breakMs, netMs: Math.max(0, grossMs - breakMs) };
+}
 
 export default function TeamAdmin() {
   const [tab, setTab] = useState<Tab>("employees");
@@ -37,7 +60,7 @@ export default function TeamAdmin() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", designation: "", joinedAt: "", salaryMonthly: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "" });
   const [issued, setIssued] = useState<{ email: string; password: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [slipForm, setSlipForm] = useState({ employeeId: "", month: new Date().toISOString().slice(0, 7), gross: "", deductions: "" });
@@ -76,6 +99,8 @@ export default function TeamAdmin() {
           ...form,
           salaryMonthly: form.salaryMonthly ? Number(form.salaryMonthly) : undefined,
           joinedAt: form.joinedAt || undefined,
+          shiftStart: form.shiftStart || undefined,
+          shiftEnd: form.shiftEnd || undefined,
         }),
       });
       const data = await res.json();
@@ -153,7 +178,7 @@ export default function TeamAdmin() {
         </div>
         <div className="flex gap-3">
           <a href="/staff/login" target="_blank" className="btn-ghost text-sm !py-2 !px-4"><ExternalLink size={14} /> Staff app</a>
-          <button onClick={() => { setForm({ name: "", email: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword() }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
+          <button onClick={() => { setForm({ name: "", email: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword(), shiftStart: "", shiftEnd: "" }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
             <Plus size={16} /> New employee
           </button>
         </div>
@@ -203,6 +228,8 @@ export default function TeamAdmin() {
                     <Field label="Designation"><input className="input" value={form.designation} onChange={(e) => setForm({ ...form, designation: e.target.value })} placeholder="Head of Engineering" /></Field>
                     <Field label="Joined"><input type="date" className="input" value={form.joinedAt} onChange={(e) => setForm({ ...form, joinedAt: e.target.value })} /></Field>
                     <Field label="Monthly salary (₹)"><input type="number" className="input" value={form.salaryMonthly} onChange={(e) => setForm({ ...form, salaryMonthly: e.target.value })} placeholder="50000" /></Field>
+                    <Field label="Shift start"><input type="time" className="input" value={form.shiftStart} onChange={(e) => setForm({ ...form, shiftStart: e.target.value })} /></Field>
+                    <Field label="Shift end"><input type="time" className="input" value={form.shiftEnd} onChange={(e) => setForm({ ...form, shiftEnd: e.target.value })} /></Field>
                     <Field label="Password">
                       <div className="flex gap-2">
                         <input className="input font-mono" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
@@ -230,7 +257,15 @@ export default function TeamAdmin() {
                       <div className="text-xs text-ink-400">{e.designation || "—"} · since {e.joinedAt}</div>
                     </div>
                   </div>
-                  <div className="text-sm text-ink-300">{e.email}{e.salaryMonthly ? ` · ₹${e.salaryMonthly.toLocaleString()}/mo` : ""}</div>
+                  <div>
+                    <div className="text-sm text-ink-300">{e.email}{e.salaryMonthly ? ` · ₹${e.salaryMonthly.toLocaleString()}/mo` : ""}</div>
+                    <div className="mt-1.5 flex items-center gap-2 text-xs text-ink-400">
+                      <span className="uppercase tracking-[0.15em] text-[10px]">Shift</span>
+                      <input type="time" defaultValue={e.shiftStart || ""} onBlur={(ev) => { if (ev.target.value !== (e.shiftStart || "")) patchEmployee(e, { shiftStart: ev.target.value }); }} className="input !py-1 !px-2 !w-auto text-xs" />
+                      <span>–</span>
+                      <input type="time" defaultValue={e.shiftEnd || ""} onBlur={(ev) => { if (ev.target.value !== (e.shiftEnd || "")) patchEmployee(e, { shiftEnd: ev.target.value }); }} className="input !py-1 !px-2 !w-auto text-xs" />
+                    </div>
+                  </div>
                   <button onClick={() => patchEmployee(e, { active: !e.active })} className={`text-xs uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border transition-colors ${e.active ? "border-green-400/40 text-green-300 hover:bg-green-400/10" : "border-ink-400/40 text-ink-400"}`}>
                     {e.active ? "Active" : "Suspended"}
                   </button>
@@ -273,21 +308,33 @@ export default function TeamAdmin() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-gold-400 border-b border-line">
-                    <th className="p-4">Employee</th><th className="p-4">Date</th><th className="p-4">In</th><th className="p-4">Out</th><th className="p-4">Mode</th>
+                    <th className="p-4">Employee</th><th className="p-4">Date</th><th className="p-4">Sessions (in → out)</th><th className="p-4">Breaks</th><th className="p-4">Worked</th><th className="p-4">Mode</th>
                   </tr>
                 </thead>
                 <tbody>
                   {attendance.length === 0 ? (
-                    <tr><td colSpan={5} className="p-8 text-center text-ink-400">No attendance records yet.</td></tr>
-                  ) : attendance.slice(0, 60).map((a) => (
-                    <tr key={a.id} className="border-b border-line/50 text-ink-200 font-light">
-                      <td className="p-4">{empName(a.employeeId)}</td>
-                      <td className="p-4">{a.date}</td>
-                      <td className="p-4">{t(a.inAt)}</td>
-                      <td className="p-4">{t(a.outAt)}</td>
-                      <td className="p-4 uppercase text-xs">{a.mode}</td>
-                    </tr>
-                  ))}
+                    <tr><td colSpan={6} className="p-8 text-center text-ink-400">No attendance records yet.</td></tr>
+                  ) : attendance.slice(0, 60).map((a) => {
+                    const tot = attTotals(a);
+                    return (
+                      <tr key={a.id} className="border-b border-line/50 text-ink-200 font-light align-top">
+                        <td className="p-4">{empName(a.employeeId)}</td>
+                        <td className="p-4 whitespace-nowrap">{a.date}</td>
+                        <td className="p-4">
+                          {tot.sessions.length === 0 ? "—" : tot.sessions.map((s, i) => (
+                            <div key={i} className="whitespace-nowrap">{t(s.in)} → {s.out ? t(s.out) : <span className="text-green-300">ongoing</span>}</div>
+                          ))}
+                        </td>
+                        <td className="p-4">
+                          {tot.breaks.length === 0 ? <span className="text-ink-500">—</span> : tot.breaks.map((b, i) => (
+                            <div key={i} className="whitespace-nowrap text-xs text-ink-400">{b.type} {fmtDur((b.end ? new Date(b.end).getTime() : Date.now()) - new Date(b.start).getTime())}</div>
+                          ))}
+                        </td>
+                        <td className="p-4 whitespace-nowrap text-gold-300">{fmtDur(tot.netMs)}</td>
+                        <td className="p-4 uppercase text-xs">{a.mode}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -10,6 +10,7 @@ import {
   assetsDb,
   notificationsDb,
   settingsDb,
+  normalizeAttendance,
 } from "@/lib/admin/db";
 import { verifyStaffToken, STAFF_COOKIE } from "@/lib/admin/auth";
 
@@ -38,7 +39,10 @@ export async function GET() {
   const myTasks = tasks.filter(
     (t) => t.assigneeId === emp.id || (t.assignee && t.assignee.toLowerCase() === emp.name.toLowerCase())
   );
-  const myAttendance = attendance.filter((a) => a.employeeId === emp.id).slice(0, 60);
+  const myAttendance = attendance
+    .filter((a) => a.employeeId === emp.id)
+    .slice(0, 60)
+    .map(normalizeAttendance);
   const myLeaves = leaves.filter((l) => l.employeeId === emp.id);
   const usedDays = myLeaves
     .filter((l) => l.status === "approved")
@@ -54,6 +58,8 @@ export async function GET() {
       email: emp.email,
       designation: emp.designation,
       joinedAt: emp.joinedAt,
+      shiftStart: emp.shiftStart,
+      shiftEnd: emp.shiftEnd,
     },
     tasks: myTasks,
     projects: projects.map((p) => ({ id: p.id, name: p.name })),

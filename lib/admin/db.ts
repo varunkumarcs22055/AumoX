@@ -592,6 +592,8 @@ export type Employee = {
   joinedAt: string;      // YYYY-MM-DD
   salaryMonthly?: number;
   active: boolean;
+  shiftStart?: string;   // HH:MM — admin-defined expected start
+  shiftEnd?: string;     // HH:MM — admin-defined expected end
 };
 const E_KEY = "employees";
 export const employeesDb = {
@@ -616,22 +618,53 @@ export const employeesDb = {
   },
 };
 
-// ---------- Attendance (clock in / clock out) ----------
+// ---------- Attendance (multi-session clock in/out + breaks) ----------
+export type AttendanceSession = { in: string; out?: string };       // ISO
+export type AttendanceBreak = { type: string; start: string; end?: string }; // ISO
 export type AttendanceRow = {
   id: string;
   employeeId: string;
   date: string;          // YYYY-MM-DD
-  inAt?: string;         // ISO
-  outAt?: string;        // ISO
   mode: "office" | "wfh";
+  sessions: AttendanceSession[]; // can clock in/out multiple times a day
+  breaks: AttendanceBreak[];     // typed break periods
+  // Legacy single-shift fields — kept so old rows still read correctly
+  inAt?: string;
+  outAt?: string;
 };
+
+/** Upgrade legacy {inAt,outAt} rows to the sessions/breaks shape on read. */
+export function normalizeAttendance(row: AttendanceRow): AttendanceRow {
+  const sessions = Array.isArray(row.sessions)
+    ? row.sessions
+    : row.inAt
+    ? [{ in: row.inAt, out: row.outAt }]
+    : [];
+  const breaks = Array.isArray(row.breaks) ? row.breaks : [];
+  return { ...row, sessions, breaks };
+}
+
+/** Worked / break time for a day. Open intervals are measured up to `now`. */
+export function attendanceTotals(row: AttendanceRow, now = Date.now()) {
+  const r = normalizeAttendance(row);
+  const dur = (a: string, b?: string) => Math.max(0, (b ? new Date(b).getTime() : now) - new Date(a).getTime());
+  const grossMs = r.sessions.reduce((s, x) => s + dur(x.in, x.out), 0);
+  const breakMs = r.breaks.reduce((s, x) => s + dur(x.start, x.end), 0);
+  const firstIn = r.sessions[0]?.in;
+  const lastOut = r.sessions.length && r.sessions[r.sessions.length - 1].out
+    ? r.sessions[r.sessions.length - 1].out
+    : undefined;
+  return { grossMs, breakMs, netMs: Math.max(0, grossMs - breakMs), firstIn, lastOut };
+}
+
 const ATT_KEY = "attendance";
 export const attendanceDb = {
   list: () => getValue<AttendanceRow[]>(ATT_KEY, []),
   async today(employeeId: string): Promise<AttendanceRow | undefined> {
     const all = await attendanceDb.list();
     const today = new Date().toISOString().slice(0, 10);
-    return all.find((a) => a.employeeId === employeeId && a.date === today);
+    const row = all.find((a) => a.employeeId === employeeId && a.date === today);
+    return row ? normalizeAttendance(row) : undefined;
   },
   async upsert(row: AttendanceRow) {
     const all = await attendanceDb.list();

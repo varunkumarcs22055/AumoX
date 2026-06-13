@@ -8,6 +8,7 @@ import {
   notificationsDb,
   nextDocNumber,
   newId,
+  normalizeAttendance,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
 import { logAdminAction } from "@/lib/admin/audit";
@@ -37,7 +38,7 @@ export async function GET() {
       salaryMonthly: e.salaryMonthly,
       active: e.active,
     })),
-    attendance: attendance.slice(0, 300),
+    attendance: attendance.slice(0, 300).map(normalizeAttendance),
     leaves,
     payslips,
     assets,

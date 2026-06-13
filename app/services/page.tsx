@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import Reveal from "@/components/anim/Reveal";
+import Tilt3D from "@/components/anim/Tilt3D";
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -175,30 +176,32 @@ export default function ServicesPage() {
 
               <Reveal stagger=".svc-card" staggerGap={0.08} className="grid md:grid-cols-2 gap-6">
                 {p.services.map(({ i: Icon, name, desc, deliverables }) => (
-                  <div key={name} className="svc-card card p-10 gold-border group">
-                    <div className="flex items-start justify-between">
-                      <div className="grid h-14 w-14 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-600 dark:text-gold-300">
-                        <Icon size={22} />
+                  <Tilt3D key={name} max={6} className="h-full">
+                    <div className="svc-card card p-10 gold-border group h-full">
+                      <div className="flex items-start justify-between">
+                        <div className="grid h-14 w-14 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-600 dark:text-gold-300">
+                          <Icon size={22} />
+                        </div>
+                        <Sparkles size={16} className="text-gold-400/60 group-hover:text-gold-400 transition-colors" />
                       </div>
-                      <Sparkles size={16} className="text-gold-400/60 group-hover:text-gold-400 transition-colors" />
+                      <h3 className="mt-7 font-display text-2xl font-light text-ink-100">{name}</h3>
+                      <p className="mt-3 text-ink-300 font-light leading-relaxed">{desc}</p>
+                      <ul className="mt-6 grid grid-cols-2 gap-2.5">
+                        {deliverables.map((d) => (
+                          <li key={d} className="flex items-start gap-2 text-sm text-ink-200">
+                            <CheckCircle2 size={15} className="text-gold-400 shrink-0 mt-0.5" />
+                            <span className="font-light">{d}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        href="/contact"
+                        className="inline-flex items-center gap-1.5 mt-7 text-xs uppercase tracking-[0.25em] text-gold-600 dark:text-gold-300 hover:opacity-80"
+                      >
+                        Discuss Project <ArrowUpRight size={14} />
+                      </Link>
                     </div>
-                    <h3 className="mt-7 font-display text-2xl font-light text-ink-100">{name}</h3>
-                    <p className="mt-3 text-ink-300 font-light leading-relaxed">{desc}</p>
-                    <ul className="mt-6 grid grid-cols-2 gap-2.5">
-                      {deliverables.map((d) => (
-                        <li key={d} className="flex items-start gap-2 text-sm text-ink-200">
-                          <CheckCircle2 size={15} className="text-gold-400 shrink-0 mt-0.5" />
-                          <span className="font-light">{d}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      href="/contact"
-                      className="inline-flex items-center gap-1.5 mt-7 text-xs uppercase tracking-[0.25em] text-gold-600 dark:text-gold-300 hover:opacity-80"
-                    >
-                      Discuss Project <ArrowUpRight size={14} />
-                    </Link>
-                  </div>
+                  </Tilt3D>
                 ))}
               </Reveal>
             </div>

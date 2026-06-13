@@ -30,7 +30,10 @@ export async function POST(req: Request) {
     salaryMonthly?: number;
     password?: string;
     active?: boolean;
+    shiftStart?: string;
+    shiftEnd?: string;
   };
+  const cleanTime = (v?: string) => (v && /^\d{2}:\d{2}$/.test(v) ? v : undefined);
 
   if (!body.name?.trim() || !body.email?.trim()) {
     return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
@@ -53,6 +56,8 @@ export async function POST(req: Request) {
       salaryMonthly:
         typeof body.salaryMonthly === "number" ? body.salaryMonthly : existing.salaryMonthly,
       active: body.active ?? existing.active,
+      shiftStart: body.shiftStart !== undefined ? cleanTime(body.shiftStart) : existing.shiftStart,
+      shiftEnd: body.shiftEnd !== undefined ? cleanTime(body.shiftEnd) : existing.shiftEnd,
       ...(body.password ? { passwordHash: await hashPassword(body.password) } : {}),
     };
     await employeesDb.upsert(updated);
@@ -75,6 +80,8 @@ export async function POST(req: Request) {
     joinedAt: body.joinedAt || new Date().toISOString().slice(0, 10),
     salaryMonthly: typeof body.salaryMonthly === "number" ? body.salaryMonthly : undefined,
     active: true,
+    shiftStart: cleanTime(body.shiftStart),
+    shiftEnd: cleanTime(body.shiftEnd),
   };
   await employeesDb.upsert(employee);
   await logAdminAction("create", "employee", `Added employee ${employee.name}${employee.designation ? ` (${employee.designation})` : ""}`);

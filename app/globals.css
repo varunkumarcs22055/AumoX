@@ -354,10 +354,28 @@ a, button {
   background: radial-gradient(240px circle at var(--spx, 50%) var(--spy, 50%), rgba(184,134,11,0.10), transparent 60%);
 }
 
+/* 3D tilt cards — a soft gold glare follows the cursor across the surface */
+.tilt3d { position: relative; transform-style: preserve-3d; }
+.tilt3d > * { position: relative; z-index: 1; }
+.tilt3d::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--spx, 50%) var(--spy, 50%), rgba(240,221,160,0.18), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.tilt3d:hover::after { opacity: 1; }
+
 @media (prefers-reduced-motion: reduce) {
   .btn-gold::after { left: -120%; }
   .gold-text.shimmer-text { animation: none; }
   .card::after { display: none; }
+  .tilt3d { transform: none !important; }
+  .tilt3d::after { display: none; }
 }
 
 /* SiteParticles overlay — different blend per theme so particles look natural on both.

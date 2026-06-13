@@ -4,6 +4,7 @@ import Marquee from "@/components/Marquee";
 import Reveal from "@/components/anim/Reveal";
 import HeroEntrance, { SplitWords } from "@/components/anim/HeroEntrance";
 import MagneticLink from "@/components/anim/MagneticLink";
+import Tilt3D from "@/components/anim/Tilt3D";
 import FAQ, { type FAQItem } from "@/components/FAQ";
 import { insightsDb } from "@/lib/admin/db";
 
@@ -99,28 +100,26 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Value pillars — replaces fake enterprise stats */}
+          {/* Value pillars — floating 3D-tilt cards */}
           <div className="relative mt-24">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { i: Sparkles,  t: "AI-First Solutions",        s: "Intelligence in every workflow." },
                 { i: Cpu,       t: "Enterprise-Grade Development", s: "Production code, built to last." },
                 { i: LayoutDashboard, t: "Custom Software & SaaS",  s: "Made for how you actually work." },
                 { i: Rocket,    t: "Built For Scale",            s: "Architected from day one." },
               ].map((s) => (
-                <div
-                  key={s.t}
-                  data-anim="stat"
-                  className="bg-bg-surface p-7 lg:p-8 flex flex-col gap-2"
-                >
-                  <s.i size={20} className="text-gold-400" />
-                  <div className="mt-2 font-display text-xl lg:text-2xl font-light text-ink-100">
-                    {s.t}
+                <Tilt3D key={s.t} className="h-full">
+                  <div data-anim="stat" className="card gold-border h-full p-7 lg:p-8 flex flex-col gap-2">
+                    <s.i size={22} className="text-gold-400 icon-pop" />
+                    <div className="mt-2 font-display text-xl lg:text-2xl font-light text-ink-100">
+                      {s.t}
+                    </div>
+                    <div className="text-sm text-ink-300 font-light leading-relaxed">
+                      {s.s}
+                    </div>
                   </div>
-                  <div className="text-sm text-ink-300 font-light leading-relaxed">
-                    {s.s}
-                  </div>
-                </div>
+                </Tilt3D>
               ))}
             </div>
           </div>

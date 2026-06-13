@@ -4,18 +4,20 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2, LogOut, Clock, CalendarDays, ArrowRight, ArrowLeft,
-  Bell, Receipt, BadgeCheck, Briefcase, Send, Printer, Lock,
+  Bell, Receipt, BadgeCheck, Briefcase, Send, Printer, Lock, Coffee,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
 type Task = { id: string; title: string; projectId?: string; due?: string; status: "todo" | "in-progress" | "done" };
-type Attendance = { id: string; date: string; inAt?: string; outAt?: string; mode: "office" | "wfh" };
+type Session = { in: string; out?: string };
+type Brk = { type: string; start: string; end?: string };
+type Attendance = { id: string; date: string; mode: "office" | "wfh"; sessions: Session[]; breaks: Brk[]; inAt?: string; outAt?: string };
 type Leave = { id: string; from: string; to: string; days: number; reason?: string; status: string; requestedAt: string };
 type Payslip = { id: string; number: string; month: string; gross: number; deductions: { label: string; amount: number }[]; net: number; notes?: string };
 type Asset = { id: string; name: string; type: string; url?: string; issuedAt: string };
 type Notif = { id: string; message: string; read: boolean; createdAt: string };
 type Me = {
-  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string };
+  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string; shiftStart?: string; shiftEnd?: string };
   tasks: Task[];
   projects: { id: string; name: string }[];
   attendance: Attendance[];
@@ -27,9 +29,38 @@ type Me = {
   notifications: Notif[];
 };
 
+const BREAK_TYPES = ["Lunch", "Tea / coffee", "Short break", "Meeting", "Personal", "Prayer", "Other"];
+
 function t(iso?: string) {
   if (!iso) return "—";
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+// "17:00" → "5:00 PM"
+function fmtShift(hhmm?: string) {
+  if (!hhmm) return null;
+  const [h, m] = hhmm.split(":").map(Number);
+  if (isNaN(h)) return hhmm;
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m || 0).padStart(2, "0")} ${ampm}`;
+}
+
+function fmtDur(ms: number) {
+  if (ms <= 0) return "0m";
+  const mins = Math.round(ms / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+// Mirror of attendanceTotals — open intervals measured to `now`.
+function totalsOf(row: Attendance | null, now: number) {
+  if (!row) return { netMs: 0, breakMs: 0, grossMs: 0 };
+  const dur = (a: string, b?: string) => Math.max(0, (b ? new Date(b).getTime() : now) - new Date(a).getTime());
+  const grossMs = (row.sessions || []).reduce((s, x) => s + dur(x.in, x.out), 0);
+  const breakMs = (row.breaks || []).reduce((s, x) => s + dur(x.start, x.end), 0);
+  return { grossMs, breakMs, netMs: Math.max(0, grossMs - breakMs) };
 }
 
 export default function StaffPage() {
@@ -38,6 +69,8 @@ export default function StaffPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"office" | "wfh">("office");
+  const [breakType, setBreakType] = useState(BREAK_TYPES[0]);
+  const [nowTs, setNowTs] = useState(() => Date.now());
   const [leaveDraft, setLeaveDraft] = useState({ from: "", to: "", reason: "" });
   const [msg, setMsg] = useState("");
   const [pwForm, setPwForm] = useState({ current: "", next: "" });
@@ -80,23 +113,30 @@ export default function StaffPage() {
   }, [router]);
   useEffect(() => { load(); }, [load]);
 
+  // Tick once a minute so live "worked so far" totals stay current.
+  useEffect(() => {
+    const id = setInterval(() => setNowTs(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
   async function logout() {
     await fetch("/api/staff/logout", { method: "POST" });
     router.push("/staff/login");
   }
 
-  async function clock(action: "in" | "out") {
+  async function clock(action: "in" | "out" | "break-start" | "break-end") {
     setBusy(true);
     setMsg("");
     try {
       const res = await fetch("/api/staff/clock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, mode }),
+        body: JSON.stringify({ action, mode, breakType }),
       });
       const d = await res.json();
       if (!res.ok) setMsg(d.error || "Failed");
-      load();
+      else if (d.row) setMe((m) => (m ? { ...m, today: d.row } : m));
+      else load();
     } finally { setBusy(false); }
   }
 
@@ -169,8 +209,27 @@ export default function StaffPage() {
   }
 
   const unread = me.notifications.filter((n) => !n.read).length;
-  const clockedIn = !!me.today?.inAt && !me.today?.outAt;
-  const doneToday = !!me.today?.inAt && !!me.today?.outAt;
+  const today = me.today;
+  const sessions = today?.sessions ?? [];
+  const breaks = today?.breaks ?? [];
+  const openSession = sessions.find((s) => !s.out);
+  const openBreak = breaks.find((b) => !b.end);
+  const working = !!openSession && !openBreak;
+  const onBreak = !!openBreak;
+  const hasStarted = sessions.length > 0;
+  const totals = totalsOf(today, nowTs);
+  const shift =
+    me.employee.shiftStart || me.employee.shiftEnd
+      ? `${fmtShift(me.employee.shiftStart) ?? "—"} – ${fmtShift(me.employee.shiftEnd) ?? "—"}`
+      : null;
+
+  const stateLabel = onBreak
+    ? `On ${openBreak!.type.toLowerCase()} break since ${t(openBreak!.start)}`
+    : working
+    ? `Working since ${t(openSession!.in)} (${today?.mode})`
+    : hasStarted
+    ? `Clocked out · ${fmtDur(totals.netMs)} worked today`
+    : "Not clocked in yet today.";
 
   return (
     <div className="min-h-screen bg-bg-base">
@@ -199,48 +258,106 @@ export default function StaffPage() {
       <main className="container-x py-10 lg:py-14 space-y-10">
         {/* Clock + notifications row */}
         <div className="grid lg:grid-cols-[1.2fr_1fr] gap-6">
-          {/* Attendance */}
+          {/* Attendance — multi-session + breaks */}
           <div className="card p-7 gold-border">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-start gap-4">
-                <div className={`grid h-12 w-12 place-items-center rounded-lg border ${clockedIn ? "border-green-400/60 bg-green-400/10 text-green-300" : "border-gold-400/30 bg-gold-400/5 text-gold-300"}`}>
-                  <Clock size={20} />
+                <div className={`grid h-12 w-12 place-items-center rounded-lg border transition-colors ${onBreak ? "border-amber-400/60 bg-amber-400/10 text-amber-300" : working ? "border-green-400/60 bg-green-400/10 text-green-300" : "border-gold-400/30 bg-gold-400/5 text-gold-300"}`}>
+                  {onBreak ? <Coffee size={20} /> : <Clock size={20} />}
                 </div>
                 <div>
                   <h2 className="text-lg font-light text-ink-100">Attendance</h2>
-                  <p className="mt-1 text-sm text-ink-300 font-light">
-                    {doneToday
-                      ? `Shift complete · in ${t(me.today?.inAt)} → out ${t(me.today?.outAt)}`
-                      : clockedIn
-                      ? `Clocked in at ${t(me.today?.inAt)} (${me.today?.mode})`
-                      : "Not clocked in yet today."}
-                  </p>
+                  <p className="mt-1 text-sm text-ink-300 font-light">{stateLabel}</p>
+                  {shift && (
+                    <p className="mt-1 text-xs text-ink-400">
+                      Your shift: <span className="text-gold-300">{shift}</span>
+                    </p>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                {!clockedIn && !doneToday && (
-                  <>
-                    <select className="input !py-2 !w-auto text-sm" value={mode} onChange={(e) => setMode(e.target.value as "office" | "wfh")}>
-                      <option value="office">Office</option>
-                      <option value="wfh">WFH</option>
-                    </select>
-                    <button onClick={() => clock("in")} disabled={busy} className="btn-gold text-sm !py-2 !px-5 disabled:opacity-60">Clock in</button>
-                  </>
-                )}
-                {clockedIn && (
-                  <button onClick={() => clock("out")} disabled={busy} className="btn-gold text-sm !py-2 !px-5 disabled:opacity-60">Clock out</button>
-                )}
-                {doneToday && <span className="text-xs uppercase tracking-[0.2em] text-green-300 border border-green-400/40 rounded-full px-3 py-1.5">Present today</span>}
+              <div className="text-right shrink-0">
+                <div className="font-display text-2xl font-extralight gold-text">{fmtDur(totals.netMs)}</div>
+                <div className="text-[10px] uppercase tracking-[0.2em] text-ink-400">worked today{totals.breakMs > 0 ? ` · ${fmtDur(totals.breakMs)} break` : ""}</div>
               </div>
             </div>
+
+            {/* Controls */}
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              {!working && !onBreak && (
+                <>
+                  <select className="input !py-2 !w-auto text-sm" value={mode} onChange={(e) => setMode(e.target.value as "office" | "wfh")}>
+                    <option value="office">Office</option>
+                    <option value="wfh">WFH</option>
+                  </select>
+                  <button onClick={() => clock("in")} disabled={busy} className="btn-gold text-sm !py-2 !px-5 disabled:opacity-60">
+                    {busy ? <Loader2 size={14} className="animate-spin" /> : null}
+                    {hasStarted ? "Clock in again" : "Clock in"}
+                  </button>
+                </>
+              )}
+              {working && (
+                <>
+                  <select className="input !py-2 !w-auto text-sm" value={breakType} onChange={(e) => setBreakType(e.target.value)}>
+                    {BREAK_TYPES.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                  <button onClick={() => clock("break-start")} disabled={busy} className="btn-ghost text-sm !py-2 !px-4 disabled:opacity-60">
+                    <Coffee size={14} /> Take break
+                  </button>
+                  <button onClick={() => clock("out")} disabled={busy} className="btn-gold text-sm !py-2 !px-5 disabled:opacity-60">Clock out</button>
+                </>
+              )}
+              {onBreak && (
+                <button onClick={() => clock("break-end")} disabled={busy} className="btn-gold text-sm !py-2 !px-5 disabled:opacity-60">
+                  {busy ? <Loader2 size={14} className="animate-spin" /> : null} End break &amp; resume
+                </button>
+              )}
+            </div>
             {msg && <p className="mt-3 text-sm text-red-400">{msg}</p>}
-            {/* recent attendance */}
+
+            {/* Today's sessions + breaks */}
+            {(sessions.length > 0 || breaks.length > 0) && (
+              <div className="mt-5 pt-5 border-t border-line grid sm:grid-cols-2 gap-5">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.25em] text-gold-400 mb-2">Today&apos;s sessions</div>
+                  <ul className="space-y-1.5">
+                    {sessions.map((s, i) => (
+                      <li key={i} className="text-sm text-ink-200 font-light flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gold-400 shrink-0" />
+                        {t(s.in)} → {s.out ? t(s.out) : <span className="text-green-300">ongoing</span>}
+                        <span className="text-ink-500 text-xs ml-auto">{fmtDur((s.out ? new Date(s.out).getTime() : nowTs) - new Date(s.in).getTime())}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.25em] text-gold-400 mb-2">Breaks</div>
+                  {breaks.length === 0 ? (
+                    <p className="text-xs text-ink-500 font-light">No breaks taken.</p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {breaks.map((b, i) => (
+                        <li key={i} className="text-sm text-ink-200 font-light flex items-center gap-2">
+                          <Coffee size={12} className="text-amber-300 shrink-0" />
+                          {b.type} · {t(b.start)}{b.end ? `–${t(b.end)}` : <span className="text-amber-300"> (ongoing)</span>}
+                          <span className="text-ink-500 text-xs ml-auto">{fmtDur((b.end ? new Date(b.end).getTime() : nowTs) - new Date(b.start).getTime())}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Recent history with worked hours */}
             <div className="mt-5 pt-5 border-t border-line flex flex-wrap gap-2">
-              {me.attendance.slice(0, 14).map((a) => (
-                <span key={a.id} title={`${a.date} · in ${t(a.inAt)} out ${t(a.outAt)} (${a.mode})`} className="text-[10px] px-2 py-1 rounded border border-line text-ink-400">
-                  {a.date.slice(5)} ✓
-                </span>
-              ))}
+              {me.attendance.slice(0, 14).map((a) => {
+                const tot = totalsOf(a, nowTs);
+                return (
+                  <span key={a.id} title={`${a.date} · ${fmtDur(tot.netMs)} worked · ${a.mode}`} className="text-[10px] px-2 py-1 rounded border border-line text-ink-400">
+                    {a.date.slice(5)} · {fmtDur(tot.netMs)}
+                  </span>
+                );
+              })}
               {me.attendance.length === 0 && <span className="text-xs text-ink-500">No attendance history yet.</span>}
             </div>
           </div>
