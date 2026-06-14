@@ -61,7 +61,7 @@ export default function TeamAdmin() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "" });
-  const [issued, setIssued] = useState<{ email: string; password: string } | null>(null);
+  const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const [slipForm, setSlipForm] = useState({ employeeId: "", month: new Date().toISOString().slice(0, 7), gross: "", deductions: "" });
   const [assetForm, setAssetForm] = useState({ employeeId: "", name: "", type: "document" });
@@ -105,7 +105,7 @@ export default function TeamAdmin() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed."); return; }
-      setIssued({ email: form.email.trim().toLowerCase(), password: form.password });
+      setIssued({ email: form.email.trim().toLowerCase(), password: form.password, emailed: data.welcomeEmailed });
       setShowForm(false);
       load();
     } finally { setSaving(false); }
@@ -188,7 +188,8 @@ export default function TeamAdmin() {
         <div className="mt-8 card p-6 ring-2 ring-gold-400/50">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">Share with the employee — shown only once</div>
+              <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{issued.emailed ? "Credentials emailed to the employee" : "Share with the employee — shown only once"}</div>
+              {issued.emailed && <div className="mt-2 text-xs text-green-300">✓ A welcome email with the workspace login was sent to {issued.email}.</div>}
               <div className="mt-3 font-mono text-sm text-ink-100 space-y-1">
                 <div>Workspace: https://aumoxo.tech/staff</div>
                 <div>Email: {issued.email}</div>
@@ -224,7 +225,7 @@ export default function TeamAdmin() {
                   <h2 className="font-display text-xl font-light text-ink-100 mb-5">New employee</h2>
                   <div className="grid md:grid-cols-3 gap-4">
                     <Field label="Full name"><input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Prathamesh" /></Field>
-                    <Field label="Work email"><input type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="prathamesh@aumoxo.tech" /></Field>
+                    <Field label="Work email"><input type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="prathamesh@aumoxo.tech" /><p className="mt-1.5 text-xs text-ink-500">Workspace login + password is emailed here from hello@aumoxo.tech.</p></Field>
                     <Field label="Designation"><input className="input" value={form.designation} onChange={(e) => setForm({ ...form, designation: e.target.value })} placeholder="Head of Engineering" /></Field>
                     <Field label="Joined"><input type="date" className="input" value={form.joinedAt} onChange={(e) => setForm({ ...form, joinedAt: e.target.value })} /></Field>
                     <Field label="Monthly salary (₹)"><input type="number" className="input" value={form.salaryMonthly} onChange={(e) => setForm({ ...form, salaryMonthly: e.target.value })} placeholder="50000" /></Field>

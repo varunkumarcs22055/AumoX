@@ -81,6 +81,37 @@ export async function sendClientWelcome(client: { company: string; name?: string
   return send(client.email, "Welcome to AUMOXO — your client portal is ready", frame("Your portal is ready", body));
 }
 
+/** Welcome email for a new employee — staff workspace access + credentials. */
+export async function sendEmployeeWelcome(emp: { name: string; email: string; designation?: string }, password: string) {
+  const first = emp.name?.split(" ")[0] || emp.name;
+  const body =
+    p(`Hi ${esc(first)},`) +
+    p(`Welcome to the AUMOXO team${emp.designation ? ` as <b style="color:#fafafa">${esc(emp.designation)}</b>` : ""}! Your staff workspace is ready — clock in/out, manage your tasks, request leave, view payslips and the things issued to you, all in one place.`) +
+    `<div style="background:#000;border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:18px;margin:6px 0 18px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#71717a">Your login</div>
+      <div style="font-size:14px;color:#fafafa;margin-top:8px">Email: <b>${esc(emp.email)}</b></div>
+      <div style="font-size:14px;color:#fafafa;margin-top:4px">Temporary password: <b style="color:#E5C76B">${esc(password)}</b></div>
+    </div>` +
+    p(`Please sign in and change your password from the workspace. Glad to have you with us. 🚀`) +
+    btn(`${SITE}/staff/login`, "Open your workspace →");
+  return send(emp.email, "Welcome to AUMOXO — your workspace is ready", frame("Welcome aboard", body));
+}
+
+/** Internal notice to the team inbox (hello@aumoxo.tech). */
+export async function notifyTeam(subject: string, lines: string[]) {
+  const to = process.env.CONTACT_EMAIL_TO ?? "hello@aumoxo.tech";
+  return send(to, subject, frame(subject, lines.map((l) => p(l)).join("")));
+}
+
+/** Friendly thank-you to a new newsletter subscriber. */
+export async function sendSubscriberWelcome(email: string) {
+  const body =
+    p(`Thanks for subscribing to AUMOXO. 🎉`) +
+    p(`You'll get our practical reads on AI, automation, CRM and building software that actually moves the needle — written for people running real businesses, not for other consultants.`) +
+    btn(`${SITE}/insights`, "Read our insights →");
+  return send(email, "You're subscribed — welcome to AUMOXO", frame("Welcome to AUMOXO", body));
+}
+
 /** New quotation awaiting the client's review. */
 export async function sendQuotationEmail(client: { company: string; email: string }, q: { number: string; currency: string; total: number; projectName?: string }) {
   const body =

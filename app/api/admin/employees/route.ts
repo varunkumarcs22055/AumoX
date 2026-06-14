@@ -3,6 +3,7 @@ import { employeesDb, newId, type Employee } from "@/lib/admin/db";
 import { hashPassword } from "@/lib/admin/auth";
 import { requireAdmin } from "@/lib/admin/guard";
 import { logAdminAction } from "@/lib/admin/audit";
+import { sendEmployeeWelcome } from "@/lib/admin/email";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -85,7 +86,8 @@ export async function POST(req: Request) {
   };
   await employeesDb.upsert(employee);
   await logAdminAction("create", "employee", `Added employee ${employee.name}${employee.designation ? ` (${employee.designation})` : ""}`);
-  return NextResponse.json({ employee: pub(employee) });
+  const emailed = await sendEmployeeWelcome({ name: employee.name, email: employee.email, designation: employee.designation }, body.password);
+  return NextResponse.json({ employee: pub(employee), welcomeEmailed: emailed });
 }
 
 export async function DELETE(req: Request) {

@@ -13,6 +13,7 @@ import {
   quotationTotal,
 } from "@/lib/admin/db";
 import { verifyClientToken, CLIENT_COOKIE } from "@/lib/admin/auth";
+import { razorpayEnabled } from "@/lib/admin/razorpay";
 
 /**
  * Returns the logged-in client's profile, their projects (phases, progress,
@@ -93,5 +94,6 @@ export async function GET() {
     notifications,
     tasks,
     bankDetails: settings.bankDetails || "",
+    onlinePayments: razorpayEnabled(),
   });
 }

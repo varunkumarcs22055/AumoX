@@ -22,6 +22,7 @@ import {
   Printer,
   Send,
   Lock,
+  CreditCard,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { printDocument } from "@/lib/print-doc";
@@ -76,7 +77,19 @@ type Me = {
   notifications?: Notif[];
   tasks?: PortalTask[];
   bankDetails?: string;
+  onlinePayments?: boolean;
 };
+
+function loadRazorpay(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && (window as unknown as { Razorpay?: unknown }).Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
 
 const QUO_BADGE: Record<PortalQuotation["status"], string> = {
   sent:     "border-sky-400/40 text-sky-300 bg-sky-400/10",
@@ -151,6 +164,7 @@ export default function PortalPage() {
   const [pwForm, setPwForm] = useState({ current: "", next: "" });
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pwSaving, setPwSaving] = useState(false);
+  const [payingId, setPayingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/portal/me", { cache: "no-store" })
@@ -230,6 +244,50 @@ export default function PortalPage() {
       notes: inv.notes,
       bankDetails: me?.bankDetails,
     });
+  }
+
+  async function payInvoice(inv: PortalInvoice) {
+    setPayingId(inv.id);
+    try {
+      const res = await fetch("/api/portal/pay/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoiceId: inv.id }),
+      });
+      const o = await res.json();
+      if (!res.ok) { alert(o.error || "Couldn't start the payment."); return; }
+      const ok = await loadRazorpay();
+      if (!ok) { alert("Couldn't load the payment window. Check your connection and try again."); return; }
+      const Razorpay = (window as unknown as { Razorpay: new (opts: unknown) => { open: () => void } }).Razorpay;
+      const rzp = new Razorpay({
+        key: o.keyId,
+        amount: o.amount,
+        currency: o.currency,
+        order_id: o.orderId,
+        name: "AUMOXO",
+        description: `Invoice ${o.invoiceNumber}`,
+        prefill: { name: o.name, email: o.email },
+        theme: { color: "#D4AF37" },
+        handler: async (resp: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          const v = await fetch("/api/portal/pay/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ invoiceId: inv.id, ...resp }),
+          });
+          const vd = await v.json();
+          if (v.ok) {
+            const me2 = await fetch("/api/portal/me", { cache: "no-store" }).then((r) => r.json());
+            setMe(me2);
+            alert("Payment successful — thank you! Your invoice is updated.");
+          } else {
+            alert(vd.error || "We couldn't verify the payment. If money was deducted it will reflect shortly — please contact us.");
+          }
+        },
+      });
+      rzp.open();
+    } finally {
+      setPayingId(null);
+    }
   }
 
   async function logout() {
@@ -631,6 +689,15 @@ export default function PortalPage() {
                   >
                     <Printer size={16} />
                   </button>
+                  {inv.status !== "paid" && me.onlinePayments && (
+                    <button
+                      onClick={() => payInvoice(inv)}
+                      disabled={payingId === inv.id}
+                      className="btn-gold !py-2 !px-4 text-sm shrink-0 disabled:opacity-60"
+                    >
+                      {payingId === inv.id ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />} Pay now
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

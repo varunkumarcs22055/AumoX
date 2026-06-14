@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { subscribersDb, notificationsDb } from "@/lib/admin/db";
+import { notifyTeam, sendSubscriberWelcome } from "@/lib/admin/email";
 
 const schema = z.object({ email: z.string().email().max(160) });
 
@@ -33,6 +34,12 @@ export async function POST(req: Request) {
       message: `New newsletter subscriber: ${parsed.data.email}`,
       link: "/admin/email",
     });
+    // Email the team + a friendly welcome to the subscriber (best-effort)
+    await notifyTeam("New newsletter subscriber", [
+      `A new visitor just subscribed: <b>${parsed.data.email}</b>`,
+      `You can email subscribers from Admin → Send Email.`,
+    ]);
+    await sendSubscriberWelcome(parsed.data.email);
   }
   // Always succeed (don't reveal whether the email was already subscribed)
   return NextResponse.json({ ok: true });

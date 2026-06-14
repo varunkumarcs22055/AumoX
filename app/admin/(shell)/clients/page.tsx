@@ -31,7 +31,7 @@ export default function ClientsAdmin() {
   const [form, setForm] = useState({ company: "", name: "", email: "", password: "" });
   const [error, setError] = useState("");
   // Newly issued credentials, shown ONCE so admin can share them with the client
-  const [issued, setIssued] = useState<{ email: string; password: string } | null>(null);
+  const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
 
   async function load() {
@@ -67,7 +67,7 @@ export default function ClientsAdmin() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed to create client."); return; }
-      setIssued({ email: form.email.trim().toLowerCase(), password: form.password });
+      setIssued({ email: form.email.trim().toLowerCase(), password: form.password, emailed: data.welcomeEmailed });
       setShowForm(false);
       load();
     } finally {
@@ -140,8 +140,11 @@ export default function ClientsAdmin() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">
-                Share these credentials with your client — shown only once
+                {issued.emailed ? "Credentials emailed to the client" : "Share these credentials — shown only once"}
               </div>
+              {issued.emailed && (
+                <div className="mt-2 text-xs text-green-300">✓ A welcome email with the portal login was sent to {issued.email}.</div>
+              )}
               <div className="mt-3 font-mono text-sm text-ink-100 space-y-1">
                 <div>Portal: https://aumoxo.tech/portal</div>
                 <div>Email: {issued.email}</div>
@@ -173,6 +176,7 @@ export default function ClientsAdmin() {
             </Field>
             <Field label="Login email">
               <input type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="jane@acme.com" />
+              <p className="mt-1.5 text-xs text-ink-500">Their portal login + password is emailed here automatically from hello@aumoxo.tech.</p>
             </Field>
             <Field label="Password (share with client)">
               <div className="flex gap-2">
