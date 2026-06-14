@@ -14,6 +14,8 @@ import {
   EyeOff,
   RefreshCw,
   Inbox,
+  Loader2,
+  Send,
 } from "lucide-react";
 
 type Query = {
@@ -35,6 +37,36 @@ export default function QueriesAdmin() {
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [replyId, setReplyId] = useState<string | null>(null);
+  const [replySubject, setReplySubject] = useState("");
+  const [replyText, setReplyText] = useState("");
+  const [replyBusy, setReplyBusy] = useState(false);
+  const [replyMsg, setReplyMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  function startReply(q: Query) {
+    if (replyId === q.id) { setReplyId(null); return; }
+    setReplyId(q.id);
+    setReplySubject(`Re: your enquiry — AUMOXO`);
+    setReplyText(`Hi ${q.name.split(" ")[0] || q.name},\n\nThanks for reaching out to AUMOXO.\n\n`);
+    setReplyMsg(null);
+  }
+
+  async function sendReply(q: Query) {
+    if (!replyText.trim()) { setReplyMsg({ ok: false, text: "Write a message first." }); return; }
+    setReplyBusy(true);
+    setReplyMsg(null);
+    try {
+      const res = await fetch("/api/admin/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: replySubject || "Re: your enquiry — AUMOXO", message: replyText, emails: [q.email] }),
+      });
+      const d = await res.json();
+      if (!res.ok) { setReplyMsg({ ok: false, text: d.error || "Failed to send." }); return; }
+      setReplyMsg({ ok: true, text: `Reply sent to ${q.email} from hello@aumoxo.tech.` });
+      if (!q.read) patch(q.id, { read: true });
+    } finally { setReplyBusy(false); }
+  }
 
   async function load() {
     setLoading(true);
@@ -180,12 +212,12 @@ export default function QueriesAdmin() {
                       </div>
                     </div>
                     <div className="mt-5 flex items-center gap-3">
-                      <a
-                        href={`mailto:${q.email}?subject=${encodeURIComponent("Re: your enquiry — AUMOXO")}`}
+                      <button
+                        onClick={() => startReply(q)}
                         className="btn-gold text-sm !py-2 !px-4"
                       >
-                        <Mail size={14} /> Reply by email
-                      </a>
+                        <Mail size={14} /> {replyId === q.id ? "Close reply" : "Reply"}
+                      </button>
                       <button
                         onClick={() => patch(q.id, { read: !q.read })}
                         className="btn-ghost text-sm !py-2 !px-4"
@@ -199,6 +231,34 @@ export default function QueriesAdmin() {
                         <Trash2 size={14}/> Delete
                       </button>
                     </div>
+
+                    {/* Inline reply — sent from hello@aumoxo.tech via Resend */}
+                    {replyId === q.id && (
+                      <div className="mt-4 border-t border-line pt-4">
+                        <div className="text-[11px] uppercase tracking-[0.25em] text-gold-400 mb-2">
+                          Reply to {q.email}
+                        </div>
+                        <input
+                          className="input mb-2"
+                          value={replySubject}
+                          onChange={(e) => setReplySubject(e.target.value)}
+                          placeholder="Subject"
+                        />
+                        <textarea
+                          className="input min-h-[160px] resize-y"
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Write your reply…"
+                        />
+                        <div className="mt-3 flex items-center gap-3 flex-wrap">
+                          <button onClick={() => sendReply(q)} disabled={replyBusy} className="btn-gold text-sm !py-2 !px-4 disabled:opacity-60">
+                            {replyBusy ? <><Loader2 size={14} className="animate-spin" /> Sending…</> : <><Send size={14} /> Send from hello@aumoxo.tech</>}
+                          </button>
+                          {replyMsg && <span className={`text-sm ${replyMsg.ok ? "text-green-300" : "text-red-400"}`}>{replyMsg.text}</span>}
+                        </div>
+                        <p className="mt-2 text-xs text-ink-500">Sent as a branded AUMOXO email, directly from the panel — no need to open Gmail.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

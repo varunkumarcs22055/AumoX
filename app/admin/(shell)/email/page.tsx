@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Mail, Send, Loader2, Search, Users, Briefcase, UserCheck, Check, X, AlertCircle } from "lucide-react";
+import { Mail, Send, Loader2, Search, Users, Briefcase, UserCheck, Check, X, AlertCircle, AtSign, Plus } from "lucide-react";
 
 type Person = { id: string; name: string; email: string; active?: boolean };
 type Recipients = { emailConfigured: boolean; clients: Person[]; employees: Person[]; subscribers: Person[] };
-type Audience = "clients" | "employees" | "subscribers";
+type Audience = "clients" | "employees" | "subscribers" | "custom";
 
 const TABS: { v: Audience; label: string; icon: typeof Users }[] = [
   { v: "clients", label: "Clients", icon: Users },
   { v: "employees", label: "Employees", icon: Briefcase },
   { v: "subscribers", label: "Subscribers", icon: UserCheck },
+  { v: "custom", label: "Custom", icon: AtSign },
 ];
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function EmailAdmin() {
   const [data, setData] = useState<Recipients | null>(null);
@@ -22,6 +25,15 @@ export default function EmailAdmin() {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [customText, setCustomText] = useState("");
+
+  function addCustom() {
+    const found = customText.split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter((e) => EMAIL_RE.test(e));
+    if (found.length === 0) { setResult({ ok: false, text: "No valid email addresses found." }); return; }
+    setSelected((prev) => { const next = new Set(prev); found.forEach((e) => next.add(e)); return next; });
+    setCustomText("");
+    setResult({ ok: true, text: `Added ${found.length} recipient(s).` });
+  }
 
   useEffect(() => {
     fetch("/api/admin/email/recipients", { cache: "no-store" })
@@ -29,7 +41,7 @@ export default function EmailAdmin() {
       .then((d) => d.clients && setData(d));
   }, []);
 
-  const list: Person[] = data ? data[tab] : [];
+  const list: Person[] = data && tab !== "custom" ? data[tab] : [];
   const filtered = useMemo(
     () => list.filter((p) => `${p.name} ${p.email}`.toLowerCase().includes(query.toLowerCase())),
     [list, query]
@@ -107,12 +119,28 @@ export default function EmailAdmin() {
               const Icon = t.icon;
               return (
                 <button key={t.v} onClick={() => { setTab(t.v); setQuery(""); }} className={`inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] px-3 py-1.5 rounded-full border transition-colors ${tab === t.v ? "border-gold-400 text-gold-300 bg-gold-400/10" : "border-line text-ink-400 hover:text-gold-300"}`}>
-                  <Icon size={13} /> {t.label} ({counts[t.v]})
+                  <Icon size={13} /> {t.label}{t.v !== "custom" ? ` (${counts[t.v as "clients" | "employees" | "subscribers"]})` : ""}
                 </button>
               );
             })}
           </div>
 
+          {tab === "custom" ? (
+            <div>
+              <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Type or paste email addresses</span>
+              <textarea
+                className="input min-h-[160px] resize-y"
+                placeholder={"someone@example.com, another@company.com\nor one per line…"}
+                value={customText}
+                onChange={(e) => setCustomText(e.target.value)}
+              />
+              <button onClick={addCustom} className="btn-gold text-sm !py-2 !px-4 mt-3">
+                <Plus size={15} /> Add to recipients
+              </button>
+              <p className="mt-2 text-xs text-ink-500">Separate with commas, spaces or new lines. Added addresses appear as chips in the composer.</p>
+            </div>
+          ) : (
+          <>
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
             <input className="input !py-2 pl-9" placeholder="Search name or email…" value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -142,6 +170,8 @@ export default function EmailAdmin() {
               );
             })}
           </div>
+          </>
+          )}
         </div>
 
         {/* Composer */}
