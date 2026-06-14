@@ -356,7 +356,7 @@ Dark mode: invert with `#0A0A0A` background, `#FAFAFA` text. Tailwind handles vi
 │   └── layout/                   # Navbar, Footer
 ├── lib/
 │   ├── email.ts                  # Resend wrapper
-│   ├── chat.ts                   # Anthropic wrapper
+│   ├── chat.ts                   # LLM wrapper
 │   └── utils.ts
 ├── content/                      # MDX for blog / case studies
 ├── public/
@@ -389,7 +389,7 @@ _(No `ANTHROPIC_API_KEY` — chatbot is static.)_
 ### Phase 1 — MVP (Week 1–2)
 - Home, About, Services, Products (list only), Contact
 - Working email form
-- Basic chatbot (Tidio quick-start or custom Claude)
+- Basic chatbot (Tidio quick-start or custom)
 - Footer, Navbar, dark mode
 - Deploy to Vercel on temp domain
 
@@ -427,7 +427,7 @@ _(No `ANTHROPIC_API_KEY` — chatbot is static.)_
 
 ## 15. Ready-to-Use AI Build Prompt
 
-> Use this prompt with Claude Code, Cursor, v0, or any AI coding tool to scaffold the project.
+> Use this prompt with any AI coding tool to scaffold the project.
 
 ```
 Build a production-ready marketing website for a service + product startup called [BRAND].

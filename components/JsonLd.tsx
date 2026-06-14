@@ -71,7 +71,7 @@ export default function JsonLd() {
           "@type": "OfferCatalog",
           name: "AUMOXO Services",
           itemListElement: [
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Solutions",          description: "Production-grade AI agents, copilots and ML systems built on Claude, GPT or open models." } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Solutions",          description: "Production-grade AI agents, copilots and ML systems built on leading large language models and open models." } },
             { "@type": "Offer", itemOffered: { "@type": "Service", name: "CRM Platforms",         description: "Custom CRM systems built around your sales process and customer lifecycle." } },
             { "@type": "Offer", itemOffered: { "@type": "Service", name: "Automation Systems",    description: "Workflow automation, AI-powered process orchestration, internal tools and integrations." } },
             { "@type": "Offer", itemOffered: { "@type": "Service", name: "Enterprise Software",   description: "Internal systems, operations platforms, dashboards and business management software." } },

@@ -155,7 +155,7 @@ export default function TeamAdmin() {
 
   function copyCreds() {
     if (!issued) return;
-    navigator.clipboard.writeText(`AUMOXO Staff Workspace\nURL: https://aumoxo.tech/staff\nEmail: ${issued.email}\nPassword: ${issued.password}`);
+    navigator.clipboard.writeText(`AUMOXO Staff Workspace\nURL: https://aumoxo.tech/emp\nEmail: ${issued.email}\nPassword: ${issued.password}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
@@ -191,7 +191,7 @@ export default function TeamAdmin() {
               <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{issued.emailed ? "Credentials emailed to the employee" : "Share with the employee — shown only once"}</div>
               {issued.emailed && <div className="mt-2 text-xs text-green-300">✓ A welcome email with the workspace login was sent to {issued.email}.</div>}
               <div className="mt-3 font-mono text-sm text-ink-100 space-y-1">
-                <div>Workspace: https://aumoxo.tech/staff</div>
+                <div>Workspace: https://aumoxo.tech/emp</div>
                 <div>Email: {issued.email}</div>
                 <div>Password: {issued.password}</div>
               </div>

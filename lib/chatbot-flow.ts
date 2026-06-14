@@ -139,7 +139,7 @@ const keywordMap: Array<[RegExp, string]> = [
   [/\b(saas|dashboard|admin|portal)\b/i, "svc_product"],
   [/\b(android|mobile|app|kotlin|flutter|ios)\b/i, "svc_product"],
   [/\b(automation|automate|workflow|zap|n8n)\b/i, "sol_ops"],
-  [/\b(ai|agent|llm|gen ?ai|claude|gpt|chatbot|bot|support)\b/i, "sol_support"],
+  [/\b(ai|agent|llm|gen ?ai|chatbot|bot|support)\b/i, "sol_support"],
   [/\b(crm|sales|pipeline|lead|follow.?up)\b/i, "sol_crm"],
   [/\b(ui|ux|design|figma|prototype)\b/i, "svc_design"],
   [/\b(consult|strategy|advisory|architecture)\b/i, "svc_consulting"],

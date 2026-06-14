@@ -9,6 +9,7 @@
 import { Resend } from "resend";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aumoxo.tech";
+const HOST = SITE.replace(/^https?:\/\//, "");
 const FROM = process.env.CONTACT_EMAIL_FROM ?? "AUMOXO <hello@aumoxo.tech>";
 
 export const emailEnabled = () => !!process.env.RESEND_API_KEY;
@@ -72,12 +73,13 @@ export async function sendClientWelcome(client: { company: string; name?: string
     p(`Hi ${esc(first)},`) +
     p(`Your AUMOXO client portal is ready. You can track your project's progress, view quotations and invoices, download deliverables and message our team — all in one place.`) +
     `<div style="background:#000;border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:18px;margin:6px 0 18px">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#71717a">Your login</div>
-      <div style="font-size:14px;color:#fafafa;margin-top:8px">Email: <b>${esc(client.email)}</b></div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#71717a">Your AUMOXO portal login</div>
+      <div style="font-size:14px;color:#fafafa;margin-top:8px">Portal: <b style="color:#E5C76B">${HOST}/client</b></div>
+      <div style="font-size:14px;color:#fafafa;margin-top:4px">Email: <b>${esc(client.email)}</b></div>
       <div style="font-size:14px;color:#fafafa;margin-top:4px">Temporary password: <b style="color:#E5C76B">${esc(password)}</b></div>
     </div>` +
     p(`For your security, please sign in and change your password from the portal.`) +
-    btn(`${SITE}/portal/login`, "Open your portal →");
+    btn(`${SITE}/client`, "Open your portal →");
   return send(client.email, "Welcome to AUMOXO — your client portal is ready", frame("Your portal is ready", body));
 }
 
@@ -88,12 +90,13 @@ export async function sendEmployeeWelcome(emp: { name: string; email: string; de
     p(`Hi ${esc(first)},`) +
     p(`Welcome to the AUMOXO team${emp.designation ? ` as <b style="color:#fafafa">${esc(emp.designation)}</b>` : ""}! Your staff workspace is ready — clock in/out, manage your tasks, request leave, view payslips and the things issued to you, all in one place.`) +
     `<div style="background:#000;border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:18px;margin:6px 0 18px">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#71717a">Your login</div>
-      <div style="font-size:14px;color:#fafafa;margin-top:8px">Email: <b>${esc(emp.email)}</b></div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#71717a">Your AUMOXO workspace login</div>
+      <div style="font-size:14px;color:#fafafa;margin-top:8px">Workspace: <b style="color:#E5C76B">${HOST}/emp</b></div>
+      <div style="font-size:14px;color:#fafafa;margin-top:4px">Email: <b>${esc(emp.email)}</b></div>
       <div style="font-size:14px;color:#fafafa;margin-top:4px">Temporary password: <b style="color:#E5C76B">${esc(password)}</b></div>
     </div>` +
     p(`Please sign in and change your password from the workspace. Glad to have you with us. 🚀`) +
-    btn(`${SITE}/staff/login`, "Open your workspace →");
+    btn(`${SITE}/emp`, "Open your workspace →");
   return send(emp.email, "Welcome to AUMOXO — your workspace is ready", frame("Welcome aboard", body));
 }
 
@@ -121,7 +124,7 @@ export async function sendQuotationEmail(client: { company: string; email: strin
       <div style="font-size:22px;color:#E5C76B;font-weight:600;margin-top:6px">${q.currency} ${q.total.toLocaleString()}</div>
     </div>` +
     p(`You can accept or decline it directly in your portal.`) +
-    btn(`${SITE}/portal/login`, "Review quotation →");
+    btn(`${SITE}/client`, "Review quotation →");
   return send(client.email, `Quotation ${q.number} from AUMOXO`, frame("New quotation for you", body));
 }
 
@@ -134,7 +137,7 @@ export async function sendInvoiceEmail(client: { company: string; email: string 
       <div style="font-size:22px;color:#E5C76B;font-weight:600;margin-top:6px">${inv.currency} ${inv.total.toLocaleString()}</div>
     </div>` +
     p(`View the full invoice and payment details in your portal.`) +
-    btn(`${SITE}/portal/login`, "View invoice →");
+    btn(`${SITE}/client`, "View invoice →");
   return send(client.email, `Invoice ${inv.number} from AUMOXO`, frame("New invoice", body));
 }
 
@@ -147,6 +150,6 @@ export async function sendPaymentReceipt(client: { company: string; email: strin
       <div style="font-size:13px;color:#a1a1aa;margin-top:6px">For invoice <b style="color:#fafafa">${esc(invoiceNumber)}</b> · ${esc(payment.method)}</div>
     </div>` +
     p(`A full history is always available in your portal.`) +
-    btn(`${SITE}/portal/login`, "Open portal →");
+    btn(`${SITE}/client`, "Open portal →");
   return send(client.email, `Payment received — ${invoiceNumber}`, frame("Payment received", body));
 }

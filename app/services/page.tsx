@@ -43,7 +43,7 @@ const pillars = [
       {
         i: Sparkles,
         name: "AI Solutions",
-        desc: "Agents, copilots and ML systems integrated where your team works. Built on Claude, GPT or open models with proper guardrails.",
+        desc: "Agents, copilots and ML systems integrated where your team works. Built on leading large language models and open models with proper guardrails.",
         deliverables: ["AI agents", "Custom chatbots", "RAG over your data", "Evaluation & guardrails"],
       },
       {

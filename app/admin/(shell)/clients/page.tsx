@@ -108,7 +108,7 @@ export default function ClientsAdmin() {
   function copyCreds() {
     if (!issued) return;
     navigator.clipboard.writeText(
-      `AUMOXO Client Portal\nURL: https://aumoxo.tech/portal\nEmail: ${issued.email}\nPassword: ${issued.password}`
+      `AUMOXO Client Portal\nURL: https://aumoxo.tech/client\nEmail: ${issued.email}\nPassword: ${issued.password}`
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
@@ -146,7 +146,7 @@ export default function ClientsAdmin() {
                 <div className="mt-2 text-xs text-green-300">✓ A welcome email with the portal login was sent to {issued.email}.</div>
               )}
               <div className="mt-3 font-mono text-sm text-ink-100 space-y-1">
-                <div>Portal: https://aumoxo.tech/portal</div>
+                <div>Portal: https://aumoxo.tech/client</div>
                 <div>Email: {issued.email}</div>
                 <div>Password: {issued.password}</div>
               </div>
