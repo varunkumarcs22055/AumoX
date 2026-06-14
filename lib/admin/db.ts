@@ -148,7 +148,7 @@ export const ALL_STORE_KEYS = [
   "invoices", "tasks", "company-settings", "doc-counters", "employees",
   "attendance", "leaves", "payslips", "assets", "quotations", "payments",
   "notifications", "admin-users", "audit-log", "expenses", "messages",
-  "project-files", "solutions", "subscribers",
+  "project-files", "solutions", "subscribers", "sent-emails", "custom-contacts",
 ] as const;
 
 /** Full snapshot of every store — powers the owner's backup export. */
@@ -371,6 +371,57 @@ export const subscribersDb = {
   async remove(id: string) {
     const all = await subscribersDb.list();
     await setValue(SUB_KEY, all.filter((s) => s.id !== id));
+  },
+};
+
+// ---------- Saved custom email contacts (reusable address book) ----------
+export type CustomContact = { id: string; name: string; email: string; createdAt: string };
+const CC_KEY = "custom-contacts";
+export const customContactsDb = {
+  list: () => getValue<CustomContact[]>(CC_KEY, []),
+  /** Add (or update the name of) a contact. Returns true if newly added. */
+  async add(name: string, email: string): Promise<boolean> {
+    const e = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return false;
+    const all = await customContactsDb.list();
+    const i = all.findIndex((c) => c.email === e);
+    if (i >= 0) {
+      if (name.trim() && all[i].name !== name.trim()) { all[i] = { ...all[i], name: name.trim() }; await setValue(CC_KEY, all); }
+      return false;
+    }
+    all.unshift({ id: newId(), name: name.trim(), email: e, createdAt: new Date().toISOString() });
+    await setValue(CC_KEY, all.slice(0, 10000));
+    return true;
+  },
+  async remove(id: string) {
+    const all = await customContactsDb.list();
+    await setValue(CC_KEY, all.filter((c) => c.id !== id));
+  },
+};
+
+// ---------- Sent email history (broadcast composer) ----------
+export type SentEmail = {
+  id: string;
+  subject: string;
+  message: string;
+  emails: string[];       // recipients (for reuse / resend)
+  sent: number;
+  failed: number;
+  sentByType: string;     // "super" | "admin"
+  sentByName: string;
+  sentAt: string;
+};
+const SENT_KEY = "sent-emails";
+export const sentEmailsDb = {
+  list: () => getValue<SentEmail[]>(SENT_KEY, []),
+  async push(e: Omit<SentEmail, "id" | "sentAt">) {
+    const all = await sentEmailsDb.list();
+    all.unshift({ ...e, id: newId(), sentAt: new Date().toISOString() });
+    await setValue(SENT_KEY, all.slice(0, 500));
+  },
+  async remove(id: string) {
+    const all = await sentEmailsDb.list();
+    await setValue(SENT_KEY, all.filter((x) => x.id !== id));
   },
 };
 

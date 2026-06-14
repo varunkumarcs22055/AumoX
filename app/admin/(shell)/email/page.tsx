@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Mail, Send, Loader2, Search, Users, Briefcase, UserCheck, Check, X, AlertCircle, AtSign, Plus } from "lucide-react";
+import { Mail, Send, Loader2, Search, Users, Briefcase, UserCheck, Check, X, AlertCircle, AtSign, Plus, Copy, Trash2, History } from "lucide-react";
 
 type Person = { id: string; name: string; email: string; active?: boolean };
-type Recipients = { emailConfigured: boolean; clients: Person[]; employees: Person[]; subscribers: Person[] };
+type Recipients = { emailConfigured: boolean; clients: Person[]; employees: Person[]; subscribers: Person[]; custom: Person[] };
 type Audience = "clients" | "employees" | "subscribers" | "custom";
+type SentEmail = { id: string; subject: string; message: string; emails: string[]; sent: number; failed: number; sentByName: string; sentAt: string };
 
 const TABS: { v: Audience; label: string; icon: typeof Users }[] = [
   { v: "clients", label: "Clients", icon: Users },
@@ -26,19 +27,67 @@ export default function EmailAdmin() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
   const [customText, setCustomText] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [history, setHistory] = useState<SentEmail[]>([]);
+  const [isSuper, setIsSuper] = useState(false);
 
-  function addCustom() {
+  function loadRecipients() {
+    fetch("/api/admin/email/recipients", { cache: "no-store" }).then((r) => r.json()).then((d) => d.clients && setData(d));
+  }
+  function loadHistory() {
+    fetch("/api/admin/email/sent", { cache: "no-store" }).then((r) => r.json()).then((d) => d.sent && setHistory(d.sent));
+  }
+
+  // Save a named custom contact (reusable), then select it.
+  async function saveContact() {
+    if (!EMAIL_RE.test(newEmail.trim())) { setResult({ ok: false, text: "Enter a valid email." }); return; }
+    const email = newEmail.trim().toLowerCase();
+    await fetch("/api/admin/email/contacts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newName, email }) });
+    setSelected((prev) => new Set(prev).add(email));
+    setNewName(""); setNewEmail("");
+    setResult({ ok: true, text: "Contact saved & selected." });
+    loadRecipients();
+  }
+
+  async function removeContact(id: string, email: string) {
+    if (!confirm("Remove this saved contact?")) return;
+    await fetch("/api/admin/email/contacts", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    setSelected((prev) => { const n = new Set(prev); n.delete(email); return n; });
+    loadRecipients();
+  }
+
+  function reuse(e: SentEmail) {
+    setSubject(e.subject);
+    setMessage(e.message);
+    setSelected(new Set(e.emails));
+    setResult({ ok: true, text: "Loaded into the composer — edit and send." });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function deleteSent(id: string) {
+    if (!confirm("Delete this email from history?")) return;
+    const res = await fetch("/api/admin/email/sent", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    if (res.ok) setHistory((h) => h.filter((x) => x.id !== id));
+    else alert("Only the main admin can delete sent emails.");
+  }
+
+  async function addCustom() {
     const found = customText.split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter((e) => EMAIL_RE.test(e));
     if (found.length === 0) { setResult({ ok: false, text: "No valid email addresses found." }); return; }
+    await fetch("/api/admin/email/contacts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ emails: found }) });
     setSelected((prev) => { const next = new Set(prev); found.forEach((e) => next.add(e)); return next; });
     setCustomText("");
-    setResult({ ok: true, text: `Added ${found.length} recipient(s).` });
+    setResult({ ok: true, text: `Saved & added ${found.length} recipient(s).` });
+    loadRecipients();
   }
 
   useEffect(() => {
-    fetch("/api/admin/email/recipients", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => d.clients && setData(d));
+    loadRecipients();
+    fetch("/api/admin/me", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setIsSuper(d?.role === "super"));
+    loadHistory();
   }, []);
 
   const list: Person[] = data && tab !== "custom" ? data[tab] : [];
@@ -87,6 +136,7 @@ export default function EmailAdmin() {
       setSelected(new Set());
       setSubject("");
       setMessage("");
+      loadHistory();
     } finally { setSending(false); }
   }
 
@@ -127,17 +177,47 @@ export default function EmailAdmin() {
 
           {tab === "custom" ? (
             <div>
-              <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Type or paste email addresses</span>
-              <textarea
-                className="input min-h-[160px] resize-y"
-                placeholder={"someone@example.com, another@company.com\nor one per line…"}
-                value={customText}
-                onChange={(e) => setCustomText(e.target.value)}
-              />
-              <button onClick={addCustom} className="btn-gold text-sm !py-2 !px-4 mt-3">
-                <Plus size={15} /> Add to recipients
-              </button>
-              <p className="mt-2 text-xs text-ink-500">Separate with commas, spaces or new lines. Added addresses appear as chips in the composer.</p>
+              {/* Save a named contact */}
+              <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Save a contact</span>
+              <div className="grid grid-cols-[1fr_1.4fr_auto] gap-2">
+                <input className="input !py-2" placeholder="Name (optional)" value={newName} onChange={(e) => setNewName(e.target.value)} />
+                <input className="input !py-2" type="email" placeholder="email@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveContact(); }} />
+                <button onClick={saveContact} className="btn-gold text-sm !py-2 !px-3"><Plus size={14} /> Save</button>
+              </div>
+
+              {/* Bulk paste */}
+              <details className="mt-3">
+                <summary className="text-xs text-gold-300 cursor-pointer hover:text-gold-200">Paste many emails at once</summary>
+                <textarea className="input min-h-[90px] resize-y mt-2" placeholder={"a@x.com, b@y.com\nor one per line…"} value={customText} onChange={(e) => setCustomText(e.target.value)} />
+                <button onClick={addCustom} className="btn-ghost text-xs !py-1.5 !px-3 mt-2"><Plus size={13} /> Save &amp; add all</button>
+              </details>
+
+              {/* Saved contacts list */}
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-[11px] uppercase tracking-[0.25em] text-ink-300">Saved contacts ({data?.custom.length ?? 0})</span>
+                {(data?.custom.length ?? 0) > 0 && (
+                  <button onClick={() => setSelected((prev) => { const n = new Set(prev); (data?.custom || []).forEach((c) => n.add(c.email)); return n; })} className="text-xs text-gold-300 hover:text-gold-200">Select all</button>
+                )}
+              </div>
+              <div className="mt-2 max-h-[300px] overflow-y-auto space-y-1 pr-1">
+                {!data || data.custom.length === 0 ? (
+                  <div className="text-center text-ink-500 py-8 text-sm">No saved contacts yet.</div>
+                ) : data.custom.map((p) => {
+                  const on = selected.has(p.email);
+                  return (
+                    <div key={p.id} className={`flex items-center gap-3 px-3 py-2 rounded-lg border transition-colors ${on ? "border-gold-400/50 bg-gold-400/5" : "border-line"}`}>
+                      <button onClick={() => toggle(p.email)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                        <span className={`grid place-items-center h-5 w-5 rounded border shrink-0 ${on ? "bg-gold-400 border-gold-400 text-black" : "border-ink-500"}`}>{on && <Check size={13} />}</span>
+                        <span className="flex-1 min-w-0">
+                          {p.name && <span className="text-sm text-ink-100 block truncate">{p.name}</span>}
+                          <span className="text-xs text-ink-400 block truncate">{p.email}</span>
+                        </span>
+                      </button>
+                      <button onClick={() => removeContact(p.id, p.email)} className="p-1.5 rounded text-red-400 hover:bg-red-400/10 shrink-0" title="Remove saved contact"><X size={13} /></button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ) : (
           <>
@@ -213,6 +293,43 @@ export default function EmailAdmin() {
             {sending ? <><Loader2 size={16} className="animate-spin" /> Sending…</> : <><Send size={16} /> Send to {selected.size} recipient{selected.size === 1 ? "" : "s"}</>}
           </button>
         </div>
+      </div>
+
+      {/* Sent history — reuse / edit / resend; delete is main-admin only */}
+      <div className="mt-10">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-4">
+          <History size={13} /> Recent sends
+        </div>
+        {history.length === 0 ? (
+          <div className="card p-6 text-center text-ink-400 text-sm">No emails sent yet — your sent emails will appear here to reuse.</div>
+        ) : (
+          <div className="space-y-2">
+            {history.map((e) => (
+              <div key={e.id} className="card p-4 flex items-start gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-ink-100 font-light">{e.subject}</div>
+                  <div className="text-xs text-ink-400 mt-0.5 line-clamp-1">{e.message}</div>
+                  <div className="text-[11px] text-ink-500 mt-1.5">
+                    {new Date(e.sentAt).toLocaleString()} · {e.sent} sent{e.failed ? ` · ${e.failed} failed` : ""} · {e.emails.length} recipient{e.emails.length === 1 ? "" : "s"} · by {e.sentByName}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => reuse(e)} className="btn-ghost text-xs !py-1.5 !px-3" title="Load into composer to edit & resend">
+                    <Copy size={13} /> Reuse
+                  </button>
+                  {isSuper && (
+                    <button onClick={() => deleteSent(e.id)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10" title="Delete (main admin only)">
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!isSuper && history.length > 0 && (
+          <p className="mt-3 text-xs text-ink-500">Only the main admin can delete sent emails.</p>
+        )}
       </div>
     </div>
   );
