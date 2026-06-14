@@ -10,6 +10,7 @@ import {
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
 import { logAdminAction } from "@/lib/admin/audit";
+import { sendPaymentReceipt } from "@/lib/admin/email";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -70,6 +71,14 @@ export async function POST(req: Request) {
     link: "/portal",
   });
   await logAdminAction("payment", "payment", `Recorded ${payment.currency} ${payment.amount.toLocaleString()} (${payment.method}) against ${invoice.number}${settled ? " — invoice now PAID" : ""}`);
+  const payClient = await clientsDb.findById(invoice.clientId);
+  if (payClient) {
+    await sendPaymentReceipt(
+      { company: payClient.company, email: payClient.email },
+      { currency: payment.currency, amount: payment.amount, method: payment.method },
+      invoice.number
+    );
+  }
   return NextResponse.json({ payment });
 }
 

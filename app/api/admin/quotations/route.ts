@@ -14,6 +14,7 @@ import {
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
 import { logAdminAction } from "@/lib/admin/audit";
+import { sendQuotationEmail } from "@/lib/admin/email";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -153,6 +154,10 @@ export async function POST(req: Request) {
     link: "/portal",
   });
   await logAdminAction("create", "quotation", `Created quotation ${quotation.number} for ${client.company} — ${quotation.currency} ${quotationTotal(quotation).toLocaleString()}`);
+  await sendQuotationEmail(
+    { company: client.company, email: client.email },
+    { number: quotation.number, currency: quotation.currency, total: quotationTotal(quotation), projectName: quotation.projectName }
+  );
   return NextResponse.json({ quotation });
 }
 

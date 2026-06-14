@@ -3,6 +3,7 @@ import { clientsDb, projectsDb, newId, type Client } from "@/lib/admin/db";
 import { hashPassword } from "@/lib/admin/auth";
 import { requireAdmin } from "@/lib/admin/guard";
 import { logAdminAction } from "@/lib/admin/audit";
+import { sendClientWelcome } from "@/lib/admin/email";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -75,7 +76,9 @@ export async function POST(req: Request) {
   };
   await clientsDb.upsert(client);
   await logAdminAction("create", "client", `Created client ${client.company} (${client.email})`);
-  return NextResponse.json({ client: pub(client) });
+  // Branded welcome email with portal access (best-effort)
+  const emailed = await sendClientWelcome({ company: client.company, name: client.name, email: client.email }, body.password);
+  return NextResponse.json({ client: pub(client), welcomeEmailed: emailed });
 }
 
 export async function DELETE(req: Request) {

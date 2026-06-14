@@ -7,12 +7,14 @@ import {
   settingsDb,
   nextDocNumber,
   newId,
+  invoiceTotal,
   type Invoice,
   type InvoiceItem,
   type InvoiceStatus,
 } from "@/lib/admin/db";
 import { requireAdmin } from "@/lib/admin/guard";
 import { logAdminAction } from "@/lib/admin/audit";
+import { sendInvoiceEmail } from "@/lib/admin/email";
 
 async function isAuthed() {
   return (await requireAdmin()).ok;
@@ -109,6 +111,12 @@ export async function POST(req: Request) {
     });
   }
   await logAdminAction("create", "invoice", `Created invoice ${invoice.number} for ${client.company} (${invoice.status})`);
+  if (invoice.status === "sent") {
+    await sendInvoiceEmail(
+      { company: client.company, email: client.email },
+      { number: invoice.number, currency: invoice.currency, total: invoiceTotal(invoice), dueDate: invoice.dueDate }
+    );
+  }
   return NextResponse.json({ invoice });
 }
 

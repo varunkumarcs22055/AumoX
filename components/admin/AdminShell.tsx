@@ -25,6 +25,7 @@ import {
   BarChart3,
   ShieldCheck,
   LayoutTemplate,
+  Mail,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -32,6 +33,7 @@ const links = [
   { href: "/admin",            label: "Dashboard",  icon: LayoutDashboard },
   { href: "/admin/queries",    label: "Inbox",      icon: Inbox },
   { href: "/admin/messages",   label: "Messages",   icon: MessageSquare },
+  { href: "/admin/email",      label: "Send Email", icon: Mail },
   { href: "/admin/leads",      label: "Leads",      icon: TrendingUp },
   { href: "/admin/quotations", label: "Quotations", icon: FileText },
   { href: "/admin/clients",    label: "Clients",    icon: Users },

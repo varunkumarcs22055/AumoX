@@ -49,10 +49,10 @@ export default function AdminDashboard() {
       <div className="mt-6 card p-5 flex items-start gap-4 gold-border">
         <Database className="text-gold-400 shrink-0" size={20} />
         <div className="text-sm text-ink-300 font-light leading-relaxed">
-          <span className="text-ink-100 font-medium">Storage:</span> Vercel KV (Redis).
-          Edits here update the live site for every visitor. If KV isn&apos;t enabled yet
-          (Project → Storage → Create → KV), the API falls back to in-memory storage
-          and resets between deploys.
+          <span className="text-ink-100 font-medium">Storage:</span> Supabase Postgres
+          (primary) with a Neon standby — every change is written to both, and reads
+          fail over automatically if one is down. A daily keep-alive prevents pausing,
+          and you can download a full backup anytime from Settings.
         </div>
       </div>
 

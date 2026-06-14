@@ -148,7 +148,7 @@ export const ALL_STORE_KEYS = [
   "invoices", "tasks", "company-settings", "doc-counters", "employees",
   "attendance", "leaves", "payslips", "assets", "quotations", "payments",
   "notifications", "admin-users", "audit-log", "expenses", "messages",
-  "project-files", "solutions",
+  "project-files", "solutions", "subscribers",
 ] as const;
 
 /** Full snapshot of every store — powers the owner's backup export. */
@@ -352,6 +352,25 @@ export const solutionsDb = {
   async remove(id: string) {
     const all = await solutionsDb.list();
     await setValue(SOL_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Newsletter subscribers ----------
+export type Subscriber = { id: string; email: string; createdAt: string };
+const SUB_KEY = "subscribers";
+export const subscribersDb = {
+  list: () => getValue<Subscriber[]>(SUB_KEY, []),
+  async add(email: string): Promise<boolean> {
+    const e = email.trim().toLowerCase();
+    const all = await subscribersDb.list();
+    if (all.some((s) => s.email === e)) return false; // already subscribed
+    all.unshift({ id: newId(), email: e, createdAt: new Date().toISOString() });
+    await setValue(SUB_KEY, all.slice(0, 50000));
+    return true;
+  },
+  async remove(id: string) {
+    const all = await subscribersDb.list();
+    await setValue(SUB_KEY, all.filter((s) => s.id !== id));
   },
 };
 

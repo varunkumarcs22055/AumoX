@@ -60,16 +60,11 @@ function NewsletterForm() {
     }
     setStatus("loading");
     try {
-      // Reuse the contact pipeline — subscriptions land in the admin inbox.
-      const res = await fetch("/api/contact", {
+      // Saves to the subscribers list — admin can email them from the broadcast dashboard.
+      const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Newsletter subscriber",
-          email,
-          service: "Newsletter",
-          message: "Newsletter subscription request from the website footer.",
-        }),
+        body: JSON.stringify({ email }),
       });
       if (!res.ok) throw new Error();
       setStatus("done");
