@@ -112,9 +112,11 @@ export default async function SolutionsPage() {
                 Our Work
                 <span className="h-px w-8 bg-gold-400" />
               </div>
-              <h2 className="section-title mt-5">What we&apos;ve built.</h2>
+              <h2 className="section-title mt-5">Solutions that deliver business outcomes.</h2>
               <p className="section-sub mx-auto text-center">
-                Real products and systems we&apos;ve shipped for our clients.
+                We build intelligent software, automation systems and digital platforms that
+                solve real business challenges — designed to improve efficiency, accelerate
+                growth and create measurable impact.
               </p>
             </div>
 
@@ -146,11 +148,38 @@ export default async function SolutionsPage() {
                     {s.summary && <p className="mt-4 text-xl font-light text-ink-200 leading-snug">{s.summary}</p>}
                     {s.description && <p className="mt-4 text-ink-300 font-light leading-relaxed whitespace-pre-wrap">{s.description}</p>}
 
+                    {/* Case study — Problem / Solution / Outcome */}
+                    {(s.problem || s.approach || s.outcome) && (
+                      <div className="mt-6 space-y-4 border-l border-gold-400/30 pl-5">
+                        {s.problem && (
+                          <div>
+                            <div className="text-[11px] uppercase tracking-[0.25em] text-gold-400">Problem</div>
+                            <p className="mt-1.5 text-ink-300 font-light leading-relaxed whitespace-pre-wrap">{s.problem}</p>
+                          </div>
+                        )}
+                        {s.approach && (
+                          <div>
+                            <div className="text-[11px] uppercase tracking-[0.25em] text-gold-400">Solution</div>
+                            <p className="mt-1.5 text-ink-300 font-light leading-relaxed whitespace-pre-wrap">{s.approach}</p>
+                          </div>
+                        )}
+                        {s.outcome && (
+                          <div>
+                            <div className="text-[11px] uppercase tracking-[0.25em] text-gold-400">Outcome</div>
+                            <p className="mt-1.5 text-ink-300 font-light leading-relaxed whitespace-pre-wrap">{s.outcome}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {s.tags.length > 0 && (
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {s.tags.map((t) => (
-                          <span key={t} className="text-[11px] uppercase tracking-[0.15em] text-ink-300 border border-line rounded-full px-3 py-1">{t}</span>
-                        ))}
+                      <div className="mt-6">
+                        <div className="text-[11px] uppercase tracking-[0.25em] text-gold-400 mb-2">Technologies</div>
+                        <div className="flex flex-wrap gap-2">
+                          {s.tags.map((t) => (
+                            <span key={t} className="text-[11px] uppercase tracking-[0.15em] text-ink-300 border border-line rounded-full px-3 py-1">{t}</span>
+                          ))}
+                        </div>
                       </div>
                     )}
 

@@ -11,6 +11,9 @@ type Solution = {
   category: string;
   summary: string;
   description: string;
+  problem?: string;
+  approach?: string;
+  outcome?: string;
   coverImage?: string;
   media: Media[];
   tags: string[];
@@ -25,6 +28,7 @@ const newId = () => Math.random().toString(36).slice(2, 10);
 
 const empty = (): Solution => ({
   id: newId(), title: "", category: "AI", summary: "", description: "",
+  problem: "", approach: "", outcome: "",
   coverImage: undefined, media: [], tags: [], link: "", order: 0, published: true, createdAt: "",
 });
 
@@ -123,11 +127,25 @@ export default function SolutionsAdmin() {
             <Field label="Summary (one line)" className="md:col-span-2">
               <input className="input" value={editing.summary} onChange={(e) => setEditing({ ...editing, summary: e.target.value })} placeholder="A WhatsApp + web AI assistant that cut response time 80%." />
             </Field>
-            <Field label="Description" className="md:col-span-2">
-              <textarea className="input min-h-[110px] resize-y" value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} placeholder="What you built, the stack, and the outcome…" />
+            <Field label="Description (intro paragraph)" className="md:col-span-2">
+              <textarea className="input min-h-[90px] resize-y" value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} placeholder="A short overview of the project…" />
             </Field>
-            <Field label="Tags (comma-separated)">
-              <input className="input" value={tagsText} onChange={(e) => setTagsText(e.target.value)} placeholder="Next.js, OpenAI, WhatsApp" />
+
+            <div className="md:col-span-2 grid md:grid-cols-3 gap-5 rounded-xl border border-line p-4 bg-bg-base/40">
+              <div className="md:col-span-3 text-[11px] uppercase tracking-[0.3em] text-gold-400">Case study (Problem · Solution · Outcome)</div>
+              <Field label="Problem">
+                <textarea className="input min-h-[120px] resize-y" value={editing.problem ?? ""} onChange={(e) => setEditing({ ...editing, problem: e.target.value })} placeholder="The business challenge the client faced…" />
+              </Field>
+              <Field label="Solution">
+                <textarea className="input min-h-[120px] resize-y" value={editing.approach ?? ""} onChange={(e) => setEditing({ ...editing, approach: e.target.value })} placeholder="What we built and how we solved it…" />
+              </Field>
+              <Field label="Outcome">
+                <textarea className="input min-h-[120px] resize-y" value={editing.outcome ?? ""} onChange={(e) => setEditing({ ...editing, outcome: e.target.value })} placeholder="The measurable impact / result…" />
+              </Field>
+            </div>
+
+            <Field label="Technologies (comma-separated)">
+              <input className="input" value={tagsText} onChange={(e) => setTagsText(e.target.value)} placeholder="Next.js, OpenAI, WhatsApp, Postgres" />
             </Field>
             <Field label="Live link (optional)">
               <input type="url" className="input" value={editing.link ?? ""} onChange={(e) => setEditing({ ...editing, link: e.target.value })} placeholder="https://…" />

@@ -239,9 +239,13 @@ export type Solution = {
   category: string;       // "AI" | "CRM" | "Web" | "Mobile" | "Automation" | "Design" | …
   summary: string;        // one-liner
   description: string;    // longer body
+  // Case-study structure (all optional) — shown as Problem / Solution / Outcome
+  problem?: string;       // the business challenge
+  approach?: string;      // what we built / how we solved it
+  outcome?: string;       // measurable impact / result
   coverImage?: string;    // Cloudinary URL
   media: SolutionMedia[]; // gallery of images + videos
-  tags: string[];
+  tags: string[];         // technologies used
   link?: string;          // live site / case study URL
   order: number;          // lower = shown first
   published: boolean;
