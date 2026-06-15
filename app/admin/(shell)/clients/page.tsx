@@ -10,6 +10,7 @@ type Client = {
   company: string;
   name: string;
   email: string;
+  officialEmail?: string;
   createdAt: string;
   active: boolean;
 };
@@ -28,10 +29,10 @@ export default function ClientsAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ company: "", name: "", email: "", password: "" });
+  const [form, setForm] = useState({ company: "", name: "", email: "", officialEmail: "", password: "" });
   const [error, setError] = useState("");
   // Newly issued credentials, shown ONCE so admin can share them with the client
-  const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean } | null>(null);
+  const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean; officialEmail?: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
   async function load() {
@@ -47,7 +48,7 @@ export default function ClientsAdmin() {
   useEffect(() => { load(); }, []);
 
   function startNew() {
-    setForm({ company: "", name: "", email: "", password: genPassword() });
+    setForm({ company: "", name: "", email: "", officialEmail: "", password: genPassword() });
     setError("");
     setShowForm(true);
   }
@@ -67,7 +68,12 @@ export default function ClientsAdmin() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed to create client."); return; }
-      setIssued({ email: form.email.trim().toLowerCase(), password: form.password, emailed: data.welcomeEmailed });
+      setIssued({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        emailed: data.welcomeEmailed,
+        officialEmail: data.officialEmail ?? (form.officialEmail.trim().toLowerCase() || form.email.trim().toLowerCase()),
+      });
       setShowForm(false);
       load();
     } finally {
@@ -143,7 +149,7 @@ export default function ClientsAdmin() {
                 {issued.emailed ? "Credentials emailed to the client" : "Share these credentials — shown only once"}
               </div>
               {issued.emailed && (
-                <div className="mt-2 text-xs text-green-300">✓ A welcome email with the portal login was sent to {issued.email}.</div>
+                <div className="mt-2 text-xs text-green-300">✓ A welcome email with the portal login was sent to {issued.officialEmail ?? issued.email}. They&apos;ll be asked to change this password on first login.</div>
               )}
               <div className="mt-3 font-mono text-sm text-ink-100 space-y-1">
                 <div>Portal: https://aumoxo.tech/client</div>
@@ -174,9 +180,13 @@ export default function ClientsAdmin() {
             <Field label="Contact person">
               <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Jane Doe" />
             </Field>
-            <Field label="Login email">
+            <Field label="Official email (for all communication)">
+              <input type="email" className="input" value={form.officialEmail} onChange={(e) => setForm({ ...form, officialEmail: e.target.value })} placeholder="jane@acme.com" />
+              <p className="mt-1.5 text-xs text-ink-500">Their real business email. The welcome message + portal credentials are sent here, and this is where we&apos;ll contact them. If left blank, the login email is used.</p>
+            </Field>
+            <Field label="Login email (portal only)">
               <input type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="jane@acme.com" />
-              <p className="mt-1.5 text-xs text-ink-500">Their portal login + password is emailed here automatically from hello@aumoxo.tech.</p>
+              <p className="mt-1.5 text-xs text-ink-500">The email they sign in to the portal with. Can be the same as the official email.</p>
             </Field>
             <Field label="Password (share with client)">
               <div className="flex gap-2">
@@ -216,8 +226,13 @@ export default function ClientsAdmin() {
                 <div className="text-xs text-ink-400">{c.name || "—"}</div>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-ink-300">
-              <Mail size={14} className="text-gold-400" /> {c.email}
+            <div className="text-sm text-ink-300 min-w-0">
+              <div className="flex items-center gap-2">
+                <Mail size={14} className="text-gold-400 shrink-0" /> <span className="truncate">{c.officialEmail || c.email}</span>
+              </div>
+              {c.officialEmail && c.officialEmail !== c.email && (
+                <div className="mt-1 text-xs text-ink-500 truncate pl-6">Login: {c.email}</div>
+              )}
             </div>
             <button
               onClick={() => toggleActive(c)}

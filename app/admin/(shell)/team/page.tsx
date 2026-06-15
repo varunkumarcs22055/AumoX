@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 type Employee = {
-  id: string; name: string; email: string; designation?: string;
+  id: string; name: string; email: string; officialEmail?: string; designation?: string;
   joinedAt: string; salaryMonthly?: number; active: boolean;
   shiftStart?: string; shiftEnd?: string;
 };
@@ -65,8 +65,8 @@ export default function TeamAdmin() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "" });
-  const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean } | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "" });
+  const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean; officialEmail?: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [slipForm, setSlipForm] = useState({ employeeId: "", month: new Date().toISOString().slice(0, 7), gross: "", deductions: "" });
   const [assetForm, setAssetForm] = useState({ employeeId: "", name: "", type: "document" });
@@ -114,7 +114,12 @@ export default function TeamAdmin() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed."); return; }
-      setIssued({ email: form.email.trim().toLowerCase(), password: form.password, emailed: data.welcomeEmailed });
+      setIssued({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        emailed: data.welcomeEmailed,
+        officialEmail: data.officialEmail ?? (form.officialEmail.trim().toLowerCase() || form.email.trim().toLowerCase()),
+      });
       setShowForm(false);
       load();
     } finally { setSaving(false); }
@@ -207,7 +212,7 @@ export default function TeamAdmin() {
         </div>
         <div className="flex gap-3">
           <a href="/staff/login" target="_blank" className="btn-ghost text-sm !py-2 !px-4"><ExternalLink size={14} /> Staff app</a>
-          <button onClick={() => { setForm({ name: "", email: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword(), shiftStart: "", shiftEnd: "" }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
+          <button onClick={() => { setForm({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword(), shiftStart: "", shiftEnd: "" }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
             <Plus size={16} /> New employee
           </button>
         </div>
@@ -218,7 +223,7 @@ export default function TeamAdmin() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{issued.emailed ? "Credentials emailed to the employee" : "Share with the employee — shown only once"}</div>
-              {issued.emailed && <div className="mt-2 text-xs text-green-300">✓ A welcome email with the workspace login was sent to {issued.email}.</div>}
+              {issued.emailed && <div className="mt-2 text-xs text-green-300">✓ A welcome email with the workspace login was sent to {issued.officialEmail ?? issued.email}. They&apos;ll be asked to change this password on first login.</div>}
               <div className="mt-3 font-mono text-sm text-ink-100 space-y-1">
                 <div>Workspace: https://aumoxo.tech/emp</div>
                 <div>Email: {issued.email}</div>
@@ -254,7 +259,8 @@ export default function TeamAdmin() {
                   <h2 className="font-display text-xl font-light text-ink-100 mb-5">New employee</h2>
                   <div className="grid md:grid-cols-3 gap-4">
                     <Field label="Full name"><input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Prathamesh" /></Field>
-                    <Field label="Work email"><input type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="prathamesh@aumoxo.tech" /><p className="mt-1.5 text-xs text-ink-500">Workspace login + password is emailed here from hello@aumoxo.tech.</p></Field>
+                    <Field label="Official email (for all communication)"><input type="email" className="input" value={form.officialEmail} onChange={(e) => setForm({ ...form, officialEmail: e.target.value })} placeholder="prathamesh@gmail.com" /><p className="mt-1.5 text-xs text-ink-500">Their real email. Welcome + workspace credentials are sent here and this is where we contact them. Blank = same as login email.</p></Field>
+                    <Field label="Login email (workspace only)"><input type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="prathamesh@aumoxo.tech" /><p className="mt-1.5 text-xs text-ink-500">The email they sign in to the workspace with.</p></Field>
                     <Field label="Designation"><input className="input" value={form.designation} onChange={(e) => setForm({ ...form, designation: e.target.value })} placeholder="Head of Engineering" /></Field>
                     <Field label="Joined"><input type="date" className="input" value={form.joinedAt} onChange={(e) => setForm({ ...form, joinedAt: e.target.value })} /></Field>
                     <Field label="Monthly salary (₹)"><input type="number" className="input" value={form.salaryMonthly} onChange={(e) => setForm({ ...form, salaryMonthly: e.target.value })} placeholder="50000" /></Field>
@@ -288,7 +294,8 @@ export default function TeamAdmin() {
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-ink-300">{e.email}{e.salaryMonthly ? ` · ₹${e.salaryMonthly.toLocaleString()}/mo` : ""}</div>
+                    <div className="text-sm text-ink-300">{e.officialEmail || e.email}{e.salaryMonthly ? ` · ₹${e.salaryMonthly.toLocaleString()}/mo` : ""}</div>
+                    {e.officialEmail && e.officialEmail !== e.email && <div className="text-xs text-ink-500">Login: {e.email}</div>}
                     <div className="mt-1.5 flex items-center gap-2 text-xs text-ink-400">
                       <span className="uppercase tracking-[0.15em] text-[10px]">Shift</span>
                       <input type="time" defaultValue={e.shiftStart || ""} onBlur={(ev) => { if (ev.target.value !== (e.shiftStart || "")) patchEmployee(e, { shiftStart: ev.target.value }); }} className="input !py-1 !px-2 !w-auto text-xs" />

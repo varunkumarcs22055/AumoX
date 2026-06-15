@@ -28,14 +28,16 @@ export async function POST(req: Request) {
     company?: string;
     name?: string;
     email?: string;
+    officialEmail?: string;
     password?: string; // only on create / reset
     active?: boolean;
   };
 
   if (!body.company?.trim() || !body.email?.trim()) {
-    return NextResponse.json({ error: "Company and email are required" }, { status: 400 });
+    return NextResponse.json({ error: "Company and login email are required" }, { status: 400 });
   }
   const email = body.email.trim().toLowerCase();
+  const officialEmail = body.officialEmail?.trim().toLowerCase() || email;
 
   // Update existing
   if (body.id) {
@@ -50,8 +52,9 @@ export async function POST(req: Request) {
       company: body.company.trim(),
       name: (body.name ?? existing.name).trim(),
       email,
+      officialEmail: body.officialEmail !== undefined ? officialEmail : existing.officialEmail,
       active: body.active ?? existing.active,
-      ...(body.password ? { passwordHash: await hashPassword(body.password) } : {}),
+      ...(body.password ? { passwordHash: await hashPassword(body.password), mustChangePassword: true } : {}),
     };
     await clientsDb.upsert(updated);
     await logAdminAction("update", "client", `Updated client ${updated.company}${body.password ? " (password reset)" : ""}`);
@@ -70,15 +73,17 @@ export async function POST(req: Request) {
     company: body.company.trim(),
     name: (body.name ?? "").trim(),
     email,
+    officialEmail,
     passwordHash: await hashPassword(body.password),
     createdAt: new Date().toISOString(),
     active: body.active ?? true,
+    mustChangePassword: true, // emailed a temporary password → force a change on first login
   };
   await clientsDb.upsert(client);
-  await logAdminAction("create", "client", `Created client ${client.company} (${client.email})`);
-  // Branded welcome email with portal access (best-effort)
-  const emailed = await sendClientWelcome({ company: client.company, name: client.name, email: client.email }, body.password);
-  return NextResponse.json({ client: pub(client), welcomeEmailed: emailed });
+  await logAdminAction("create", "client", `Created client ${client.company} (official: ${officialEmail})`);
+  // Branded welcome email sent to the OFFICIAL email (best-effort)
+  const emailed = await sendClientWelcome({ company: client.company, name: client.name, email: officialEmail, loginEmail: email }, body.password);
+  return NextResponse.json({ client: pub(client), welcomeEmailed: emailed, officialEmail });
 }
 
 export async function DELETE(req: Request) {

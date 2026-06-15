@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
   }
 
-  await employeesDb.upsert({ ...employee, passwordHash: await hashPassword(next) });
+  await employeesDb.upsert({ ...employee, passwordHash: await hashPassword(next), mustChangePassword: false });
   await logActorAction("staff", employee.name, "password", "session", `${employee.name} changed their password`);
   return NextResponse.json({ ok: true });
 }

@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     id?: string;
     name?: string;
     email?: string;
+    officialEmail?: string;
     designation?: string;
     joinedAt?: string;
     salaryMonthly?: number;
@@ -37,9 +38,10 @@ export async function POST(req: Request) {
   const cleanTime = (v?: string) => (v && /^\d{2}:\d{2}$/.test(v) ? v : undefined);
 
   if (!body.name?.trim() || !body.email?.trim()) {
-    return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
+    return NextResponse.json({ error: "Name and login email are required" }, { status: 400 });
   }
   const email = body.email.trim().toLowerCase();
+  const officialEmail = body.officialEmail?.trim().toLowerCase() || email;
 
   if (body.id) {
     const existing = await employeesDb.findById(body.id);
@@ -52,6 +54,7 @@ export async function POST(req: Request) {
       ...existing,
       name: body.name.trim(),
       email,
+      officialEmail: body.officialEmail !== undefined ? officialEmail : existing.officialEmail,
       designation: body.designation?.trim() || existing.designation,
       joinedAt: body.joinedAt || existing.joinedAt,
       salaryMonthly:
@@ -59,7 +62,7 @@ export async function POST(req: Request) {
       active: body.active ?? existing.active,
       shiftStart: body.shiftStart !== undefined ? cleanTime(body.shiftStart) : existing.shiftStart,
       shiftEnd: body.shiftEnd !== undefined ? cleanTime(body.shiftEnd) : existing.shiftEnd,
-      ...(body.password ? { passwordHash: await hashPassword(body.password) } : {}),
+      ...(body.password ? { passwordHash: await hashPassword(body.password), mustChangePassword: true } : {}),
     };
     await employeesDb.upsert(updated);
     await logAdminAction("update", "employee", `Updated employee ${updated.name}${body.password ? " (password reset)" : ""}${body.active === false ? " — deactivated" : ""}`);
@@ -76,18 +79,20 @@ export async function POST(req: Request) {
     id: newId(),
     name: body.name.trim(),
     email,
+    officialEmail,
     passwordHash: await hashPassword(body.password),
     designation: body.designation?.trim(),
     joinedAt: body.joinedAt || new Date().toISOString().slice(0, 10),
     salaryMonthly: typeof body.salaryMonthly === "number" ? body.salaryMonthly : undefined,
     active: true,
+    mustChangePassword: true, // emailed a temporary password → force a change on first login
     shiftStart: cleanTime(body.shiftStart),
     shiftEnd: cleanTime(body.shiftEnd),
   };
   await employeesDb.upsert(employee);
   await logAdminAction("create", "employee", `Added employee ${employee.name}${employee.designation ? ` (${employee.designation})` : ""}`);
-  const emailed = await sendEmployeeWelcome({ name: employee.name, email: employee.email, designation: employee.designation }, body.password);
-  return NextResponse.json({ employee: pub(employee), welcomeEmailed: emailed });
+  const emailed = await sendEmployeeWelcome({ name: employee.name, email: officialEmail, loginEmail: email, designation: employee.designation }, body.password);
+  return NextResponse.json({ employee: pub(employee), welcomeEmailed: emailed, officialEmail });
 }
 
 export async function DELETE(req: Request) {

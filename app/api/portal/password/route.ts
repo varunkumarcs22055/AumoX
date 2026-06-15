@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
   }
 
-  await clientsDb.upsert({ ...client, passwordHash: await hashPassword(next) });
+  await clientsDb.upsert({ ...client, passwordHash: await hashPassword(next), mustChangePassword: false });
   await logActorAction("client", client.company, "password", "session", `${client.company} changed their portal password`);
   return NextResponse.json({ ok: true });
 }

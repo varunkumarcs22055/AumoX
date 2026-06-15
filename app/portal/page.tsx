@@ -27,6 +27,7 @@ import {
 import { LogoMark } from "@/components/Logo";
 import { printDocument } from "@/lib/print-doc";
 import PortalSupport from "@/components/portal/PortalSupport";
+import FirstLoginPasswordGate from "@/components/FirstLoginPasswordGate";
 
 type Phase = { name: string; status: "pending" | "in-progress" | "completed"; note?: string };
 type Update = { id: string; date: string; title: string; body?: string };
@@ -70,7 +71,7 @@ type PortalFile = { id: string; projectId: string; name: string; url: string; si
 type Notif = { id: string; message: string; read: boolean; createdAt: string };
 type PortalTask = { id: string; projectId: string; title: string; status: "todo" | "in-progress" | "done"; due?: string };
 type Me = {
-  client: { company: string; name: string; email: string };
+  client: { company: string; name: string; email: string; mustChangePassword?: boolean };
   projects: Project[];
   invoices?: PortalInvoice[];
   quotations?: PortalQuotation[];
@@ -326,6 +327,16 @@ export default function PortalPage() {
 
   return (
     <div className="min-h-screen bg-bg-base">
+      {/* First-login: force a password change (temp password was emailed) */}
+      <FirstLoginPasswordGate
+        open={!!me.client.mustChangePassword}
+        endpoint="/api/portal/password"
+        context="portal"
+        onDone={async () => {
+          const me2 = await fetch("/api/portal/me", { cache: "no-store" }).then((r) => r.json());
+          setMe(me2);
+        }}
+      />
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-bg-base/85 backdrop-blur-xl border-b border-line">
         <div className="container-x h-[72px] flex items-center justify-between">

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import StaffExtras from "@/components/staff/StaffExtras";
+import FirstLoginPasswordGate from "@/components/FirstLoginPasswordGate";
 
 type Task = { id: string; title: string; projectId?: string; due?: string; status: "todo" | "in-progress" | "done" };
 type Session = { in: string; out?: string };
@@ -18,7 +19,7 @@ type Payslip = { id: string; number: string; month: string; gross: number; deduc
 type Asset = { id: string; name: string; type: string; url?: string; issuedAt: string };
 type Notif = { id: string; message: string; read: boolean; createdAt: string };
 type Me = {
-  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string; shiftStart?: string; shiftEnd?: string; phone?: string; address?: string; emergencyContact?: string; photo?: string };
+  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string; shiftStart?: string; shiftEnd?: string; phone?: string; address?: string; emergencyContact?: string; photo?: string; mustChangePassword?: boolean };
   tasks: Task[];
   projects: { id: string; name: string }[];
   attendance: Attendance[];
@@ -239,6 +240,13 @@ export default function StaffPage() {
 
   return (
     <div className="min-h-screen bg-bg-base">
+      {/* First-login: force a password change (temp password was emailed) */}
+      <FirstLoginPasswordGate
+        open={!!me.employee.mustChangePassword}
+        endpoint="/api/staff/password"
+        context="workspace"
+        onDone={async () => { load(); }}
+      />
       {/* Top bar */}
       <header className="sticky top-0 z-40 bg-bg-base/85 backdrop-blur-xl border-b border-line">
         <div className="container-x h-[72px] flex items-center justify-between">

@@ -73,6 +73,7 @@ export async function GET() {
       address: emp.address,
       emergencyContact: emp.emergencyContact,
       photo: emp.photo,
+      mustChangePassword: !!emp.mustChangePassword,
     },
     announcements,
     holidays: holidays.filter((h) => h.date >= today).slice(0, 12),

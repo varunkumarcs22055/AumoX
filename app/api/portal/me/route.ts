@@ -56,7 +56,7 @@ export async function GET() {
     }));
 
   return NextResponse.json({
-    client: { company: client.company, name: client.name, email: client.email },
+    client: { company: client.company, name: client.name, email: client.email, mustChangePassword: !!client.mustChangePassword },
     projects,
     invoices: invoices.map((i) => ({
       id: i.id,

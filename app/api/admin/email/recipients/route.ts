@@ -16,8 +16,9 @@ export async function GET() {
   ]);
   return NextResponse.json({
     emailConfigured: emailEnabled(),
-    clients: clients.map((c) => ({ id: c.id, name: c.name || c.company, email: c.email, active: c.active })),
-    employees: employees.map((e) => ({ id: e.id, name: e.name, email: e.email, active: e.active })),
+    // Contact clients/employees on their official email (falls back to the login email)
+    clients: clients.map((c) => ({ id: c.id, name: c.name || c.company, email: c.officialEmail || c.email, active: c.active })),
+    employees: employees.map((e) => ({ id: e.id, name: e.name, email: e.officialEmail || e.email, active: e.active })),
     subscribers: subscribers.map((s) => ({ id: s.id, name: "", email: s.email })),
     custom: custom.map((c) => ({ id: c.id, name: c.name, email: c.email })),
   });

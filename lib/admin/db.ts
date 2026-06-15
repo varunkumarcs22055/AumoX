@@ -513,10 +513,12 @@ export type Client = {
   id: string;
   company: string;
   name: string;          // contact person
-  email: string;         // login identifier (stored lowercase)
+  email: string;         // portal login identifier (stored lowercase)
+  officialEmail?: string;// real business email used for ALL communication
   passwordHash: string;  // PBKDF2 — never returned to the browser
   createdAt: string;
   active: boolean;
+  mustChangePassword?: boolean; // true after create/reset → forces a change on first login
 };
 
 const C_KEY = "clients";
@@ -750,12 +752,14 @@ export async function nextDocNumber(type: "IN" | "QT" | "PS" | "TK"): Promise<st
 export type Employee = {
   id: string;
   name: string;
-  email: string;         // login (lowercase)
+  email: string;         // workspace login (lowercase)
+  officialEmail?: string;// real email used for ALL communication
   passwordHash: string;
   designation?: string;  // e.g. "Full-Stack Engineer"
   joinedAt: string;      // YYYY-MM-DD
   salaryMonthly?: number;
   active: boolean;
+  mustChangePassword?: boolean; // true after create/reset → forces a change on first login
   shiftStart?: string;   // HH:MM — admin-defined expected start
   shiftEnd?: string;     // HH:MM — admin-defined expected end
   // Self-service profile fields (employee-editable)

@@ -66,16 +66,17 @@ export async function sendBroadcastEmail(to: string, subject: string, message: s
   return send(to, subject, frame(subject, body || p(esc(message))), replyTo || "hello@aumoxo.tech");
 }
 
-/** Welcome email with portal access for a new client. */
-export async function sendClientWelcome(client: { company: string; name?: string; email: string }, password: string) {
+/** Welcome email with portal access for a new client (sent to their official email). */
+export async function sendClientWelcome(client: { company: string; name?: string; email: string; loginEmail?: string }, password: string) {
   const first = client.name?.split(" ")[0] || client.company;
+  const loginEmail = client.loginEmail || client.email;
   const body =
     p(`Hi ${esc(first)},`) +
     p(`Your AUMOXO client portal is ready. You can track your project's progress, view quotations and invoices, download deliverables and message our team — all in one place.`) +
     `<div style="background:#000;border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:18px;margin:6px 0 18px">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#71717a">Your AUMOXO portal login</div>
       <div style="font-size:14px;color:#fafafa;margin-top:8px">Portal: <b style="color:#E5C76B">${HOST}/client</b></div>
-      <div style="font-size:14px;color:#fafafa;margin-top:4px">Email: <b>${esc(client.email)}</b></div>
+      <div style="font-size:14px;color:#fafafa;margin-top:4px">Login email: <b>${esc(loginEmail)}</b></div>
       <div style="font-size:14px;color:#fafafa;margin-top:4px">Temporary password: <b style="color:#E5C76B">${esc(password)}</b></div>
     </div>` +
     p(`For your security, please sign in and change your password from the portal.`) +
@@ -83,16 +84,17 @@ export async function sendClientWelcome(client: { company: string; name?: string
   return send(client.email, "Welcome to AUMOXO — your client portal is ready", frame("Your portal is ready", body));
 }
 
-/** Welcome email for a new employee — staff workspace access + credentials. */
-export async function sendEmployeeWelcome(emp: { name: string; email: string; designation?: string }, password: string) {
+/** Welcome email for a new employee — staff workspace access (sent to their official email). */
+export async function sendEmployeeWelcome(emp: { name: string; email: string; designation?: string; loginEmail?: string }, password: string) {
   const first = emp.name?.split(" ")[0] || emp.name;
+  const loginEmail = emp.loginEmail || emp.email;
   const body =
     p(`Hi ${esc(first)},`) +
     p(`Welcome to the AUMOXO team${emp.designation ? ` as <b style="color:#fafafa">${esc(emp.designation)}</b>` : ""}! Your staff workspace is ready — clock in/out, manage your tasks, request leave, view payslips and the things issued to you, all in one place.`) +
     `<div style="background:#000;border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:18px;margin:6px 0 18px">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#71717a">Your AUMOXO workspace login</div>
       <div style="font-size:14px;color:#fafafa;margin-top:8px">Workspace: <b style="color:#E5C76B">${HOST}/emp</b></div>
-      <div style="font-size:14px;color:#fafafa;margin-top:4px">Email: <b>${esc(emp.email)}</b></div>
+      <div style="font-size:14px;color:#fafafa;margin-top:4px">Login email: <b>${esc(loginEmail)}</b></div>
       <div style="font-size:14px;color:#fafafa;margin-top:4px">Temporary password: <b style="color:#E5C76B">${esc(password)}</b></div>
     </div>` +
     p(`Please sign in and change your password from the workspace. Glad to have you with us. 🚀`) +
