@@ -39,7 +39,7 @@ const leadership = [
     name: "Prathamesh",
     role: "Head of Engineering",
     initials: "P",
-    photo: "/team/prathamesh.jpg",
+    photo: undefined, // photo pending — card shows gold initials until provided
     focus: ["Development Operations", "Technical Delivery", "Code Quality", "Project Execution"],
   },
 ];
