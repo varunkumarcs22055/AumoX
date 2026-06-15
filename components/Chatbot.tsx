@@ -13,7 +13,7 @@ type Msg = {
   id: string;
 };
 
-const STORAGE_KEY = "aumox_chat_v1";
+const STORAGE_KEY = "aumox_chat_v2";
 
 export default function Chatbot() {
   const router = useRouter();
@@ -22,6 +22,7 @@ export default function Chatbot() {
   const [hasGreeting, setHasGreeting] = useState(true);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Load persisted messages or seed greeting
@@ -44,7 +45,7 @@ export default function Chatbot() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, open]);
+  }, [messages, open, typing]);
 
   function seedGreeting() {
     const g = flow.greeting;
@@ -78,9 +79,26 @@ export default function Chatbot() {
       }, 250);
       return;
     }
-    if (opt.next) {
-      setTimeout(() => pushBot(opt.next!), 280);
+    if (opt.action === "external" && opt.href) {
+      window.open(opt.href, opt.href.startsWith("mailto:") ? "_self" : "_blank", "noopener,noreferrer");
+      return;
     }
+    if (opt.action === "navigate" && opt.href) {
+      setTimeout(() => { setOpen(false); router.push(opt.href!); }, 200);
+      return;
+    }
+    if (opt.next) {
+      replyBot(opt.next);
+    }
+  }
+
+  // Show a brief "typing" indicator before the bot answers — feels alive.
+  function replyBot(nodeId: string, delay = 480) {
+    setTyping(true);
+    setTimeout(() => {
+      setTyping(false);
+      pushBot(nodeId);
+    }, delay);
   }
 
   function handleSend(e: React.FormEvent) {
@@ -90,7 +108,7 @@ export default function Chatbot() {
     pushUser(text);
     setInput("");
     const target = matchIntent(text);
-    setTimeout(() => pushBot(target), 360);
+    replyBot(target, 620);
   }
 
   function reset() {
@@ -142,7 +160,7 @@ export default function Chatbot() {
           <div className="flex-1">
             <div className="text-sm font-medium text-ink-100">AUMOXO Assistant</div>
             <div className="text-[11px] text-gold-400/80 tracking-widest uppercase">
-              Online · Guided
+              Online · Ask me anything
             </div>
           </div>
           <button
@@ -183,6 +201,16 @@ export default function Chatbot() {
               )}
             </div>
           ))}
+
+          {typing && (
+            <div className="max-w-[60%] rounded-2xl rounded-bl-md border border-line bg-bg-elevated px-4 py-3">
+              <div className="flex gap-1">
+                <span className="h-2 w-2 rounded-full bg-gold-400/70 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="h-2 w-2 rounded-full bg-gold-400/70 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="h-2 w-2 rounded-full bg-gold-400/70 animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Input */}
@@ -193,7 +221,7 @@ export default function Chatbot() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message…"
+            placeholder="Ask about services, pricing, our work…"
             className="flex-1 rounded-full bg-bg-elevated border border-line px-4 py-2.5 text-sm text-ink-100 placeholder:text-ink-400 outline-none focus:border-gold-400/60"
           />
           <button
