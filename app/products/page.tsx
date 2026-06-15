@@ -1,7 +1,7 @@
 import Link from "next/link";
 import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import Reveal from "@/components/anim/Reveal";
-import { ArrowUpRight, CheckCircle2, Sparkles, Briefcase, Workflow, ExternalLink } from "lucide-react";
+import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { solutionsDb } from "@/lib/admin/db";
 
 // Managed from the admin (Solutions) — always render fresh.
@@ -20,51 +20,53 @@ export const metadata = {
   alternates: { canonical: "/products" },
 };
 
-const solutions = [
+// Real shipped work, shown when no admin-managed Solutions exist yet. The moment
+// the team adds projects in Admin → Solutions, those take over automatically.
+type ShowcaseProject = {
+  id: string;
+  category: string;
+  title: string;
+  summary: string;
+  description?: string;
+  problem?: string;
+  approach?: string;
+  outcome?: string;
+  coverImage?: string;
+  media: { type: "image" | "video"; url: string }[];
+  tags: string[];
+  link?: string;
+};
+
+const FALLBACK_PROJECTS: ShowcaseProject[] = [
   {
-    i: Sparkles,
-    name: "AI Customer Support Suite",
-    tag: "Solution 01",
-    headline: "Customer support that scales without scaling headcount.",
-    desc: "Website chatbot, WhatsApp bot, knowledge base and intelligent ticket routing — trained on your business knowledge and live from week one.",
-    features: [
-      "Website chatbot",
-      "WhatsApp bot",
-      "Knowledge base",
-      "Ticket routing",
-      "Human handoff",
-      "Analytics & training",
-    ],
+    id: "collabcode",
+    category: "AI · SaaS",
+    title: "CollabCode",
+    summary: "AI-powered collaborative development platform — teams code, review and innovate together in real time.",
+    problem:
+      "Modern engineering teams are distributed, but writing and reviewing code together still means juggling a separate editor, chat and call — so pairing is clunky, reviews lag and context gets lost between tools.",
+    approach:
+      "CollabCode brings the whole workflow into one real-time workspace: multiple developers edit and review the same codebase live, with AI-assisted development workflows that speed up writing and reviewing — built on a modern, scalable SaaS architecture and deployed to the cloud.",
+    outcome:
+      "A faster, more connected way to build software — improving developer productivity and streamlining collaborative development through real-time collaboration and AI assistance.",
+    tags: ["React", "Node.js", "Real-time / WebSockets", "AI integration", "Cloud · SaaS"],
+    link: "https://collab-code-rosy.vercel.app/",
+    media: [],
   },
   {
-    i: Briefcase,
-    name: "CRM & Sales Automation",
-    tag: "Solution 02",
-    headline: "Built around how your team actually sells.",
-    desc: "Lead management, follow-up automation, sales dashboards and reporting — tailored to your pipeline, not a generic template.",
-    features: [
-      "Lead management",
-      "Follow-up automation",
-      "Sales dashboards",
-      "Pipeline tracking",
-      "Reporting & analytics",
-      "Email + WhatsApp sequences",
-    ],
-  },
-  {
-    i: Workflow,
-    name: "Operations Automation",
-    tag: "Solution 03",
-    headline: "Free your team from repetitive work.",
-    desc: "Internal workflows, approvals, notifications and reporting — orchestrated end-to-end so your team focuses on the work that matters.",
-    features: [
-      "Internal workflows",
-      "Approvals & sign-off",
-      "Notifications",
-      "Reporting & dashboards",
-      "Integration with your stack",
-      "Audit trails",
-    ],
+    id: "aurea",
+    category: "Web · Design",
+    title: "Aurea — Fine Dining Experience",
+    summary: "An elegant, immersive website for a premium fine-dining restaurant — story, menu, gallery, reviews and reservations.",
+    problem:
+      "Aurea, a fine-dining restaurant, needed a digital presence as refined as its cuisine — one that conveys atmosphere, showcases the seasonal menu and lets guests reserve a table effortlessly on any device.",
+    approach:
+      "We designed and built a polished, fully responsive site: a cinematic hero, an 'Our Story' chef feature, a categorised menu (starters, mains, desserts, drinks) with pricing, a gallery, guest reviews and a clear 'Reserve a Table' flow — all crafted to feel premium and load fast.",
+    outcome:
+      "A sophisticated online storefront that mirrors the in-restaurant experience and turns visitors into reservations.",
+    tags: ["React", "Tailwind CSS", "Responsive design", "Reservation flow"],
+    link: "https://fine-dining-restaurant-website-six.vercel.app/",
+    media: [],
   },
 ];
 
@@ -78,6 +80,9 @@ export default async function SolutionsPage() {
   const work = (await solutionsDb.list())
     .filter((s) => s.published)
     .sort((a, b) => a.order - b.order);
+  // Prefer admin-managed case studies; fall back to our real shipped projects
+  // so the showcase is never empty.
+  const showcase: ShowcaseProject[] = work.length > 0 ? work : FALLBACK_PROJECTS;
 
   return (
     <>
@@ -102,9 +107,8 @@ export default async function SolutionsPage() {
         </div>
       </section>
 
-      {/* OUR WORK — admin-managed, with images & videos */}
-      {work.length > 0 && (
-        <section className="py-24 lg:py-32 border-b border-line">
+      {/* OUR WORK — admin-managed, falling back to our real shipped projects */}
+      <section className="py-24 lg:py-32 border-b border-line">
           <div className="container-x">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <div className="eyebrow justify-center">
@@ -112,16 +116,16 @@ export default async function SolutionsPage() {
                 Our Work
                 <span className="h-px w-8 bg-gold-400" />
               </div>
-              <h2 className="section-title mt-5">Solutions that deliver business outcomes.</h2>
+              <h2 className="section-title mt-5">Solutions That Deliver Business Outcomes</h2>
               <p className="section-sub mx-auto text-center">
-                We build intelligent software, automation systems and digital platforms that
-                solve real business challenges — designed to improve efficiency, accelerate
-                growth and create measurable impact.
+                At AUMOXO, we build intelligent software, automation systems and digital
+                platforms that solve real business challenges — each designed to improve
+                efficiency, accelerate growth and create measurable impact.
               </p>
             </div>
 
             <div className="space-y-20">
-              {work.map((s, idx) => (
+              {showcase.map((s, idx) => (
                 <Reveal
                   key={s.id}
                   kind="fade-up"
@@ -213,56 +217,6 @@ export default async function SolutionsPage() {
             </div>
           </div>
         </section>
-      )}
-
-      {/* SOLUTIONS */}
-      <section className="py-24 lg:py-32">
-        <div className="container-x space-y-24">
-          {solutions.map((p, idx) => (
-            <Reveal
-              key={p.name}
-              kind="fade-up"
-              className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
-                idx % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
-              }`}
-            >
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">
-                  {p.tag}
-                </div>
-                <h2 className="mt-3 font-display text-4xl md:text-5xl font-extralight text-ink-100 tracking-tight leading-[1.05]">
-                  {p.name}
-                </h2>
-                <p className="mt-6 text-2xl font-light text-ink-200 leading-snug">
-                  {p.headline}
-                </p>
-                <p className="mt-6 text-ink-300 font-light leading-relaxed">{p.desc}</p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Link href="/contact" className="btn-gold">
-                    Discuss Project <ArrowUpRight size={18} />
-                  </Link>
-                  <Link href="/contact" className="btn-ghost">
-                    Schedule Consultation
-                  </Link>
-                </div>
-              </div>
-              <div className="card p-10 gold-border">
-                <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-6">
-                  What's Inside
-                </div>
-                <ul className="space-y-4">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-3 text-ink-200">
-                      <CheckCircle2 size={18} className="text-gold-400 shrink-0 mt-0.5" />
-                      <span className="font-light">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
 
       {/* COMING SOON PRODUCTS */}
       <section className="py-24 lg:py-32 bg-bg-surface border-y border-line">
