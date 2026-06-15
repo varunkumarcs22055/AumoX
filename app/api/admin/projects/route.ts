@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   projectsDb,
   clientsDb,
+  teamsDb,
   notificationsDb,
   newId,
   DEFAULT_PHASES,
@@ -31,10 +32,11 @@ function sanitizePhases(input: unknown): ProjectPhase[] {
 
 export async function GET() {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const [projects, clients] = await Promise.all([projectsDb.list(), clientsDb.list()]);
+  const [projects, clients, teams] = await Promise.all([projectsDb.list(), clientsDb.list(), teamsDb.list()]);
   return NextResponse.json({
     projects,
     clients: clients.map((c) => ({ id: c.id, company: c.company, name: c.name })),
+    teams: teams.map((t) => ({ id: t.id, name: t.name })),
   });
 }
 
@@ -60,6 +62,7 @@ export async function POST(req: Request) {
       ...(body.phases ? { phases: sanitizePhases(body.phases) } : {}),
       ...(body.startDate !== undefined ? { startDate: body.startDate } : {}),
       ...(body.targetDate !== undefined ? { targetDate: body.targetDate } : {}),
+      ...(body.teamId !== undefined ? { teamId: body.teamId || undefined } : {}),
     };
     if (body.addUpdate?.title?.trim()) {
       updated.updates = [
@@ -107,6 +110,7 @@ export async function POST(req: Request) {
     updates: [],
     startDate: body.startDate,
     targetDate: body.targetDate,
+    teamId: body.teamId || undefined,
   };
   await projectsDb.upsert(project);
   await logAdminAction("create", "project", `Created project "${project.name}" for ${client.company}`);

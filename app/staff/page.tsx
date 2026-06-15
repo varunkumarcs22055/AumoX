@@ -20,7 +20,7 @@ type Payslip = { id: string; number: string; month: string; gross: number; deduc
 type Asset = { id: string; name: string; type: string; url?: string; issuedAt: string };
 type Notif = { id: string; message: string; read: boolean; createdAt: string };
 type Me = {
-  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string; shiftStart?: string; shiftEnd?: string; phone?: string; address?: string; emergencyContact?: string; photo?: string; mustChangePassword?: boolean };
+  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string; shiftStart?: string; shiftEnd?: string; phone?: string; address?: string; emergencyContact?: string; photo?: string; role?: "member" | "manager" | "hr"; mustChangePassword?: boolean };
   tasks: Task[];
   projects: { id: string; name: string }[];
   attendance: Attendance[];
@@ -35,6 +35,7 @@ type Me = {
   timeEntries?: { id: string; projectId?: string; date: string; hours: number; billable: boolean; note?: string; invoiced?: boolean }[];
   claims?: { id: string; date: string; category: string; description: string; amount: number; currency: string; status: string; receiptUrl?: string }[];
   directory?: { id: string; name: string; designation?: string; email: string; photo?: string }[];
+  teams?: { id: string; name: string; isManager?: boolean; isHr?: boolean; manager?: { id: string; name: string; designation?: string; email?: string; photo?: string; role?: "member" | "manager" | "hr" } | null; hr?: { id: string; name: string; designation?: string; email?: string; photo?: string; role?: "member" | "manager" | "hr" } | null; members: { id: string; name: string; designation?: string; email?: string; photo?: string; role?: "member" | "manager" | "hr" }[] }[];
 };
 
 const BREAK_TYPES = ["Lunch", "Tea / coffee", "Short break", "Meeting", "Personal", "Prayer", "Other"];

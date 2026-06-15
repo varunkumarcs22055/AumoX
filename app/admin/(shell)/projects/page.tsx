@@ -18,8 +18,10 @@ type Project = {
   updates: Update[];
   startDate?: string;
   targetDate?: string;
+  teamId?: string;
 };
 type ClientLite = { id: string; company: string; name: string };
+type TeamLite = { id: string; name: string };
 
 const PHASE_STATUSES: { v: PhaseStatus; label: string }[] = [
   { v: "pending", label: "Pending" },
@@ -30,11 +32,12 @@ const PHASE_STATUSES: { v: PhaseStatus; label: string }[] = [
 export default function ProjectsAdmin() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<ClientLite[]>([]);
+  const [teams, setTeams] = useState<TeamLite[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", clientId: "", description: "", startDate: "", targetDate: "" });
+  const [form, setForm] = useState({ name: "", clientId: "", description: "", startDate: "", targetDate: "", teamId: "" });
   const [updateDraft, setUpdateDraft] = useState({ title: "", body: "" });
   const [error, setError] = useState("");
 
@@ -45,6 +48,7 @@ export default function ProjectsAdmin() {
       const data = await res.json();
       setProjects(data.projects ?? []);
       setClients(data.clients ?? []);
+      setTeams(data.teams ?? []);
     } finally {
       setLoading(false);
     }
@@ -52,6 +56,14 @@ export default function ProjectsAdmin() {
   useEffect(() => { load(); }, []);
 
   const clientName = (id: string) => clients.find((c) => c.id === id)?.company ?? "Unknown client";
+  const teamName = (id?: string) => (id ? teams.find((t) => t.id === id)?.name : undefined);
+
+  async function setProjectTeam(p: Project, teamId: string) {
+    setProjects((all) => all.map((x) => (x.id === p.id ? { ...x, teamId: teamId || undefined } : x)));
+    await fetch("/api/admin/projects", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: p.id, teamId }),
+    });
+  }
 
   async function createProject() {
     setError("");
@@ -69,7 +81,7 @@ export default function ProjectsAdmin() {
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed to create project."); return; }
       setShowForm(false);
-      setForm({ name: "", clientId: "", description: "", startDate: "", targetDate: "" });
+      setForm({ name: "", clientId: "", description: "", startDate: "", targetDate: "", teamId: "" });
       load();
     } finally {
       setSaving(false);
@@ -165,6 +177,13 @@ export default function ProjectsAdmin() {
             <Field label="Target date">
               <input type="date" className="input" value={form.targetDate} onChange={(e) => setForm({ ...form, targetDate: e.target.value })} />
             </Field>
+            <Field label="Assign to team (internal)" className="md:col-span-2">
+              <select className="input" value={form.teamId} onChange={(e) => setForm({ ...form, teamId: e.target.value })}>
+                <option value="">— no team yet —</option>
+                {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              <p className="mt-1.5 text-xs text-ink-500">Only this team will see the project in their workspace. Manage teams under Team / HR → Teams.</p>
+            </Field>
             <Field label="Description (shown to client)" className="md:col-span-2">
               <textarea className="input min-h-[90px] resize-y" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Custom CRM with lead management, sales pipeline and reporting." />
             </Field>
@@ -198,7 +217,7 @@ export default function ProjectsAdmin() {
                 <div className="flex-1 min-w-0">
                   <div className="text-ink-100 font-light text-lg truncate">{p.name}</div>
                   <div className="text-[11px] uppercase tracking-[0.2em] text-ink-400 mt-1">
-                    {clientName(p.clientId)} · {p.status} · {done}/{p.phases.length} phases · {p.updates.length} updates
+                    {clientName(p.clientId)} · {p.status} · {done}/{p.phases.length} phases · {p.updates.length} updates{teamName(p.teamId) ? ` · 👥 ${teamName(p.teamId)}` : ""}
                   </div>
                 </div>
                 {open ? <ChevronUp size={18} className="text-gold-400 shrink-0" /> : <ChevronDown size={18} className="text-gold-400 shrink-0" />}
@@ -206,6 +225,15 @@ export default function ProjectsAdmin() {
 
               {open && (
                 <div className="border-t border-line p-5 lg:p-6 space-y-8">
+                  {/* Team assignment */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-[11px] uppercase tracking-[0.25em] text-ink-400">Delivery team:</span>
+                    <select className="input !py-1.5 !px-3 text-sm !w-auto" value={p.teamId || ""} onChange={(e) => setProjectTeam(p, e.target.value)}>
+                      <option value="">— no team —</option>
+                      {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                    <span className="text-xs text-ink-500">Only this team sees the project in their workspace.</span>
+                  </div>
                   {/* Status + delete */}
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="text-[11px] uppercase tracking-[0.25em] text-ink-400">Project status:</span>

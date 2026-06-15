@@ -15,6 +15,7 @@ import {
   holidaysDb,
   timeEntriesDb,
   expenseClaimsDb,
+  teamsDb,
 } from "@/lib/admin/db";
 import { verifyStaffToken, STAFF_COOKIE } from "@/lib/admin/auth";
 
@@ -28,7 +29,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [tasks, projects, attendance, leaves, payslips, assets, notifications, settings, announcements, holidays, allTime, claims, allEmployees] =
+  const [tasks, projects, attendance, leaves, payslips, assets, notifications, settings, announcements, holidays, allTime, claims, allEmployees, myTeams] =
     await Promise.all([
       tasksDb.list(),
       projectsDb.list(),
@@ -43,6 +44,7 @@ export async function GET() {
       timeEntriesDb.listByEmployee(emp.id),
       expenseClaimsDb.listByEmployee(emp.id),
       employeesDb.list(),
+      teamsDb.listForEmployee(emp.id),
     ]);
 
   const myTasks = tasks.filter(
@@ -60,6 +62,38 @@ export async function GET() {
   const today = new Date().toISOString().slice(0, 10);
   const todayRow = myAttendance.find((a) => a.date === today);
 
+  // ----- Team scoping: an employee only sees their own team(s), not everyone -----
+  const empById = new Map(allEmployees.map((e) => [e.id, e]));
+  const person = (id?: string) => {
+    if (!id) return null;
+    const e = empById.get(id);
+    if (!e || !e.active) return null;
+    return { id: e.id, name: e.name, designation: e.designation, email: e.officialEmail || e.email, photo: e.photo, role: e.role ?? "member" };
+  };
+  const teams = myTeams.map((t) => ({
+    id: t.id,
+    name: t.name,
+    isManager: t.managerId === emp.id,
+    isHr: t.hrId === emp.id,
+    manager: person(t.managerId),
+    hr: person(t.hrId),
+    members: t.memberIds.map(person).filter(Boolean),
+  }));
+  // Directory = everyone across my team(s) (manager + HR + members), minus myself.
+  const teammateIds = new Set<string>();
+  for (const t of myTeams) {
+    if (t.managerId) teammateIds.add(t.managerId);
+    if (t.hrId) teammateIds.add(t.hrId);
+    t.memberIds.forEach((id) => teammateIds.add(id));
+  }
+  teammateIds.delete(emp.id);
+  const directory = [...teammateIds].map(person).filter(Boolean);
+  // Projects scoped to my team(s). Before any team exists, fall back to all so
+  // the timesheet picker isn't empty during rollout.
+  const myTeamIds = new Set(myTeams.map((t) => t.id));
+  const teamProjects = projects.filter((p) => p.teamId && myTeamIds.has(p.teamId));
+  const projectsForMe = myTeams.length === 0 ? projects : teamProjects;
+
   return NextResponse.json({
     employee: {
       id: emp.id,
@@ -73,17 +107,17 @@ export async function GET() {
       address: emp.address,
       emergencyContact: emp.emergencyContact,
       photo: emp.photo,
+      role: emp.role ?? "member",
       mustChangePassword: !!emp.mustChangePassword,
     },
     announcements,
     holidays: holidays.filter((h) => h.date >= today).slice(0, 12),
     timeEntries: allTime.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 200),
     claims: claims.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    directory: allEmployees
-      .filter((e) => e.active)
-      .map((e) => ({ id: e.id, name: e.name, designation: e.designation, email: e.email, photo: e.photo })),
+    teams,
+    directory,
     tasks: myTasks,
-    projects: projects.map((p) => ({ id: p.id, name: p.name })),
+    projects: projectsForMe.map((p) => ({ id: p.id, name: p.name })),
     attendance: myAttendance,
     today: todayRow ?? null,
     leaves: myLeaves,

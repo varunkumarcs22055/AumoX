@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import {
-  Plus, Trash2, Check, X, Loader2, KeyRound, Copy, User, ExternalLink, BadgeCheck,
+  Plus, Trash2, Check, X, Loader2, KeyRound, Copy, User, ExternalLink, BadgeCheck, Pencil,
 } from "lucide-react";
 import MediaUpload from "@/components/admin/MediaUpload";
 
 type Employee = {
   id: string; name: string; email: string; officialEmail?: string; designation?: string;
   joinedAt: string; salaryMonthly?: number; active: boolean;
-  shiftStart?: string; shiftEnd?: string;
+  shiftStart?: string; shiftEnd?: string; role?: "member" | "manager" | "hr"; photo?: string;
 };
+type Team = { id: string; name: string; managerId?: string; hrId?: string; memberIds: string[]; createdAt: string };
 type Leave = { id: string; employeeId: string; from: string; to: string; days: number; reason?: string; status: string; requestedAt: string };
 type Session = { in: string; out?: string };
 type Brk = { type: string; start: string; end?: string };
@@ -18,7 +19,7 @@ type Attendance = { id: string; employeeId: string; date: string; mode: string; 
 type Payslip = { id: string; number: string; employeeId: string; month: string; gross: number; net: number };
 type Asset = { id: string; employeeId: string; name: string; type: string; issuedAt: string };
 
-type Tab = "employees" | "leaves" | "attendance" | "payroll" | "assets" | "claims" | "holidays";
+type Tab = "employees" | "teams" | "leaves" | "attendance" | "payroll" | "assets" | "claims" | "holidays";
 type Claim = { id: string; employeeId: string; date: string; category: string; description: string; amount: number; currency: string; receiptUrl?: string; status: "pending" | "approved" | "rejected"; createdAt: string };
 type Holiday = { id: string; date: string; name: string };
 
@@ -66,20 +67,24 @@ export default function TeamAdmin() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "", photo: "" });
+  const [form, setForm] = useState({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "", photo: "", role: "member" as "member" | "manager" | "hr" });
   const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean; officialEmail?: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [slipForm, setSlipForm] = useState({ employeeId: "", month: new Date().toISOString().slice(0, 7), gross: "", deductions: "" });
   const [assetForm, setAssetForm] = useState({ employeeId: "", name: "", type: "document" });
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [teamForm, setTeamForm] = useState<{ id?: string; name: string; managerId: string; hrId: string; memberIds: string[] }>({ name: "", managerId: "", hrId: "", memberIds: [] });
+  const [teamSaving, setTeamSaving] = useState(false);
 
   async function load() {
     setLoading(true);
     try {
-      const [empRes, hrRes, clRes, holRes] = await Promise.all([
+      const [empRes, hrRes, clRes, holRes, teamRes] = await Promise.all([
         fetch("/api/admin/employees", { cache: "no-store" }).then((r) => r.json()),
         fetch("/api/admin/hr", { cache: "no-store" }).then((r) => r.json()),
         fetch("/api/admin/expense-claims", { cache: "no-store" }).then((r) => r.json()),
         fetch("/api/admin/holidays", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/admin/teams", { cache: "no-store" }).then((r) => r.json()),
       ]);
       setEmployees(empRes.employees ?? []);
       setLeaves(hrRes.leaves ?? []);
@@ -88,7 +93,29 @@ export default function TeamAdmin() {
       setAssets(hrRes.assets ?? []);
       setClaims(clRes.claims ?? []);
       setHolidays(holRes.holidays ?? []);
+      setTeams(teamRes.teams ?? []);
     } finally { setLoading(false); }
+  }
+
+  async function saveTeam() {
+    if (!teamForm.name.trim()) { alert("Team name is required."); return; }
+    setTeamSaving(true);
+    try {
+      const d = await fetch("/api/admin/teams", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(teamForm),
+      }).then((r) => r.json());
+      if (d.teams) setTeams(d.teams);
+      setTeamForm({ name: "", managerId: "", hrId: "", memberIds: [] });
+    } finally { setTeamSaving(false); }
+  }
+  async function removeTeam(id: string) {
+    if (!confirm("Delete this team? Members and projects are not deleted.")) return;
+    await fetch("/api/admin/teams", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    setTeams((all) => all.filter((t) => t.id !== id));
+    if (teamForm.id === id) setTeamForm({ name: "", managerId: "", hrId: "", memberIds: [] });
+  }
+  function toggleMember(id: string) {
+    setTeamForm((f) => ({ ...f, memberIds: f.memberIds.includes(id) ? f.memberIds.filter((m) => m !== id) : [...f.memberIds, id] }));
   }
   useEffect(() => { load(); }, []);
 
@@ -177,6 +204,7 @@ export default function TeamAdmin() {
 
   const TABS: { v: Tab; label: string }[] = [
     { v: "employees", label: `Employees (${employees.length})` },
+    { v: "teams", label: `Teams (${teams.length})` },
     { v: "leaves", label: `Leaves (${leaves.filter((l) => l.status === "pending").length} pending)` },
     { v: "attendance", label: "Attendance" },
     { v: "payroll", label: "Payroll" },
@@ -213,7 +241,7 @@ export default function TeamAdmin() {
         </div>
         <div className="flex gap-3">
           <a href="/staff/login" target="_blank" className="btn-ghost text-sm !py-2 !px-4"><ExternalLink size={14} /> Staff app</a>
-          <button onClick={() => { setForm({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword(), shiftStart: "", shiftEnd: "", photo: "" }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
+          <button onClick={() => { setForm({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword(), shiftStart: "", shiftEnd: "", photo: "", role: "member" }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
             <Plus size={16} /> New employee
           </button>
         </div>
@@ -263,6 +291,13 @@ export default function TeamAdmin() {
                     <Field label="Official email (for all communication)"><input type="email" className="input" value={form.officialEmail} onChange={(e) => setForm({ ...form, officialEmail: e.target.value })} placeholder="prathamesh@gmail.com" /><p className="mt-1.5 text-xs text-ink-500">Their real email. Welcome + workspace credentials are sent here and this is where we contact them. Blank = same as login email.</p></Field>
                     <Field label="Login email (workspace only)"><input type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="prathamesh@aumoxo.tech" /><p className="mt-1.5 text-xs text-ink-500">The email they sign in to the workspace with.</p></Field>
                     <Field label="Designation"><input className="input" value={form.designation} onChange={(e) => setForm({ ...form, designation: e.target.value })} placeholder="Head of Engineering" /></Field>
+                    <Field label="Workspace role">
+                      <select className="input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as "member" | "manager" | "hr" })}>
+                        <option value="member">Team member</option>
+                        <option value="manager">Manager</option>
+                        <option value="hr">HR</option>
+                      </select>
+                    </Field>
                     <Field label="Joined"><input type="date" className="input" value={form.joinedAt} onChange={(e) => setForm({ ...form, joinedAt: e.target.value })} /></Field>
                     <Field label="Monthly salary (₹)"><input type="number" className="input" value={form.salaryMonthly} onChange={(e) => setForm({ ...form, salaryMonthly: e.target.value })} placeholder="50000" /></Field>
                     <Field label="Shift start"><input type="time" className="input" value={form.shiftStart} onChange={(e) => setForm({ ...form, shiftStart: e.target.value })} /></Field>
@@ -305,7 +340,12 @@ export default function TeamAdmin() {
                   <div className="flex items-center gap-3">
                     <div className="grid h-10 w-10 place-items-center rounded-lg border border-gold-400/30 bg-gold-400/5 text-gold-300 shrink-0"><User size={16} /></div>
                     <div>
-                      <div className="text-ink-100 font-light">{e.name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-ink-100 font-light">{e.name}</span>
+                        {e.role && e.role !== "member" && (
+                          <span className="text-[9px] uppercase tracking-[0.16em] px-2 py-0.5 rounded-full border border-gold-400/40 text-gold-300">{e.role === "hr" ? "HR" : "Manager"}</span>
+                        )}
+                      </div>
                       <div className="text-xs text-ink-400">{e.designation || "—"} · since {e.joinedAt}</div>
                     </div>
                   </div>
@@ -328,6 +368,77 @@ export default function TeamAdmin() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* TEAMS */}
+          {tab === "teams" && (
+            <div className="space-y-6">
+              <div className="card p-6 gold-border">
+                <h2 className="font-display text-xl font-light text-ink-100 mb-1">{teamForm.id ? "Edit team" : "Create a team"}</h2>
+                <p className="text-sm text-ink-400 font-light mb-5">Build a team from your employees. Members only see their own team — manager, HR and teammates.</p>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Field label="Team name"><input className="input" value={teamForm.name} onChange={(e) => setTeamForm({ ...teamForm, name: e.target.value })} placeholder="Aurea Delivery Squad" /></Field>
+                  <Field label="Manager">
+                    <select className="input" value={teamForm.managerId} onChange={(e) => setTeamForm({ ...teamForm, managerId: e.target.value })}>
+                      <option value="">— none —</option>
+                      {employees.filter((e) => e.active).map((e) => <option key={e.id} value={e.id}>{e.name}{e.designation ? ` · ${e.designation}` : ""}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="HR">
+                    <select className="input" value={teamForm.hrId} onChange={(e) => setTeamForm({ ...teamForm, hrId: e.target.value })}>
+                      <option value="">— none —</option>
+                      {employees.filter((e) => e.active).map((e) => <option key={e.id} value={e.id}>{e.name}{e.designation ? ` · ${e.designation}` : ""}</option>)}
+                    </select>
+                  </Field>
+                </div>
+                <div className="mt-4">
+                  <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Members</span>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                    {employees.filter((e) => e.active && e.id !== teamForm.managerId && e.id !== teamForm.hrId).map((e) => {
+                      const on = teamForm.memberIds.includes(e.id);
+                      return (
+                        <button type="button" key={e.id} onClick={() => toggleMember(e.id)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-colors ${on ? "border-gold-400/50 bg-gold-400/5" : "border-line hover:bg-bg-elevated"}`}>
+                          <span className={`grid place-items-center h-5 w-5 rounded border shrink-0 ${on ? "bg-gold-400 border-gold-400 text-black" : "border-ink-500"}`}>{on && <Check size={13} />}</span>
+                          <span className="min-w-0"><span className="text-sm text-ink-100 block truncate">{e.name}</span><span className="text-[10px] text-ink-400 block truncate">{e.designation || ""}</span></span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="mt-5 flex gap-3">
+                  <button onClick={saveTeam} disabled={teamSaving || !teamForm.name.trim()} className="btn-gold text-sm !py-2 !px-4 disabled:opacity-60">{teamSaving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />} {teamForm.id ? "Save team" : "Create team"}</button>
+                  {teamForm.id && <button onClick={() => setTeamForm({ name: "", managerId: "", hrId: "", memberIds: [] })} className="btn-ghost text-sm !py-2 !px-4"><X size={15} /> Cancel edit</button>}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {teams.length === 0 ? (
+                  <div className="card p-10 text-center text-ink-400">No teams yet — create your first above.</div>
+                ) : teams.map((t) => (
+                  <div key={t.id} className="card p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-ink-100 font-light text-lg">{t.name}</div>
+                        <div className="mt-1 text-xs text-ink-400 flex flex-wrap gap-x-4 gap-y-1">
+                          <span>Manager: <span className="text-gold-300">{empName(t.managerId || "") }</span></span>
+                          <span>HR: <span className="text-gold-300">{empName(t.hrId || "")}</span></span>
+                          <span>{t.memberIds.length} member{t.memberIds.length === 1 ? "" : "s"}</span>
+                        </div>
+                        {t.memberIds.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {t.memberIds.map((id) => <span key={id} className="text-[11px] border border-line rounded-full px-2.5 py-0.5 text-ink-300">{empName(id)}</span>)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <button onClick={() => { setTeamForm({ id: t.id, name: t.name, managerId: t.managerId || "", hrId: t.hrId || "", memberIds: t.memberIds }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="p-2 rounded-lg text-gold-300 hover:bg-gold-400/10" title="Edit"><Pencil size={15} /></button>
+                        <button onClick={() => removeTeam(t.id)} className="p-2 rounded-lg text-red-400 hover:bg-red-400/10" title="Delete"><Trash2 size={15} /></button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

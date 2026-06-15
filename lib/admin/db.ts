@@ -150,6 +150,7 @@ export const ALL_STORE_KEYS = [
   "notifications", "admin-users", "audit-log", "expenses", "messages",
   "project-files", "solutions", "subscribers", "sent-emails", "custom-contacts",
   "tickets", "time-entries", "announcements", "expense-claims", "holidays",
+  "teams",
 ] as const;
 
 /** Full snapshot of every store — powers the owner's backup export. */
@@ -569,6 +570,7 @@ export type Project = {
   updates: ProjectUpdate[];
   startDate?: string;
   targetDate?: string;
+  teamId?: string;       // internal team responsible for delivery
 };
 
 export const DEFAULT_PHASES: ProjectPhase[] = [
@@ -759,6 +761,7 @@ export type Employee = {
   email: string;         // workspace login (lowercase)
   officialEmail?: string;// real email used for ALL communication
   passwordHash: string;
+  role?: "member" | "manager" | "hr"; // workspace role; default "member"
   designation?: string;  // e.g. "Full-Stack Engineer"
   joinedAt: string;      // YYYY-MM-DD
   salaryMonthly?: number;
@@ -1341,5 +1344,35 @@ export const holidaysDb = {
   async remove(id: string) {
     const all = await holidaysDb.list();
     await setValue(HOL_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Teams (org structure: manager + HR + members) ----------
+export type Team = {
+  id: string;
+  name: string;
+  managerId?: string;    // employee id of the team's manager
+  hrId?: string;         // employee id of the team's HR
+  memberIds: string[];   // employee ids of the team members
+  createdAt: string;
+};
+const TEAM_KEY = "teams";
+export const teamsDb = {
+  list: () => getValue<Team[]>(TEAM_KEY, []),
+  findById: async (id: string) => (await teamsDb.list()).find((t) => t.id === id),
+  /** Every team an employee belongs to — as manager, HR or member. */
+  async listForEmployee(empId: string) {
+    const all = await teamsDb.list();
+    return all.filter((t) => t.managerId === empId || t.hrId === empId || t.memberIds.includes(empId));
+  },
+  async upsert(t: Team) {
+    const all = await teamsDb.list();
+    const i = all.findIndex((x) => x.id === t.id);
+    if (i >= 0) all[i] = t; else all.unshift(t);
+    await setValue(TEAM_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await teamsDb.list();
+    await setValue(TEAM_KEY, all.filter((x) => x.id !== id));
   },
 };

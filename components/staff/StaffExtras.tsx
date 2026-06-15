@@ -11,6 +11,8 @@ type Holiday = { id: string; date: string; name: string };
 type Dir = { id: string; name: string; designation?: string; email: string; photo?: string };
 type Emp = { id: string; name: string; email: string; designation?: string; joinedAt: string; phone?: string; address?: string; emergencyContact?: string; photo?: string };
 
+type Person = { id: string; name: string; designation?: string; email?: string; photo?: string; role?: "member" | "manager" | "hr" };
+type Team = { id: string; name: string; isManager?: boolean; isHr?: boolean; manager?: Person | null; hr?: Person | null; members: Person[] };
 type Props = {
   me: {
     employee: Emp;
@@ -20,6 +22,7 @@ type Props = {
     timeEntries?: TimeEntry[];
     claims?: Claim[];
     directory?: Dir[];
+    teams?: Team[];
   };
   reload: () => void;
 };
@@ -170,18 +173,51 @@ export default function StaffExtras({ me, reload }: Props) {
             </ul>
           </div>
           <div className="card p-7">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400"><Users size={13} /> Team directory</div>
-            <div className="mt-4 grid grid-cols-2 gap-3 max-h-[200px] overflow-y-auto">
-              {(me.directory || []).map((d) => (
-                <div key={d.id} className="flex items-center gap-2">
-                  {d.photo ? (/* eslint-disable-next-line @next/next/no-img-element */ <img src={d.photo} alt="" className="h-8 w-8 rounded-full object-cover border border-line" />) : <div className="h-8 w-8 rounded-full bg-gold-400/10 border border-gold-400/30 grid place-items-center text-[10px] text-gold-300">{d.name.slice(0, 2).toUpperCase()}</div>}
-                  <div className="min-w-0"><div className="text-xs text-ink-100 truncate">{d.name}</div><div className="text-[10px] text-ink-400 truncate">{d.designation || ""}</div></div>
-                </div>
-              ))}
-            </div>
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400"><Users size={13} /> My team</div>
+            {(me.teams?.length ?? 0) === 0 ? (
+              <p className="mt-4 text-sm text-ink-400 font-light">You haven&apos;t been added to a team yet. Your manager or HR will set this up.</p>
+            ) : (
+              <div className="mt-4 space-y-5 max-h-[260px] overflow-y-auto pr-1">
+                {me.teams!.map((t) => (
+                  <div key={t.id}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm text-ink-100 font-light">{t.name}</span>
+                      {(t.isManager || t.isHr) && (
+                        <span className="text-[9px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border border-gold-400/40 text-gold-300">
+                          You&apos;re {t.isManager ? "Manager" : "HR"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1.5">
+                      {t.manager && <Member p={t.manager} tag="Manager" />}
+                      {t.hr && <Member p={t.hr} tag="HR" />}
+                      {t.members.map((m) => <Member key={m.id} p={m} />)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+function Member({ p, tag }: { p: Person; tag?: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      {p.photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={p.photo} alt="" className="h-8 w-8 rounded-full object-cover border border-line shrink-0" />
+      ) : (
+        <div className="h-8 w-8 rounded-full bg-gold-400/10 border border-gold-400/30 grid place-items-center text-[10px] text-gold-300 shrink-0">{p.name.slice(0, 2).toUpperCase()}</div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="text-xs text-ink-100 truncate">{p.name}</div>
+        <div className="text-[10px] text-ink-400 truncate">{p.designation || ""}</div>
+      </div>
+      {tag && <span className="text-[9px] uppercase tracking-[0.16em] px-2 py-0.5 rounded-full border border-gold-400/30 text-gold-300 shrink-0">{tag}</span>}
     </div>
   );
 }

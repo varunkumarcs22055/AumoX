@@ -35,7 +35,10 @@ export async function POST(req: Request) {
     shiftStart?: string;
     shiftEnd?: string;
     photo?: string;
+    role?: "member" | "manager" | "hr";
   };
+  const cleanRole = (r?: string): "member" | "manager" | "hr" | undefined =>
+    r === "manager" || r === "hr" || r === "member" ? r : undefined;
   const cleanTime = (v?: string) => (v && /^\d{2}:\d{2}$/.test(v) ? v : undefined);
 
   if (!body.name?.trim() || !body.email?.trim()) {
@@ -64,6 +67,7 @@ export async function POST(req: Request) {
       shiftStart: body.shiftStart !== undefined ? cleanTime(body.shiftStart) : existing.shiftStart,
       shiftEnd: body.shiftEnd !== undefined ? cleanTime(body.shiftEnd) : existing.shiftEnd,
       photo: body.photo !== undefined ? (body.photo.trim() || undefined) : existing.photo,
+      role: body.role !== undefined ? (cleanRole(body.role) ?? existing.role) : existing.role,
       ...(body.password ? { passwordHash: await hashPassword(body.password), mustChangePassword: true } : {}),
     };
     await employeesDb.upsert(updated);
@@ -91,6 +95,7 @@ export async function POST(req: Request) {
     shiftStart: cleanTime(body.shiftStart),
     shiftEnd: cleanTime(body.shiftEnd),
     photo: body.photo?.trim() || undefined,
+    role: cleanRole(body.role) ?? "member",
   };
   await employeesDb.upsert(employee);
   await logAdminAction("create", "employee", `Added employee ${employee.name}${employee.designation ? ` (${employee.designation})` : ""}`);
