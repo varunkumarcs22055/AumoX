@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Plus, Trash2, Check, X, Loader2, KeyRound, Copy, User, ExternalLink, BadgeCheck,
 } from "lucide-react";
+import MediaUpload from "@/components/admin/MediaUpload";
 
 type Employee = {
   id: string; name: string; email: string; officialEmail?: string; designation?: string;
@@ -65,7 +66,7 @@ export default function TeamAdmin() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "" });
+  const [form, setForm] = useState({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: "", shiftStart: "", shiftEnd: "", photo: "" });
   const [issued, setIssued] = useState<{ email: string; password: string; emailed?: boolean; officialEmail?: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [slipForm, setSlipForm] = useState({ employeeId: "", month: new Date().toISOString().slice(0, 7), gross: "", deductions: "" });
@@ -212,7 +213,7 @@ export default function TeamAdmin() {
         </div>
         <div className="flex gap-3">
           <a href="/staff/login" target="_blank" className="btn-ghost text-sm !py-2 !px-4"><ExternalLink size={14} /> Staff app</a>
-          <button onClick={() => { setForm({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword(), shiftStart: "", shiftEnd: "" }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
+          <button onClick={() => { setForm({ name: "", email: "", officialEmail: "", designation: "", joinedAt: "", salaryMonthly: "", password: genPassword(), shiftStart: "", shiftEnd: "", photo: "" }); setError(""); setShowForm(true); setTab("employees"); }} className="btn-gold text-sm !py-2 !px-4">
             <Plus size={16} /> New employee
           </button>
         </div>
@@ -272,6 +273,21 @@ export default function TeamAdmin() {
                         <button type="button" onClick={() => setForm({ ...form, password: genPassword() })} className="btn-ghost text-xs !py-2 !px-3 shrink-0">↻</button>
                       </div>
                     </Field>
+                    <div className="md:col-span-3">
+                      <span className="block text-[11px] uppercase tracking-[0.25em] text-ink-300 mb-2">Photo (saved to Cloudinary as the employee&apos;s name)</span>
+                      <div className="w-40">
+                        <MediaUpload
+                          accept="image"
+                          folder="aumoxo/emp"
+                          publicId={form.name || undefined}
+                          value={form.photo}
+                          valueType="image"
+                          onChange={(url) => setForm({ ...form, photo: url })}
+                          onClear={() => setForm({ ...form, photo: "" })}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-ink-500">Enter the name first — the image is stored in the <b>aumoxo/emp</b> folder as that name (e.g. <b>varun</b>).</p>
+                    </div>
                   </div>
                   {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
                   <div className="mt-5 flex gap-3">

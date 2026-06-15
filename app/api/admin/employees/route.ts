@@ -34,6 +34,7 @@ export async function POST(req: Request) {
     active?: boolean;
     shiftStart?: string;
     shiftEnd?: string;
+    photo?: string;
   };
   const cleanTime = (v?: string) => (v && /^\d{2}:\d{2}$/.test(v) ? v : undefined);
 
@@ -62,6 +63,7 @@ export async function POST(req: Request) {
       active: body.active ?? existing.active,
       shiftStart: body.shiftStart !== undefined ? cleanTime(body.shiftStart) : existing.shiftStart,
       shiftEnd: body.shiftEnd !== undefined ? cleanTime(body.shiftEnd) : existing.shiftEnd,
+      photo: body.photo !== undefined ? (body.photo.trim() || undefined) : existing.photo,
       ...(body.password ? { passwordHash: await hashPassword(body.password), mustChangePassword: true } : {}),
     };
     await employeesDb.upsert(updated);
@@ -88,6 +90,7 @@ export async function POST(req: Request) {
     mustChangePassword: true, // emailed a temporary password → force a change on first login
     shiftStart: cleanTime(body.shiftStart),
     shiftEnd: cleanTime(body.shiftEnd),
+    photo: body.photo?.trim() || undefined,
   };
   await employeesDb.upsert(employee);
   await logAdminAction("create", "employee", `Added employee ${employee.name}${employee.designation ? ` (${employee.designation})` : ""}`);

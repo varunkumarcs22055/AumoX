@@ -141,7 +141,7 @@ export default function StaffExtras({ me, reload }: Props) {
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400"><UserCircle size={13} /> My profile</div>
           <div className="mt-4 flex items-center gap-4">
             <div className="w-20 shrink-0">
-              <MediaUpload accept="image" folder="aumoxo/staff" signEndpoint="/api/staff/cloudinary-sign" value={pf.photo} valueType="image" onChange={(url) => setPf({ ...pf, photo: url })} onClear={() => setPf({ ...pf, photo: "" })} />
+              <MediaUpload accept="image" folder="aumoxo/emp" publicId={me.employee.name} signEndpoint="/api/staff/cloudinary-sign" value={pf.photo} valueType="image" onChange={(url) => setPf({ ...pf, photo: url })} onClear={() => setPf({ ...pf, photo: "" })} />
             </div>
             <div className="text-sm">
               <div className="text-ink-100">{me.employee.name}</div>

@@ -13,6 +13,9 @@ type Props = {
   accept?: "image" | "video" | "both";
   /** Cloudinary folder bucket. */
   folder?: string;
+  /** Optional fixed filename (Cloudinary public_id) — e.g. an employee's name,
+   *  so the asset saves as <folder>/<publicId> instead of a random id. */
+  publicId?: string;
   /** Sign endpoint — defaults to the admin one; staff pages pass their own. */
   signEndpoint?: string;
   label?: string;
@@ -26,6 +29,7 @@ export default function MediaUpload({
   valueType,
   accept = "image",
   folder = "aumoxo/media",
+  publicId,
   signEndpoint = "/api/admin/cloudinary/sign",
   label,
   className = "",
@@ -48,7 +52,7 @@ export default function MediaUpload({
       const signRes = await fetch(signEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder }),
+        body: JSON.stringify({ folder, publicId }),
       });
       if (!signRes.ok) {
         const d = await signRes.json().catch(() => ({}));
@@ -63,6 +67,8 @@ export default function MediaUpload({
       fd.append("timestamp", String(sig.timestamp));
       fd.append("signature", sig.signature);
       fd.append("folder", sig.folder);
+      // Only send public_id when the server signed it (signature must match).
+      if (sig.publicId) fd.append("public_id", sig.publicId);
 
       const url = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
