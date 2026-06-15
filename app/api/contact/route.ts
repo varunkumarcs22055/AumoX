@@ -96,7 +96,10 @@ export async function POST(req: Request) {
   await logActorAction("visitor", data.name, "enquiry", "query", `New website enquiry — ${data.service}${data.company ? ` · ${data.company}` : ""}`);
 
   const to = process.env.CONTACT_EMAIL_TO ?? "hello@aumoxo.tech";
-  const from = process.env.CONTACT_EMAIL_FROM ?? "onboarding@resend.dev";
+  // CONTACT_EMAIL_FROM is a full "Name <email>" sender (e.g. "AUMOXO <hello@aumoxo.tech>").
+  // Use it verbatim — wrapping it again ("AUMOXO Website <AUMOXO <hello@…>>") produces an
+  // invalid From header that Resend rejects, which is why no mail was going out.
+  const from = process.env.CONTACT_EMAIL_FROM ?? "AUMOXO <onboarding@resend.dev>";
   const apiKey = process.env.RESEND_API_KEY;
 
   // If no API key configured, log + accept (so the UI doesn't break in dev)
@@ -114,19 +117,20 @@ export async function POST(req: Request) {
   try {
     const resend = new Resend(apiKey);
 
-    // 1) Notify the team
+    // 1) Notify the team — reply-to is the visitor so we can answer in one click
     await resend.emails.send({
-      from: `AUMOXO Website <${from}>`,
+      from,
       to,
       replyTo: data.email,
       subject: `New inquiry · ${data.service} · ${data.name}`,
       html: notifyHtml(data),
     });
 
-    // 2) Auto-reply to the visitor
+    // 2) Auto-reply / confirmation to the visitor — they hear from us immediately
     await resend.emails.send({
-      from: `AUMOXO <${from}>`,
+      from,
       to: data.email,
+      replyTo: to,
       subject: "We've received your message — AUMOXO",
       html: autoReplyHtml(data),
     });

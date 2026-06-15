@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -28,6 +28,7 @@ import { LogoMark } from "@/components/Logo";
 import { printDocument } from "@/lib/print-doc";
 import PortalSupport from "@/components/portal/PortalSupport";
 import FirstLoginPasswordGate from "@/components/FirstLoginPasswordGate";
+import { usePoll } from "@/lib/usePoll";
 
 type Phase = { name: string; status: "pending" | "in-progress" | "completed"; note?: string };
 type Update = { id: string; date: string; title: string; body?: string };
@@ -185,7 +186,32 @@ export default function PortalPage() {
       .then((d) => d?.messages && setThread(d.messages));
   }, [router]);
 
-  useEffect(() => { threadEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [thread]);
+  // Live: silently re-pull portal data + the message thread so team replies,
+  // new invoices/quotations and announcements appear without a manual refresh.
+  const refresh = useCallback(async () => {
+    const [m, msg] = await Promise.all([
+      fetch("/api/portal/me", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch("/api/portal/messages", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    ]);
+    if (m?.client) setMe(m);
+    if (msg?.messages) {
+      setThread((prev) => {
+        const next = msg.messages as ThreadMsg[];
+        const same = prev.length === next.length && prev[prev.length - 1]?.id === next[next.length - 1]?.id;
+        return same ? prev : next;
+      });
+    }
+  }, []);
+  usePoll(refresh, 15000);
+
+  // Auto-scroll the thread only when a new message actually arrives.
+  const threadLenRef = useRef(0);
+  useEffect(() => {
+    if (thread.length > threadLenRef.current) {
+      threadEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    threadLenRef.current = thread.length;
+  }, [thread]);
 
   async function sendMessage() {
     if (!draft.trim()) return;

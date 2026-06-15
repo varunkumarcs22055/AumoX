@@ -1272,7 +1272,9 @@ export const announcementsDb = {
   async forAudience(aud: "staff" | "clients") {
     const all = await announcementsDb.list();
     return all
-      .filter((a) => a.audience === aud || a.audience === "all")
+      // Show announcements targeted at this audience, "all", or any legacy/blank
+      // audience (older records saved before the field existed).
+      .filter((a) => a.audience === aud || a.audience === "all" || !a.audience)
       .sort((a, b) => (Number(b.pinned) - Number(a.pinned)) || b.createdAt.localeCompare(a.createdAt));
   },
   async upsert(a: Announcement) {

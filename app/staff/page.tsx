@@ -9,6 +9,7 @@ import {
 import { LogoMark } from "@/components/Logo";
 import StaffExtras from "@/components/staff/StaffExtras";
 import FirstLoginPasswordGate from "@/components/FirstLoginPasswordGate";
+import { usePoll } from "@/lib/usePoll";
 
 type Task = { id: string; title: string; projectId?: string; due?: string; status: "todo" | "in-progress" | "done" };
 type Session = { in: string; out?: string };
@@ -119,6 +120,9 @@ export default function StaffPage() {
       .finally(() => setLoading(false));
   }, [router]);
   useEffect(() => { load(); }, [load]);
+  // Live: silently re-pull the workspace (tasks, announcements, notifications,
+  // attendance) every 15s and on tab focus — no manual refresh needed.
+  usePoll(load, 15000);
 
   // Tick once a minute so live "worked so far" totals stay current.
   useEffect(() => {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LifeBuoy, Send, Loader2, Trash2, RefreshCw } from "lucide-react";
+import { usePoll } from "@/lib/usePoll";
 
 type Reply = { id: string; from: "client" | "team"; body: string; at: string; authorName?: string };
 type Ticket = {
@@ -36,6 +37,8 @@ export default function TicketsAdmin() {
     setClients(data.clients ?? []);
   }
   useEffect(() => { load(); }, []);
+  // Live: pull new client replies / tickets every 15s + on focus — no refresh.
+  usePoll(load, 15000);
 
   const company = (id: string) => clients.find((c) => c.id === id)?.company ?? "Unknown";
   const visible = useMemo(() => filter === "all" ? tickets : tickets.filter((t) => t.status === filter), [tickets, filter]);

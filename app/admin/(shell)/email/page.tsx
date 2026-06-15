@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, Send, Loader2, Search, Users, Briefcase, UserCheck, Check, X, AlertCircle, AtSign, Plus, Copy, Trash2, History } from "lucide-react";
+import { usePagedList } from "@/lib/admin/usePagedList";
+import Pagination from "@/components/admin/Pagination";
 
 type Person = { id: string; name: string; email: string; active?: boolean };
 type Recipients = { emailConfigured: boolean; clients: Person[]; employees: Person[]; subscribers: Person[]; custom: Person[] };
 type Audience = "clients" | "employees" | "subscribers" | "custom";
 type SentEmail = { id: string; subject: string; message: string; emails: string[]; sent: number; failed: number; sentByName: string; sentAt: string };
+
+// Stable (module-scope) searchable-text extractors for usePagedList.
+const personText = (p: Person) => `${p.name} ${p.email}`;
+const sentText = (e: SentEmail) => `${e.subject} ${e.message} ${e.sentByName} ${e.emails.join(" ")}`;
 
 const TABS: { v: Audience; label: string; icon: typeof Users }[] = [
   { v: "clients", label: "Clients", icon: Users },
@@ -30,6 +36,7 @@ export default function EmailAdmin() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [history, setHistory] = useState<SentEmail[]>([]);
+  const [historyQuery, setHistoryQuery] = useState("");
   const [isSuper, setIsSuper] = useState(false);
 
   function loadRecipients() {
@@ -91,10 +98,13 @@ export default function EmailAdmin() {
   }, []);
 
   const list: Person[] = data && tab !== "custom" ? data[tab] : [];
-  const filtered = useMemo(
-    () => list.filter((p) => `${p.name} ${p.email}`.toLowerCase().includes(query.toLowerCase())),
-    [list, query]
-  );
+  // Recipient picker: dynamic search + pagination (10/page). `filtered` is the
+  // full match set so "Select all" still covers every match, not just the page.
+  const recipientPage = usePagedList(list, query, personText, 10);
+  const filtered = recipientPage.filtered;
+
+  // Recent sends: dynamic search across subject/body/sender/recipients + pages.
+  const historyPage = usePagedList(history, historyQuery, sentText, 8);
 
   function toggle(email: string) {
     setSelected((prev) => {
@@ -231,12 +241,12 @@ export default function EmailAdmin() {
             <button onClick={clearTabSelection} className="text-ink-400 hover:text-red-400">Clear this tab</button>
           </div>
 
-          <div className="mt-3 max-h-[420px] overflow-y-auto space-y-1 pr-1">
+          <div className="mt-3 space-y-1">
             {!data ? (
               <div className="text-center text-ink-400 py-10 text-sm">Loading…</div>
             ) : filtered.length === 0 ? (
-              <div className="text-center text-ink-500 py-10 text-sm">No {tab} found.</div>
-            ) : filtered.map((p) => {
+              <div className="text-center text-ink-500 py-10 text-sm">{query ? `No ${tab} match “${query}”.` : `No ${tab} found.`}</div>
+            ) : recipientPage.pageItems.map((p) => {
               const on = selected.has(p.email);
               return (
                 <button key={p.id} onClick={() => toggle(p.email)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border text-left transition-colors ${on ? "border-gold-400/50 bg-gold-400/5" : "border-line hover:bg-bg-elevated"}`}>
@@ -250,6 +260,15 @@ export default function EmailAdmin() {
               );
             })}
           </div>
+          <Pagination
+            page={recipientPage.page}
+            totalPages={recipientPage.totalPages}
+            total={recipientPage.total}
+            from={recipientPage.from}
+            to={recipientPage.to}
+            onPage={recipientPage.setPage}
+            unit={tab}
+          />
           </>
           )}
         </div>
@@ -297,14 +316,34 @@ export default function EmailAdmin() {
 
       {/* Sent history — reuse / edit / resend; delete is main-admin only */}
       <div className="mt-10">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-4">
-          <History size={13} /> Recent sends
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-gold-400">
+            <History size={13} /> Recent sends{history.length > 0 ? ` (${history.length})` : ""}
+          </div>
+          {history.length > 0 && (
+            <div className="relative w-full sm:w-80">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+              <input
+                className="input !py-2 pl-9"
+                placeholder="Search sent emails — subject, text, name or address…"
+                value={historyQuery}
+                onChange={(e) => setHistoryQuery(e.target.value)}
+              />
+              {historyQuery && (
+                <button onClick={() => setHistoryQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-500 hover:text-red-400" aria-label="Clear search">
+                  <X size={15} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
         {history.length === 0 ? (
           <div className="card p-6 text-center text-ink-400 text-sm">No emails sent yet — your sent emails will appear here to reuse.</div>
+        ) : historyPage.total === 0 ? (
+          <div className="card p-6 text-center text-ink-400 text-sm">No sent emails match “{historyQuery}”.</div>
         ) : (
           <div className="space-y-2">
-            {history.map((e) => (
+            {historyPage.pageItems.map((e) => (
               <div key={e.id} className="card p-4 flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-ink-100 font-light">{e.subject}</div>

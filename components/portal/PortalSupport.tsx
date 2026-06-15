@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LifeBuoy, Plus, Send, Loader2, X } from "lucide-react";
+import { usePoll } from "@/lib/usePoll";
 
 type Reply = { id: string; from: "client" | "team"; body: string; at: string; authorName?: string };
 type Ticket = {
@@ -30,6 +31,8 @@ export default function PortalSupport() {
     fetch("/api/portal/tickets", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => d?.tickets && setTickets(d.tickets));
   }
   useEffect(() => { load(); }, []);
+  // Live: pull ticket updates (team replies, status changes) every 15s + on focus.
+  usePoll(load, 15000);
   const active = tickets.find((t) => t.id === openId);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [active?.replies.length]);
 

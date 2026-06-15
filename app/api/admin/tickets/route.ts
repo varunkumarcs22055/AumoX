@@ -34,7 +34,8 @@ export async function POST(req: Request) {
     await notificationsDb.push({ audience: `client:${t.clientId}`, type: "ticket", message: `Support replied on ${t.number}`, link: "/portal" });
     const client = await clientsDb.findById(t.clientId);
     if (client) {
-      await sendBroadcastEmail(client.email, `Re: ${t.subject} (${t.number})`, `${body.reply.trim()}\n\nView and reply in your portal: https://aumoxo.tech/client`);
+      // Send to the client's real business email (falls back to login email)
+      await sendBroadcastEmail(client.officialEmail || client.email, `Re: ${t.subject} (${t.number})`, `${body.reply.trim()}\n\nView and reply in your portal: https://aumoxo.tech/client`);
     }
     await logAdminAction("ticket", "ticket", `Replied to ticket ${t.number}`);
   }

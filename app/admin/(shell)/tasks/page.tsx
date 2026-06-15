@@ -10,10 +10,12 @@ type Task = {
   title: string;
   projectId?: string;
   assignee?: string;
+  assigneeId?: string;
   due?: string;
   status: TaskStatus;
 };
 type ProjectLite = { id: string; name: string };
+type EmployeeLite = { id: string; name: string };
 
 const COLS: { v: TaskStatus; label: string }[] = [
   { v: "todo", label: "To do" },
@@ -24,9 +26,10 @@ const COLS: { v: TaskStatus; label: string }[] = [
 export default function TasksAdmin() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<ProjectLite[]>([]);
+  const [employees, setEmployees] = useState<EmployeeLite[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState({ title: "", projectId: "", assignee: "", due: "" });
+  const [draft, setDraft] = useState({ title: "", projectId: "", assigneeId: "", due: "" });
 
   async function load() {
     setLoading(true);
@@ -35,6 +38,7 @@ export default function TasksAdmin() {
       const data = await res.json();
       setTasks(data.tasks ?? []);
       setProjects(data.projects ?? []);
+      setEmployees(data.employees ?? []);
     } finally {
       setLoading(false);
     }
@@ -48,11 +52,16 @@ export default function TasksAdmin() {
       const res = await fetch("/api/admin/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...draft, projectId: draft.projectId || undefined }),
+        body: JSON.stringify({
+          title: draft.title,
+          projectId: draft.projectId || undefined,
+          assigneeId: draft.assigneeId || undefined,
+          due: draft.due || undefined,
+        }),
       });
       const data = await res.json();
       setTasks(data.tasks ?? []);
-      setDraft({ title: "", projectId: "", assignee: "", due: "" });
+      setDraft({ title: "", projectId: "", assigneeId: "", due: "" });
     } finally {
       setSaving(false);
     }
@@ -104,7 +113,10 @@ export default function TasksAdmin() {
           </select>
         </Field>
         <Field label="Assignee">
-          <input className="input !py-2" placeholder="Varun / Aditya / Prathamesh" value={draft.assignee} onChange={(e) => setDraft({ ...draft, assignee: e.target.value })} />
+          <select className="input !py-2" value={draft.assigneeId} onChange={(e) => setDraft({ ...draft, assigneeId: e.target.value })}>
+            <option value="">Unassigned</option>
+            {employees.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+          </select>
         </Field>
         <Field label="Due">
           <input type="date" className="input !py-2" value={draft.due} onChange={(e) => setDraft({ ...draft, due: e.target.value })} />

@@ -57,6 +57,21 @@ const nextConfig = {
       { source: "/client/:path*", destination: "/portal/:path*", permanent: false },
       { source: "/emp", destination: "/staff", permanent: false },
       { source: "/emp/:path*", destination: "/staff/:path*", permanent: false },
+
+      // SEO — pages Google indexed before they were removed now 404. 301 them to
+      // the closest live page so crawlers + any backlinks land somewhere real
+      // (clears Search Console "Not found (404)").
+      { source: "/work", destination: "/insights", permanent: true },
+      { source: "/work/:path*", destination: "/insights", permanent: true },
+      { source: "/newsroom", destination: "/insights", permanent: true },
+      { source: "/newsroom/:path*", destination: "/insights", permanent: true },
+      { source: "/blog", destination: "/insights", permanent: true },
+      { source: "/blog/:path*", destination: "/insights", permanent: true },
+      { source: "/leadership", destination: "/about", permanent: true },
+      { source: "/investors", destination: "/about", permanent: true },
+      { source: "/awards", destination: "/about", permanent: true },
+      { source: "/sustainability", destination: "/about", permanent: true },
+      { source: "/locations", destination: "/contact", permanent: true },
     ];
   },
   async headers() {
