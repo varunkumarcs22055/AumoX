@@ -52,6 +52,10 @@ const nextConfig = {
   poweredByHeader: false, // remove "X-Powered-By: Next.js" fingerprint
   images: {
     formats: ["image/avif", "image/webp"],
+    // All site media lives on Cloudinary — allow next/image to optimise it.
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com" },
+    ],
   },
   // Panels are reached by typing the route directly — no buttons on the site.
   // Short memorable aliases: /client → portal, /emp → staff.

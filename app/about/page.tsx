@@ -25,14 +25,14 @@ const leadership = [
     name: "Aditya Singh",
     role: "Founder & CEO",
     initials: "AS",
-    photo: "/team/aditya.jpg",
+    photo: "https://res.cloudinary.com/dmbuydq2r/image/upload/v1781552090/aumoxo/team/aditya.jpg",
     focus: ["Product Strategy", "Business Development", "Client Success", "Company Growth"],
   },
   {
     name: "Varun Thakur",
     role: "Co-Founder & CTO",
     initials: "VT",
-    photo: "/team/varun.jpg",
+    photo: "https://res.cloudinary.com/dmbuydq2r/image/upload/v1781552094/aumoxo/team/varun.jpg",
     focus: ["Architecture", "Engineering", "Infrastructure", "Scalability"],
   },
   {
