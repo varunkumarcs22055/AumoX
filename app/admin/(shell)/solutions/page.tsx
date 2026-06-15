@@ -26,6 +26,37 @@ type Solution = {
 const CATEGORIES = ["AI", "CRM", "Automation", "Web", "Mobile", "SaaS", "Design", "Other"];
 const newId = () => Math.random().toString(36).slice(2, 10);
 
+// Starter case studies (AUMOXO's real shipped projects). One-click seed below;
+// edit or delete any of these afterwards like a normal solution.
+const STARTER_PROJECTS: Array<Partial<Solution>> = [
+  {
+    title: "CollabCode",
+    category: "SaaS",
+    summary: "AI-powered collaborative development platform — teams code, review and innovate together in real time.",
+    description: "",
+    problem: "Distributed development teams needed one place to write and review code together in real time — with AI assistance — instead of juggling disconnected tools.",
+    approach: "We built CollabCode: real-time, multi-user coding and review with AI-assisted development workflows, on a modern, scalable SaaS architecture deployed to the cloud.",
+    outcome: "Improves developer productivity and streamlines collaborative software development with real-time collaboration and AI assistance.",
+    tags: ["Real-time collaboration", "AI-assisted workflows", "SaaS architecture", "Cloud deployment"],
+    link: "https://collab-code-rosy.vercel.app/",
+    media: [],
+    published: true,
+  },
+  {
+    title: "Fine Dining — Restaurant Website",
+    category: "Web",
+    summary: "An elegant, fully responsive website for a fine-dining restaurant — menu, ambiance and reservations.",
+    description: "",
+    problem: "The restaurant needed a refined online presence that matched its premium dining experience and made it effortless for guests to explore the menu and get in touch.",
+    approach: "We designed and built a fast, responsive website with an immersive hero, curated menu sections, a gallery and a clear reservation/contact flow — focused on atmosphere and mobile experience.",
+    outcome: "A polished digital storefront that reflects the restaurant's brand and gives guests a smooth way to browse the menu and reach out.",
+    tags: ["Next.js", "React", "Tailwind CSS", "Responsive design"],
+    link: "https://fine-dining-restaurant-website-six.vercel.app/",
+    media: [],
+    published: true,
+  },
+];
+
 const empty = (): Solution => ({
   id: newId(), title: "", category: "AI", summary: "", description: "",
   problem: "", approach: "", outcome: "",
@@ -84,6 +115,27 @@ export default function SolutionsAdmin() {
     load();
   }
 
+  // One-click: add AUMOXO's starter case studies (skips any already added by title).
+  async function seedStarters() {
+    const existing = new Set(items.map((i) => i.title.trim().toLowerCase()));
+    const toAdd = STARTER_PROJECTS.filter((p) => !existing.has((p.title ?? "").trim().toLowerCase()));
+    if (toAdd.length === 0) { alert("Your example projects are already added."); return; }
+    if (!confirm(`Add ${toAdd.length} example project(s) to your public Solutions page? You can edit or delete them afterwards.`)) return;
+    setSaving(true);
+    try {
+      let last: { solutions?: Solution[] } = {};
+      for (const p of toAdd) {
+        last = await fetch("/api/admin/solutions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...p, id: newId(), order: items.length }),
+        }).then((r) => r.json());
+      }
+      if (last.solutions) setItems(last.solutions.sort((a, b) => a.order - b.order));
+      else load();
+    } finally { setSaving(false); }
+  }
+
   function addMedia(url: string, type: "image" | "video") {
     setEditing((e) => (e ? { ...e, media: [...e.media, { url, type }] } : e));
   }
@@ -101,8 +153,11 @@ export default function SolutionsAdmin() {
             The work you&apos;ve built — with images and videos. Published items appear on the public Solutions page.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <a href="/products" target="_blank" className="btn-ghost text-sm !py-2 !px-4"><ExternalLink size={14} /> View public page</a>
+          <button onClick={seedStarters} disabled={saving} className="btn-ghost text-sm !py-2 !px-4 disabled:opacity-60" title="Add CollabCode + the restaurant site as ready-made case studies">
+            <Plus size={14} /> Add my 2 projects
+          </button>
           <button onClick={startNew} className="btn-gold text-sm !py-2 !px-4"><Plus size={16} /> New solution</button>
         </div>
       </div>
