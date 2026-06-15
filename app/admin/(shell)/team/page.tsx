@@ -17,7 +17,9 @@ type Attendance = { id: string; employeeId: string; date: string; mode: string; 
 type Payslip = { id: string; number: string; employeeId: string; month: string; gross: number; net: number };
 type Asset = { id: string; employeeId: string; name: string; type: string; issuedAt: string };
 
-type Tab = "employees" | "leaves" | "attendance" | "payroll" | "assets";
+type Tab = "employees" | "leaves" | "attendance" | "payroll" | "assets" | "claims" | "holidays";
+type Claim = { id: string; employeeId: string; date: string; category: string; description: string; amount: number; currency: string; receiptUrl?: string; status: "pending" | "approved" | "rejected"; createdAt: string };
+type Holiday = { id: string; date: string; name: string };
 
 function genPassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -56,6 +58,9 @@ export default function TeamAdmin() {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [payslips, setPayslips] = useState<Payslip[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [holForm, setHolForm] = useState({ date: "", name: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -69,15 +74,19 @@ export default function TeamAdmin() {
   async function load() {
     setLoading(true);
     try {
-      const [empRes, hrRes] = await Promise.all([
+      const [empRes, hrRes, clRes, holRes] = await Promise.all([
         fetch("/api/admin/employees", { cache: "no-store" }).then((r) => r.json()),
         fetch("/api/admin/hr", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/admin/expense-claims", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/admin/holidays", { cache: "no-store" }).then((r) => r.json()),
       ]);
       setEmployees(empRes.employees ?? []);
       setLeaves(hrRes.leaves ?? []);
       setAttendance(hrRes.attendance ?? []);
       setPayslips(hrRes.payslips ?? []);
       setAssets(hrRes.assets ?? []);
+      setClaims(clRes.claims ?? []);
+      setHolidays(holRes.holidays ?? []);
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, []);
@@ -166,7 +175,27 @@ export default function TeamAdmin() {
     { v: "attendance", label: "Attendance" },
     { v: "payroll", label: "Payroll" },
     { v: "assets", label: "Assets" },
+    { v: "claims", label: `Claims (${claims.filter((c) => c.status === "pending").length} pending)` },
+    { v: "holidays", label: "Holidays" },
   ];
+
+  async function claimAction(id: string, action: "approve" | "reject") {
+    setSaving(true);
+    try {
+      await fetch("/api/admin/expense-claims", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, action }) });
+      load();
+    } finally { setSaving(false); }
+  }
+  async function addHoliday() {
+    if (!holForm.date || !holForm.name.trim()) return;
+    const d = await fetch("/api/admin/holidays", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(holForm) }).then((r) => r.json());
+    setHolidays(d.holidays ?? []);
+    setHolForm({ date: "", name: "" });
+  }
+  async function removeHoliday(id: string) {
+    const d = await fetch("/api/admin/holidays", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }).then((r) => r.json());
+    setHolidays(d.holidays ?? []);
+  }
 
   return (
     <div>
@@ -420,6 +449,53 @@ export default function TeamAdmin() {
                       <span className="text-xs text-ink-400 ml-3">{empName(a.employeeId)} · {a.type} · {new Date(a.issuedAt).toLocaleDateString()}</span>
                     </div>
                     <button onClick={() => hrAction({ action: "asset-delete", id: a.id })} className="p-1.5 rounded text-red-400 hover:bg-red-400/10"><Trash2 size={14} /></button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* EXPENSE CLAIMS */}
+          {tab === "claims" && (
+            <div className="space-y-3">
+              {claims.length === 0 ? (
+                <div className="card p-10 text-center text-ink-400">No expense claims submitted.</div>
+              ) : claims.map((c) => (
+                <div key={c.id} className="card p-5 flex flex-wrap items-center gap-4">
+                  <div className="flex-1 min-w-[200px]">
+                    <div className="text-ink-100 font-light">{empName(c.employeeId)} · {c.currency} {c.amount.toLocaleString()}</div>
+                    <div className="text-xs text-ink-400 mt-0.5">{c.date} · {c.category} · {c.description}</div>
+                  </div>
+                  {c.receiptUrl && <a href={c.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gold-300 hover:text-gold-200 underline">receipt</a>}
+                  {c.status === "pending" ? (
+                    <div className="flex gap-2">
+                      <button onClick={() => claimAction(c.id, "approve")} disabled={saving} className="btn-gold text-xs !py-1.5 !px-3">Approve</button>
+                      <button onClick={() => claimAction(c.id, "reject")} disabled={saving} className="btn-ghost text-xs !py-1.5 !px-3 !text-red-400">Reject</button>
+                    </div>
+                  ) : (
+                    <span className={`text-xs uppercase tracking-[0.2em] ${c.status === "approved" ? "text-green-300" : "text-red-400"}`}>{c.status}</span>
+                  )}
+                </div>
+              ))}
+              <p className="text-xs text-ink-500">Approved claims post automatically to Finance → Expenses.</p>
+            </div>
+          )}
+
+          {/* HOLIDAYS */}
+          {tab === "holidays" && (
+            <div className="space-y-5">
+              <div className="card p-5 grid md:grid-cols-[1fr_2fr_auto] gap-3 items-end">
+                <Field label="Date"><input type="date" className="input !py-2" value={holForm.date} onChange={(e) => setHolForm({ ...holForm, date: e.target.value })} /></Field>
+                <Field label="Holiday name"><input className="input !py-2" placeholder="Diwali / Republic Day…" value={holForm.name} onChange={(e) => setHolForm({ ...holForm, name: e.target.value })} /></Field>
+                <button onClick={addHoliday} disabled={!holForm.date || !holForm.name.trim()} className="btn-gold text-sm !py-2.5 !px-4 disabled:opacity-60"><Plus size={14} /> Add</button>
+              </div>
+              <div className="space-y-2">
+                {holidays.length === 0 ? (
+                  <div className="card p-8 text-center text-ink-400">No company holidays set.</div>
+                ) : holidays.map((h) => (
+                  <div key={h.id} className="card p-4 flex items-center gap-4">
+                    <div className="flex-1"><span className="text-ink-100 font-light">{h.name}</span><span className="text-xs text-ink-400 ml-3">{new Date(h.date).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}</span></div>
+                    <button onClick={() => removeHoliday(h.id)} className="p-1.5 rounded text-red-400 hover:bg-red-400/10"><Trash2 size={14} /></button>
                   </div>
                 ))}
               </div>

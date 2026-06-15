@@ -149,6 +149,7 @@ export const ALL_STORE_KEYS = [
   "attendance", "leaves", "payslips", "assets", "quotations", "payments",
   "notifications", "admin-users", "audit-log", "expenses", "messages",
   "project-files", "solutions", "subscribers", "sent-emails", "custom-contacts",
+  "tickets", "time-entries", "announcements", "expense-claims", "holidays",
 ] as const;
 
 /** Full snapshot of every store — powers the owner's backup export. */
@@ -187,6 +188,7 @@ async function setValue<T>(key: string, value: T): Promise<void> {
 }
 
 // ---------- Types ----------
+export type QueryStatus = "new" | "reviewing" | "next-phase" | "rejected" | "closed";
 export type Query = {
   id: string;
   receivedAt: string; // ISO
@@ -199,6 +201,8 @@ export type Query = {
   budget?: string;
   message: string;
   read: boolean;
+  status?: QueryStatus;
+  replies?: { body: string; at: string }[]; // record of what we replied
 };
 
 export type Job = {
@@ -729,7 +733,7 @@ export const settingsDb = {
 // ---------- Immutable document serials: {PREFIX}{YY}{MM}{TYPE}{SEQ} ----------
 // e.g. AMX2606IN001. Counters only ever increment — issued numbers never change.
 const CTR_KEY = "doc-counters";
-export async function nextDocNumber(type: "IN" | "QT" | "PS"): Promise<string> {
+export async function nextDocNumber(type: "IN" | "QT" | "PS" | "TK"): Promise<string> {
   const s = await settingsDb.get();
   const now = new Date();
   const yy = String(now.getFullYear()).slice(2);
@@ -754,6 +758,11 @@ export type Employee = {
   active: boolean;
   shiftStart?: string;   // HH:MM — admin-defined expected start
   shiftEnd?: string;     // HH:MM — admin-defined expected end
+  // Self-service profile fields (employee-editable)
+  phone?: string;
+  address?: string;
+  emergencyContact?: string;
+  photo?: string;        // Cloudinary URL
 };
 const E_KEY = "employees";
 export const employeesDb = {
@@ -1174,5 +1183,153 @@ export const filesDb = {
   async remove(id: string) {
     const all = await filesDb.list();
     await setValue(F_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Support tickets (client helpdesk) ----------
+export type TicketStatus = "open" | "in-progress" | "resolved" | "closed";
+export type TicketPriority = "low" | "normal" | "high" | "urgent";
+export type TicketReply = { id: string; from: "client" | "team"; body: string; at: string; authorName?: string };
+export type Ticket = {
+  id: string;
+  number: string;         // AMX2606TK001
+  clientId: string;
+  subject: string;
+  category: string;       // "Technical" | "Billing" | "General" | "Feature request"
+  priority: TicketPriority;
+  status: TicketStatus;
+  replies: TicketReply[];
+  createdAt: string;
+  updatedAt: string;
+};
+const TKT_KEY = "tickets";
+export const ticketsDb = {
+  list: () => getValue<Ticket[]>(TKT_KEY, []),
+  async listByClient(clientId: string) {
+    const all = await ticketsDb.list();
+    return all.filter((t) => t.clientId === clientId).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  },
+  async upsert(t: Ticket) {
+    const all = await ticketsDb.list();
+    const i = all.findIndex((x) => x.id === t.id);
+    if (i >= 0) all[i] = t; else all.unshift(t);
+    await setValue(TKT_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await ticketsDb.list();
+    await setValue(TKT_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Timesheets (billable hours against projects) ----------
+export type TimeEntry = {
+  id: string;
+  employeeId: string;
+  projectId?: string;
+  date: string;           // YYYY-MM-DD
+  hours: number;
+  billable: boolean;
+  note?: string;
+  invoiced?: boolean;
+  createdAt: string;
+};
+const TE_KEY = "time-entries";
+export const timeEntriesDb = {
+  list: () => getValue<TimeEntry[]>(TE_KEY, []),
+  async listByEmployee(employeeId: string) {
+    const all = await timeEntriesDb.list();
+    return all.filter((t) => t.employeeId === employeeId);
+  },
+  async upsert(t: TimeEntry) {
+    const all = await timeEntriesDb.list();
+    const i = all.findIndex((x) => x.id === t.id);
+    if (i >= 0) all[i] = t; else all.unshift(t);
+    await setValue(TE_KEY, all.slice(0, 20000));
+  },
+  async remove(id: string) {
+    const all = await timeEntriesDb.list();
+    await setValue(TE_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Announcements (company intranet feed) ----------
+export type Announcement = {
+  id: string;
+  title: string;
+  body: string;
+  audience: "staff" | "clients" | "all";
+  pinned: boolean;
+  createdAt: string;
+  authorName: string;
+};
+const ANN_KEY = "announcements";
+export const announcementsDb = {
+  list: () => getValue<Announcement[]>(ANN_KEY, []),
+  async forAudience(aud: "staff" | "clients") {
+    const all = await announcementsDb.list();
+    return all
+      .filter((a) => a.audience === aud || a.audience === "all")
+      .sort((a, b) => (Number(b.pinned) - Number(a.pinned)) || b.createdAt.localeCompare(a.createdAt));
+  },
+  async upsert(a: Announcement) {
+    const all = await announcementsDb.list();
+    const i = all.findIndex((x) => x.id === a.id);
+    if (i >= 0) all[i] = a; else all.unshift(a);
+    await setValue(ANN_KEY, all.slice(0, 500));
+  },
+  async remove(id: string) {
+    const all = await announcementsDb.list();
+    await setValue(ANN_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Expense claims (staff reimbursements) ----------
+export type ExpenseClaim = {
+  id: string;
+  employeeId: string;
+  date: string;
+  category: string;
+  description: string;
+  amount: number;
+  currency: string;
+  receiptUrl?: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  decidedAt?: string;
+};
+const ECL_KEY = "expense-claims";
+export const expenseClaimsDb = {
+  list: () => getValue<ExpenseClaim[]>(ECL_KEY, []),
+  async listByEmployee(employeeId: string) {
+    const all = await expenseClaimsDb.list();
+    return all.filter((c) => c.employeeId === employeeId);
+  },
+  async upsert(c: ExpenseClaim) {
+    const all = await expenseClaimsDb.list();
+    const i = all.findIndex((x) => x.id === c.id);
+    if (i >= 0) all[i] = c; else all.unshift(c);
+    await setValue(ECL_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await expenseClaimsDb.list();
+    await setValue(ECL_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Company holidays ----------
+export type Holiday = { id: string; date: string; name: string };
+const HOL_KEY = "holidays";
+export const holidaysDb = {
+  list: () => getValue<Holiday[]>(HOL_KEY, []),
+  async upsert(h: Holiday) {
+    const all = await holidaysDb.list();
+    const i = all.findIndex((x) => x.id === h.id);
+    if (i >= 0) all[i] = h; else all.push(h);
+    all.sort((a, b) => a.date.localeCompare(b.date));
+    await setValue(HOL_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await holidaysDb.list();
+    await setValue(HOL_KEY, all.filter((x) => x.id !== id));
   },
 };

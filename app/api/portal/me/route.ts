@@ -9,6 +9,7 @@ import {
   notificationsDb,
   settingsDb,
   tasksDb,
+  announcementsDb,
   invoiceTotal,
   quotationTotal,
 } from "@/lib/admin/db";
@@ -93,6 +94,7 @@ export async function GET() {
     })),
     notifications,
     tasks,
+    announcements: await announcementsDb.forAudience("clients"),
     bankDetails: settings.bankDetails || "",
     onlinePayments: razorpayEnabled(),
   });

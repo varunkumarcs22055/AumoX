@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 import { printDocument } from "@/lib/print-doc";
+import PortalSupport from "@/components/portal/PortalSupport";
 
 type Phase = { name: string; status: "pending" | "in-progress" | "completed"; note?: string };
 type Update = { id: string; date: string; title: string; body?: string };
@@ -78,6 +79,7 @@ type Me = {
   tasks?: PortalTask[];
   bankDetails?: string;
   onlinePayments?: boolean;
+  announcements?: { id: string; title: string; body: string; pinned: boolean; createdAt: string }[];
 };
 
 function loadRazorpay(): Promise<boolean> {
@@ -364,6 +366,21 @@ export default function PortalPage() {
             updated by the team as work progresses.
           </p>
         </div>
+
+        {/* Announcements */}
+        {(me.announcements?.length ?? 0) > 0 && (
+          <div className="mb-10 space-y-3">
+            {me.announcements!.map((a) => (
+              <div key={a.id} className="card p-5 gold-border">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{a.pinned ? "📌 " : ""}Announcement</span>
+                </div>
+                <div className="mt-1.5 text-ink-100 font-light">{a.title}</div>
+                <p className="mt-1.5 text-sm text-ink-300 font-light whitespace-pre-wrap">{a.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Projects */}
         {me.projects.length === 0 ? (
@@ -709,6 +726,9 @@ export default function PortalPage() {
             )}
           </div>
         )}
+
+        {/* Support tickets */}
+        <PortalSupport />
 
         {/* Messages — direct thread with the team */}
         <div className="mt-12 max-w-3xl">

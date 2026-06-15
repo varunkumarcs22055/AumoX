@@ -460,8 +460,13 @@ export default async function HomePage() {
                 className="insight-card card p-8 flex flex-col group cursor-pointer"
               >
                 <div className="aspect-[16/10] -mx-8 -mt-8 mb-6 bg-gradient-to-br from-gold-400/20 via-bg-elevated to-bg-base relative overflow-hidden">
-                  <div className="absolute inset-0 grid-overlay opacity-50" />
-                  <div className="absolute bottom-4 left-8 text-[11px] uppercase tracking-[0.3em] text-gold-700 dark:text-gold-300 bg-bg-base/60 border border-gold-400/40 rounded-full px-3 py-1">
+                  {a.image ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={a.image} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  ) : (
+                    <div className="absolute inset-0 grid-overlay opacity-50" />
+                  )}
+                  <div className="absolute bottom-4 left-8 text-[11px] uppercase tracking-[0.3em] text-gold-700 dark:text-gold-300 bg-bg-base/70 border border-gold-400/40 rounded-full px-3 py-1 backdrop-blur">
                     {a.tag}
                   </div>
                 </div>

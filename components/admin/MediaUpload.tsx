@@ -12,7 +12,9 @@ type Props = {
   /** What can be uploaded. */
   accept?: "image" | "video" | "both";
   /** Cloudinary folder bucket. */
-  folder?: "aumoxo/insights" | "aumoxo/solutions" | "aumoxo/media";
+  folder?: string;
+  /** Sign endpoint — defaults to the admin one; staff pages pass their own. */
+  signEndpoint?: string;
   label?: string;
   className?: string;
   onChange: (url: string, type: MediaType) => void;
@@ -24,6 +26,7 @@ export default function MediaUpload({
   valueType,
   accept = "image",
   folder = "aumoxo/media",
+  signEndpoint = "/api/admin/cloudinary/sign",
   label,
   className = "",
   onChange,
@@ -42,7 +45,7 @@ export default function MediaUpload({
     setBusy(true);
     setProgress(0);
     try {
-      const signRes = await fetch("/api/admin/cloudinary/sign", {
+      const signRes = await fetch(signEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ folder }),

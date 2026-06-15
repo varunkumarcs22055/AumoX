@@ -26,6 +26,9 @@ import {
   ShieldCheck,
   LayoutTemplate,
   Mail,
+  LifeBuoy,
+  Clock,
+  Megaphone,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -33,6 +36,7 @@ const links = [
   { href: "/admin",            label: "Dashboard",  icon: LayoutDashboard },
   { href: "/admin/queries",    label: "Inbox",      icon: Inbox },
   { href: "/admin/messages",   label: "Messages",   icon: MessageSquare },
+  { href: "/admin/tickets",    label: "Tickets",    icon: LifeBuoy },
   { href: "/admin/email",      label: "Send Email", icon: Mail },
   { href: "/admin/leads",      label: "Leads",      icon: TrendingUp },
   { href: "/admin/quotations", label: "Quotations", icon: FileText },
@@ -41,8 +45,10 @@ const links = [
   { href: "/admin/tasks",      label: "Tasks",      icon: ListChecks },
   { href: "/admin/invoices",   label: "Invoices",   icon: Receipt },
   { href: "/admin/finance",    label: "Finance",    icon: Landmark },
+  { href: "/admin/timesheets", label: "Timesheets", icon: Clock },
   { href: "/admin/reports",    label: "Reports",    icon: BarChart3 },
   { href: "/admin/team",       label: "Team / HR",  icon: UserCog },
+  { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/careers",    label: "Careers",    icon: Briefcase },
   { href: "/admin/solutions",  label: "Solutions",  icon: LayoutTemplate },
   { href: "/admin/insights",   label: "Insights",   icon: BookOpen },

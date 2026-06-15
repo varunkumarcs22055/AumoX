@@ -30,6 +30,16 @@ type Query = {
   budget?: string;
   message: string;
   read: boolean;
+  status?: "new" | "reviewing" | "next-phase" | "rejected" | "closed";
+  replies?: { body: string; at: string }[];
+};
+
+const STATUS_META: Record<NonNullable<Query["status"]>, { label: string; cls: string }> = {
+  new: { label: "New", cls: "border-sky-400/40 text-sky-300" },
+  reviewing: { label: "Reviewing", cls: "border-amber-400/40 text-amber-300" },
+  "next-phase": { label: "Next phase ✓", cls: "border-green-400/40 text-green-300" },
+  rejected: { label: "Rejected", cls: "border-red-400/40 text-red-400" },
+  closed: { label: "Closed", cls: "border-ink-400/40 text-ink-400" },
 };
 
 export default function QueriesAdmin() {
@@ -64,8 +74,15 @@ export default function QueriesAdmin() {
       const d = await res.json();
       if (!res.ok) { setReplyMsg({ ok: false, text: d.error || "Failed to send." }); return; }
       setReplyMsg({ ok: true, text: `Reply sent to ${q.email} from hello@aumoxo.tech.` });
-      if (!q.read) patch(q.id, { read: true });
+      // Record the reply on the query so it's visible later
+      const replies = [...(q.replies || []), { body: replyText, at: new Date().toISOString() }];
+      patch(q.id, { read: true, replies, status: q.status && q.status !== "new" ? q.status : "reviewing" });
+      setReplyText("");
     } finally { setReplyBusy(false); }
+  }
+
+  function setStatus(q: Query, status: Query["status"]) {
+    patch(q.id, { status });
   }
 
   async function load() {
@@ -184,8 +201,13 @@ export default function QueriesAdmin() {
                         {new Date(q.receivedAt).toLocaleString()}
                       </div>
                     </div>
-                    <div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-gold-400">
-                      {q.service} {q.timeline ? `· ${q.timeline}` : ""} {q.budget ? `· ${q.budget}` : ""}
+                    <div className="mt-1 flex items-center gap-2 flex-wrap">
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-gold-400">
+                        {q.service} {q.timeline ? `· ${q.timeline}` : ""} {q.budget ? `· ${q.budget}` : ""}
+                      </span>
+                      {q.status && q.status !== "new" && (
+                        <span className={`text-[9px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-full border ${STATUS_META[q.status].cls}`}>{STATUS_META[q.status].label}</span>
+                      )}
                     </div>
                     <p className="mt-2 text-sm text-ink-300 font-light line-clamp-2">
                       {q.message}
@@ -211,6 +233,37 @@ export default function QueriesAdmin() {
                         {q.message}
                       </div>
                     </div>
+
+                    {/* Status / decision */}
+                    <div className="mt-5">
+                      <div className="text-[11px] uppercase tracking-[0.25em] text-ink-400 mb-2">Status / decision</div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${STATUS_META[q.status || "new"].cls}`}>
+                          {STATUS_META[q.status || "new"].label}
+                        </span>
+                        <span className="text-ink-500">→</span>
+                        <button onClick={() => setStatus(q, "reviewing")} className="text-xs px-3 py-1.5 rounded-full border border-amber-400/40 text-amber-300 hover:bg-amber-400/10">Reviewing</button>
+                        <button onClick={() => setStatus(q, "next-phase")} className="text-xs px-3 py-1.5 rounded-full border border-green-400/40 text-green-300 hover:bg-green-400/10">Accept · next phase</button>
+                        <button onClick={() => setStatus(q, "rejected")} className="text-xs px-3 py-1.5 rounded-full border border-red-400/40 text-red-400 hover:bg-red-400/10">Reject</button>
+                        <button onClick={() => setStatus(q, "closed")} className="text-xs px-3 py-1.5 rounded-full border border-line text-ink-400 hover:bg-bg-elevated">Close</button>
+                      </div>
+                    </div>
+
+                    {/* What we've replied */}
+                    {(q.replies?.length ?? 0) > 0 && (
+                      <div className="mt-5">
+                        <div className="text-[11px] uppercase tracking-[0.25em] text-ink-400 mb-2">What we replied ({q.replies!.length})</div>
+                        <div className="space-y-2">
+                          {q.replies!.map((r, i) => (
+                            <div key={i} className="p-3 rounded-lg bg-gold-400/5 border border-gold-400/20 text-sm text-ink-200 font-light">
+                              <p className="whitespace-pre-wrap">{r.body}</p>
+                              <div className="mt-1 text-[10px] text-ink-400">Sent {new Date(r.at).toLocaleString()}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="mt-5 flex items-center gap-3">
                       <button
                         onClick={() => startReply(q)}

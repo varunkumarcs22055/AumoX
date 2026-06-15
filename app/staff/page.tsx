@@ -7,6 +7,7 @@ import {
   Bell, Receipt, BadgeCheck, Briefcase, Send, Printer, Lock, Coffee,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import StaffExtras from "@/components/staff/StaffExtras";
 
 type Task = { id: string; title: string; projectId?: string; due?: string; status: "todo" | "in-progress" | "done" };
 type Session = { in: string; out?: string };
@@ -17,7 +18,7 @@ type Payslip = { id: string; number: string; month: string; gross: number; deduc
 type Asset = { id: string; name: string; type: string; url?: string; issuedAt: string };
 type Notif = { id: string; message: string; read: boolean; createdAt: string };
 type Me = {
-  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string; shiftStart?: string; shiftEnd?: string };
+  employee: { id: string; name: string; email: string; designation?: string; joinedAt: string; shiftStart?: string; shiftEnd?: string; phone?: string; address?: string; emergencyContact?: string; photo?: string };
   tasks: Task[];
   projects: { id: string; name: string }[];
   attendance: Attendance[];
@@ -27,6 +28,11 @@ type Me = {
   payslips: Payslip[];
   assets: Asset[];
   notifications: Notif[];
+  announcements?: { id: string; title: string; body: string; pinned: boolean; createdAt: string; authorName: string }[];
+  holidays?: { id: string; date: string; name: string }[];
+  timeEntries?: { id: string; projectId?: string; date: string; hours: number; billable: boolean; note?: string; invoiced?: boolean }[];
+  claims?: { id: string; date: string; category: string; description: string; amount: number; currency: string; status: string; receiptUrl?: string }[];
+  directory?: { id: string; name: string; designation?: string; email: string; photo?: string }[];
 };
 
 const BREAK_TYPES = ["Lunch", "Tea / coffee", "Short break", "Meeting", "Personal", "Prayer", "Other"];
@@ -493,6 +499,9 @@ export default function StaffPage() {
             </ul>
           </div>
         </div>
+
+        {/* Self-service: announcements, timesheet, claims, profile, directory, holidays */}
+        <StaffExtras me={me} reload={load} />
 
         {/* Account security */}
         <div className="card p-7 max-w-3xl">

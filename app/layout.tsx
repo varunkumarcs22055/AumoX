@@ -90,12 +90,9 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   icons: {
-    icon: [
-      { url: "/favicon.svg?v=3", type: "image/svg+xml" },
-      { url: "/logo-mark.png?v=3", type: "image/png", sizes: "any" },
-    ],
-    apple: "/logo-mark.png?v=3",
-    shortcut: "/favicon.svg?v=3",
+    icon: [{ url: "/logo-mark.png?v=5", type: "image/png", sizes: "any" }],
+    apple: "/logo-mark.png?v=5",
+    shortcut: "/logo-mark.png?v=5",
   },
   robots: {
     index: true,

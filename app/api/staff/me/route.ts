@@ -11,6 +11,10 @@ import {
   notificationsDb,
   settingsDb,
   normalizeAttendance,
+  announcementsDb,
+  holidaysDb,
+  timeEntriesDb,
+  expenseClaimsDb,
 } from "@/lib/admin/db";
 import { verifyStaffToken, STAFF_COOKIE } from "@/lib/admin/auth";
 
@@ -24,7 +28,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [tasks, projects, attendance, leaves, payslips, assets, notifications, settings] =
+  const [tasks, projects, attendance, leaves, payslips, assets, notifications, settings, announcements, holidays, allTime, claims, allEmployees] =
     await Promise.all([
       tasksDb.list(),
       projectsDb.list(),
@@ -34,6 +38,11 @@ export async function GET() {
       assetsDb.listByEmployee(emp.id),
       notificationsDb.listFor(`staff:${emp.id}`),
       settingsDb.get(),
+      announcementsDb.forAudience("staff"),
+      holidaysDb.list(),
+      timeEntriesDb.listByEmployee(emp.id),
+      expenseClaimsDb.listByEmployee(emp.id),
+      employeesDb.list(),
     ]);
 
   const myTasks = tasks.filter(
@@ -60,7 +69,18 @@ export async function GET() {
       joinedAt: emp.joinedAt,
       shiftStart: emp.shiftStart,
       shiftEnd: emp.shiftEnd,
+      phone: emp.phone,
+      address: emp.address,
+      emergencyContact: emp.emergencyContact,
+      photo: emp.photo,
     },
+    announcements,
+    holidays: holidays.filter((h) => h.date >= today).slice(0, 12),
+    timeEntries: allTime.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 200),
+    claims: claims.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    directory: allEmployees
+      .filter((e) => e.active)
+      .map((e) => ({ id: e.id, name: e.name, designation: e.designation, email: e.email, photo: e.photo })),
     tasks: myTasks,
     projects: projects.map((p) => ({ id: p.id, name: p.name })),
     attendance: myAttendance,
