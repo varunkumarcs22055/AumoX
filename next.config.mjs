@@ -41,6 +41,10 @@ const securityHeaders = [
   // Cross-origin isolation lite
   { key: "X-DNS-Prefetch-Control", value: "on" },
   { key: "X-XSS-Protection", value: "1; mode=block" },
+  // Isolate our browsing context from cross-origin windows (anti tab-nabbing /
+  // cross-window attacks) while still allowing payment popups (Razorpay) to
+  // keep their opener reference.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
 ];
 
 const nextConfig = {
