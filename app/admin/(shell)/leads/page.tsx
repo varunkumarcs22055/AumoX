@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus, Trash2, Check, X, Loader2, Edit2, Mail, Phone, CalendarClock, TrendingUp, UserPlus, Copy,
+  Plus, Trash2, Check, X, Loader2, Edit2, Mail, Phone, CalendarClock, TrendingUp, UserPlus, Copy, Search,
 } from "lucide-react";
+import { usePagedList } from "@/lib/admin/usePagedList";
+import Pagination from "@/components/admin/Pagination";
+
+const leadText = (l: { name: string; company?: string; email?: string; phone?: string; service?: string; source?: string; notes?: string }) =>
+  `${l.name} ${l.company ?? ""} ${l.email ?? ""} ${l.phone ?? ""} ${l.service ?? ""} ${l.source ?? ""} ${l.notes ?? ""}`;
 
 type LeadStage = "new" | "contacted" | "qualified" | "proposal" | "won" | "lost";
 type Lead = {
@@ -62,6 +67,7 @@ export default function LeadsAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Lead>(emptyLead());
   const [filter, setFilter] = useState<LeadStage | "all">("all");
+  const [search, setSearch] = useState("");
   const [error, setError] = useState("");
   const [converting, setConverting] = useState("");
   const [creds, setCreds] = useState<{ company: string; email: string; password: string } | null>(null);
@@ -89,7 +95,8 @@ export default function LeadsAdmin() {
     };
   }, [leads]);
 
-  const visible = filter === "all" ? leads : leads.filter((l) => l.stage === filter);
+  const byStage = filter === "all" ? leads : leads.filter((l) => l.stage === filter);
+  const paged = usePagedList(byStage, search, leadText, 10);
 
   async function save() {
     setError("");
@@ -163,9 +170,25 @@ export default function LeadsAdmin() {
             convert button to turn a lead into a client with a portal login in one click.
           </p>
         </div>
-        <button onClick={() => { setEditing(emptyLead()); setError(""); setShowForm(true); }} className="btn-gold text-sm !py-2 !px-4">
-          <Plus size={16} /> New lead
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+            <input
+              className="input !py-2 pl-9 pr-8 w-60"
+              placeholder="Search name, company, email…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-500 hover:text-red-400" aria-label="Clear search">
+                <X size={15} />
+              </button>
+            )}
+          </div>
+          <button onClick={() => { setEditing(emptyLead()); setError(""); setShowForm(true); }} className="btn-gold text-sm !py-2 !px-4">
+            <Plus size={16} /> New lead
+          </button>
+        </div>
       </div>
 
       {/* Pipeline summary */}
@@ -278,9 +301,9 @@ export default function LeadsAdmin() {
       <div className="mt-6 space-y-3">
         {loading ? (
           <div className="card p-10 text-center text-ink-400">Loading…</div>
-        ) : visible.length === 0 ? (
-          <div className="card p-10 text-center text-ink-400">No leads here yet.</div>
-        ) : visible.map((l) => {
+        ) : paged.total === 0 ? (
+          <div className="card p-10 text-center text-ink-400">{search ? `No leads match “${search}”.` : "No leads here yet."}</div>
+        ) : paged.pageItems.map((l) => {
           const stage = STAGES.find((s) => s.v === l.stage)!;
           const overdue = l.nextFollowUp && new Date(l.nextFollowUp) < new Date() && !["won", "lost"].includes(l.stage);
           return (
@@ -335,6 +358,17 @@ export default function LeadsAdmin() {
             </div>
           );
         })}
+        {!loading && paged.total > 0 && (
+          <Pagination
+            page={paged.page}
+            totalPages={paged.totalPages}
+            total={paged.total}
+            from={paged.from}
+            to={paged.to}
+            onPage={paged.setPage}
+            unit="leads"
+          />
+        )}
       </div>
     </div>
   );

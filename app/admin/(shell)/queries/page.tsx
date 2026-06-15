@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Mail,
   Phone,
@@ -16,7 +16,12 @@ import {
   Inbox,
   Loader2,
   Send,
+  Search,
+  X,
 } from "lucide-react";
+import { usePoll } from "@/lib/usePoll";
+import { usePagedList } from "@/lib/admin/usePagedList";
+import Pagination from "@/components/admin/Pagination";
 
 type Query = {
   id: string;
@@ -34,6 +39,9 @@ type Query = {
   replies?: { body: string; at: string }[];
 };
 
+const queryText = (q: Query) =>
+  `${q.name} ${q.email} ${q.company ?? ""} ${q.phone ?? ""} ${q.service} ${q.message} ${q.status ?? ""}`;
+
 const STATUS_META: Record<NonNullable<Query["status"]>, { label: string; cls: string }> = {
   new: { label: "New", cls: "border-sky-400/40 text-sky-300" },
   reviewing: { label: "Reviewing", cls: "border-amber-400/40 text-amber-300" },
@@ -45,6 +53,7 @@ const STATUS_META: Record<NonNullable<Query["status"]>, { label: string; cls: st
 export default function QueriesAdmin() {
   const [queries, setQueries] = useState<Query[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [replyId, setReplyId] = useState<string | null>(null);
@@ -85,22 +94,23 @@ export default function QueriesAdmin() {
     patch(q.id, { status });
   }
 
-  async function load() {
-    setLoading(true);
+  // Silent fetch — used by polling so the list refreshes without a spinner.
+  const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/queries", { cache: "no-store" });
       const data = await res.json();
       setQueries(data.queries ?? []);
-    } catch {
-      setQueries([]);
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* keep current list on a transient error */ }
+  }, []);
+
+  async function load() {
+    setLoading(true);
+    try { await refresh(); } finally { setLoading(false); }
   }
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
+  // Live: new enquiries appear on their own every 15s + on tab focus.
+  usePoll(refresh, 15000);
 
   async function patch(id: string, patch: Partial<Query>) {
     await fetch("/api/admin/queries", {
@@ -121,7 +131,8 @@ export default function QueriesAdmin() {
     setQueries((q) => q.filter((x) => x.id !== id));
   }
 
-  const visible = filter === "unread" ? queries.filter((q) => !q.read) : queries;
+  const byRead = filter === "unread" ? queries.filter((q) => !q.read) : queries;
+  const paged = usePagedList(byRead, search, queryText, 12);
   const unreadCount = queries.filter((q) => !q.read).length;
 
   return (
@@ -138,7 +149,21 @@ export default function QueriesAdmin() {
             )}
           </p>
         </div>
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-3 items-center flex-wrap">
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+            <input
+              className="input !py-2 pl-9 pr-8 w-64"
+              placeholder="Search name, email, service…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-500 hover:text-red-400" aria-label="Clear search">
+                <X size={15} />
+              </button>
+            )}
+          </div>
           <button
             onClick={() => setFilter(filter === "all" ? "unread" : "all")}
             className="btn-ghost text-sm !py-2 !px-4"
@@ -153,21 +178,23 @@ export default function QueriesAdmin() {
 
       {loading ? (
         <div className="mt-12 text-center text-ink-400">Loading…</div>
-      ) : visible.length === 0 ? (
+      ) : paged.total === 0 ? (
         <div className="mt-12 card p-12 text-center">
           <Inbox size={32} className="mx-auto text-gold-400 mb-4" />
           <h3 className="text-lg font-light text-ink-100">
-            {filter === "unread" ? "All caught up." : "No queries yet."}
+            {search ? "No matching enquiries." : filter === "unread" ? "All caught up." : "No queries yet."}
           </h3>
           <p className="mt-2 text-sm text-ink-300 font-light">
-            {filter === "unread"
+            {search
+              ? `Nothing matches “${search}”. Clear the search to see everything.`
+              : filter === "unread"
               ? "Switch to 'Show all' to view previously-read messages."
               : "When visitors submit the contact form, they'll appear here."}
           </p>
         </div>
       ) : (
         <div className="mt-10 space-y-3">
-          {visible.map((q) => {
+          {paged.pageItems.map((q) => {
             const open = openId === q.id;
             return (
               <div
@@ -317,6 +344,15 @@ export default function QueriesAdmin() {
               </div>
             );
           })}
+          <Pagination
+            page={paged.page}
+            totalPages={paged.totalPages}
+            total={paged.total}
+            from={paged.from}
+            to={paged.to}
+            onPage={paged.setPage}
+            unit="enquiries"
+          />
         </div>
       )}
     </div>

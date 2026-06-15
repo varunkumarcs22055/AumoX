@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSquare, Send, Loader2, RefreshCw } from "lucide-react";
+import { usePoll } from "@/lib/usePoll";
 
 type Thread = {
   clientId: string;
@@ -57,6 +58,24 @@ export default function MessagesAdmin() {
   }
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  // Live: silently refresh the thread list + the open conversation so client
+  // replies appear on their own — no manual refresh.
+  const refresh = useCallback(async () => {
+    const t = await fetch("/api/admin/messages", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (t?.threads) setThreads(t.threads);
+    if (active) {
+      const m = await fetch(`/api/admin/messages?clientId=${active}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      if (m?.messages) {
+        setMessages((prev) => {
+          const next = m.messages as Msg[];
+          const same = prev.length === next.length && prev[prev.length - 1]?.id === next[next.length - 1]?.id;
+          return same ? prev : next;
+        });
+      }
+    }
+  }, [active]);
+  usePoll(refresh, 15000);
 
   async function send() {
     if (!draft.trim() || !active) return;

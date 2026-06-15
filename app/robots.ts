@@ -8,7 +8,16 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/admin/", "/portal", "/portal/", "/staff", "/staff/", "/api/", "/_next/"],
+        disallow: [
+          // Private panels + their short aliases (the aliases 3xx-redirect, which
+          // Search Console flags as "Page with redirect" if it crawls them).
+          "/admin", "/admin/", "/portal", "/portal/", "/staff", "/staff/",
+          "/client", "/client/", "/emp", "/emp/",
+          "/api/", "/_next/",
+          // Old pages that no longer exist (now 301'd) — keep crawlers off them.
+          "/work", "/newsroom", "/blog", "/leadership", "/investors",
+          "/awards", "/sustainability", "/locations",
+        ],
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,
