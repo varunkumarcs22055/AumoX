@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ShieldCheck, RefreshCw, Search, Lock, Loader2,
   UserCog, Users, Briefcase, Globe, Cog,
+  Trash2, CheckSquare, Square, X,
 } from "lucide-react";
 
 type Entry = {
@@ -53,6 +54,12 @@ export default function ActivityAdmin() {
   const [entity, setEntity] = useState<string>("all");
   const [q, setQ] = useState("");
 
+  // Pruning state
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [olderThan, setOlderThan] = useState("");
+  const [busy, setBusy] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,6 +72,36 @@ export default function ActivityAdmin() {
       setReport(await res.json());
     } finally { setLoading(false); }
   }, [actor, entity, q]);
+
+  // Send a prune request, then refresh + reset selection.
+  const prune = useCallback(
+    async (payload: Record<string, unknown>, confirmMsg: string) => {
+      if (busy) return;
+      if (!window.confirm(`${confirmMsg}\n\nThis cannot be undone.`)) return;
+      setBusy(true);
+      try {
+        const res = await fetch("/api/admin/audit", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { alert(data.error || "Could not delete entries."); return; }
+        setSelected(new Set());
+        setSelecting(false);
+        await load();
+      } finally { setBusy(false); }
+    },
+    [busy, load]
+  );
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   useEffect(() => {
     const t = setTimeout(load, q ? 300 : 0); // debounce search typing
@@ -86,11 +123,11 @@ export default function ActivityAdmin() {
   }
 
   // Group entries by day for a clean report timeline
-  const groups: { day: string; items: Entry[] }[] = [];
+  const groups: { day: string; dateKey: string; items: Entry[] }[] = [];
   for (const e of report?.entries ?? []) {
     const day = dayLabel(e.at);
     const g = groups.find((x) => x.day === day);
-    if (g) g.items.push(e); else groups.push({ day, items: [e] });
+    if (g) g.items.push(e); else groups.push({ day, dateKey: e.at.slice(0, 10), items: [e] });
   }
 
   return (
@@ -106,9 +143,25 @@ export default function ActivityAdmin() {
             who did what, and when. Visible only to you.
           </p>
         </div>
-        <button onClick={load} className="btn-ghost text-sm !py-2 !px-4">
-          <RefreshCw size={14} /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setSelecting((v) => !v); setSelected(new Set()); }}
+            className={`btn-ghost text-sm !py-2 !px-4 ${selecting ? "!border-gold-400/60 !text-gold-300" : ""}`}
+          >
+            {selecting ? <X size={14} /> : <CheckSquare size={14} />}
+            {selecting ? "Cancel" : "Select"}
+          </button>
+          <button
+            onClick={() => prune({ mode: "all" }, "Permanently delete the ENTIRE activity log?")}
+            disabled={busy || (report?.total ?? 0) === 0}
+            className="btn-ghost text-sm !py-2 !px-4 !border-red-400/40 !text-red-300 hover:!bg-red-400/10 disabled:opacity-40"
+          >
+            <Trash2 size={14} /> Clear all
+          </button>
+          <button onClick={load} className="btn-ghost text-sm !py-2 !px-4">
+            <RefreshCw size={14} /> Refresh
+          </button>
+        </div>
       </div>
 
       {/* Headline counts */}
@@ -147,6 +200,49 @@ export default function ActivityAdmin() {
         </select>
       </div>
 
+      {/* Date-wise cleanup — prune everything before a chosen date to reclaim storage */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-ink-400">Storage cleanup</span>
+        <span className="text-ink-400">·</span>
+        <span className="text-ink-300 font-light">Delete entries older than</span>
+        <input
+          type="date"
+          value={olderThan}
+          max={new Date().toISOString().slice(0, 10)}
+          onChange={(e) => setOlderThan(e.target.value)}
+          className="input !py-1.5 !w-auto"
+        />
+        <button
+          onClick={() => prune(
+            { mode: "before", before: olderThan },
+            `Delete every activity entry recorded before ${olderThan}?`
+          )}
+          disabled={busy || !olderThan}
+          className="btn-ghost text-sm !py-1.5 !px-3 !border-red-400/40 !text-red-300 hover:!bg-red-400/10 disabled:opacity-40"
+        >
+          <Trash2 size={13} /> Prune
+        </button>
+      </div>
+
+      {/* Selection action bar */}
+      {selecting && (
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-gold-400/30 bg-gold-400/5 px-4 py-3">
+          <div className="text-sm text-ink-200">
+            {selected.size === 0 ? "Tap entries below to select them." : `${selected.size} selected`}
+          </div>
+          <button
+            onClick={() => prune(
+              { mode: "ids", ids: Array.from(selected) },
+              `Delete ${selected.size} selected entr${selected.size === 1 ? "y" : "ies"}?`
+            )}
+            disabled={busy || selected.size === 0}
+            className="btn-ghost text-sm !py-1.5 !px-3 !border-red-400/40 !text-red-300 hover:!bg-red-400/10 disabled:opacity-40"
+          >
+            {busy ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} Delete selected
+          </button>
+        </div>
+      )}
+
       {/* Timeline */}
       <div className="mt-8">
         {loading && !report ? (
@@ -157,13 +253,39 @@ export default function ActivityAdmin() {
           <div className="space-y-8">
             {groups.map((g) => (
               <div key={g.day}>
-                <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-3">{g.day}</div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-[11px] uppercase tracking-[0.3em] text-gold-400">{g.day}</div>
+                  <button
+                    onClick={() => prune(
+                      { mode: "day", day: g.dateKey },
+                      `Delete all ${g.items.length} entr${g.items.length === 1 ? "y" : "ies"} from ${g.day}?`
+                    )}
+                    disabled={busy}
+                    className="text-[10px] uppercase tracking-widest text-ink-400 hover:text-red-300 inline-flex items-center gap-1 disabled:opacity-40"
+                  >
+                    <Trash2 size={11} /> Delete day
+                  </button>
+                </div>
                 <div className="space-y-2">
                   {g.items.map((e) => {
                     const meta = ACTOR_META[e.actorType] ?? ACTOR_META.system;
                     const Icon = meta.icon;
+                    const checked = selected.has(e.id);
                     return (
-                      <div key={e.id} className="card p-4 flex items-start gap-4">
+                      <div
+                        key={e.id}
+                        onClick={selecting ? () => toggleSelect(e.id) : undefined}
+                        className={`card p-4 flex items-start gap-4 ${selecting ? "cursor-pointer" : ""} ${checked ? "ring-1 ring-gold-400/60" : ""}`}
+                      >
+                        {selecting && (
+                          <button
+                            onClick={(ev) => { ev.stopPropagation(); toggleSelect(e.id); }}
+                            className="shrink-0 mt-0.5"
+                            aria-label={checked ? "Deselect" : "Select"}
+                          >
+                            {checked ? <CheckSquare size={18} className="text-gold-300" /> : <Square size={18} className="text-ink-400" />}
+                          </button>
+                        )}
                         <div className={`shrink-0 grid h-9 w-9 place-items-center rounded-lg border ${meta.cls}`}>
                           <Icon size={15} />
                         </div>

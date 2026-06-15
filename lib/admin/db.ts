@@ -1093,6 +1093,34 @@ export const auditDb = {
     // action, so a tighter cap keeps each write small (cheaper storage ops).
     await setValue(AUDIT_KEY, all.slice(0, 600));
   },
+  // --- Pruning (super-admin only at the API layer). Each returns how many
+  // entries were removed so the caller can report it. ---
+  async clear(): Promise<number> {
+    const all = await auditDb.list();
+    await setValue(AUDIT_KEY, []);
+    return all.length;
+  },
+  async removeIds(ids: string[]): Promise<number> {
+    const set = new Set(ids);
+    const all = await auditDb.list();
+    const kept = all.filter((e) => !set.has(e.id));
+    await setValue(AUDIT_KEY, kept);
+    return all.length - kept.length;
+  },
+  /** Remove everything strictly older than the given ISO instant. */
+  async removeBefore(iso: string): Promise<number> {
+    const all = await auditDb.list();
+    const kept = all.filter((e) => e.at >= iso);
+    await setValue(AUDIT_KEY, kept);
+    return all.length - kept.length;
+  },
+  /** Remove every entry on a single calendar day (YYYY-MM-DD, by ISO prefix). */
+  async removeDay(day: string): Promise<number> {
+    const all = await auditDb.list();
+    const kept = all.filter((e) => e.at.slice(0, 10) !== day);
+    await setValue(AUDIT_KEY, kept);
+    return all.length - kept.length;
+  },
 };
 
 // ---------- Expenses (money out — completes the ledger) ----------
