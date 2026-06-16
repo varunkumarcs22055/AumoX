@@ -39,7 +39,7 @@ const leadership = [
     name: "Prathamesh",
     role: "Head of Engineering",
     initials: "P",
-    photo: undefined, // photo pending — card shows gold initials until provided
+    photo: "https://res.cloudinary.com/dmbuydq2r/image/upload/v1781597789/aumoxo/team/prathamesh.jpg",
     focus: ["Development Operations", "Technical Delivery", "Code Quality", "Project Execution"],
   },
 ];
