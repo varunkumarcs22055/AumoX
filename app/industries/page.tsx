@@ -11,6 +11,11 @@ import {
   Home,
 } from "lucide-react";
 import Reveal from "@/components/anim/Reveal";
+import Marquee from "@/components/Marquee";
+import { clientLogosDb } from "@/lib/admin/db";
+
+// Logos are managed from Admin → Company Logos — always render the latest.
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Industries — Startups, SMEs, Education, Healthcare, E-Commerce",
@@ -72,7 +77,23 @@ const industries = [
   },
 ];
 
-export default function IndustriesPage() {
+export default async function IndustriesPage() {
+  const logos = (await clientLogosDb.list()).sort((a, b) => a.order - b.order);
+  const logoItems = logos.map((l) => {
+    // eslint-disable-next-line @next/next/no-img-element
+    const img = (
+      <img
+        src={l.logo}
+        alt={l.name || "Company logo"}
+        title={l.name || undefined}
+        className="h-10 lg:h-12 w-auto object-contain opacity-70 transition-opacity duration-300 hover:opacity-100"
+      />
+    );
+    return l.url ? (
+      <a href={l.url} target="_blank" rel="noopener noreferrer" className="inline-flex">{img}</a>
+    ) : img;
+  });
+
   return (
     <>
       <BreadcrumbsLd items={[{ name: "Industries", path: "/industries" }]} />
@@ -94,6 +115,23 @@ export default function IndustriesPage() {
           </div>
         </div>
       </section>
+
+      {/* Company logo marquee — managed from Admin → Company Logos. Auto-scrolls
+          and self-adjusts to however many logos exist; hidden until at least one. */}
+      {logos.length > 0 && (
+        <section className="py-16 border-y border-line bg-bg-surface">
+          <div className="container-x">
+            <p className="text-center text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-10">
+              Trusted by businesses we build for
+            </p>
+            <Marquee
+              items={logoItems}
+              speedSeconds={Math.max(18, logos.length * 4)}
+              gapRem={4}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Industries We Serve */}
       <section className="py-24 lg:py-32">

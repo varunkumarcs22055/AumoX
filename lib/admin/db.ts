@@ -150,7 +150,7 @@ export const ALL_STORE_KEYS = [
   "notifications", "admin-users", "audit-log", "expenses", "messages",
   "project-files", "solutions", "subscribers", "sent-emails", "custom-contacts",
   "tickets", "time-entries", "announcements", "expense-claims", "holidays",
-  "teams",
+  "teams", "client-logos",
 ] as const;
 
 /** Full snapshot of every store — powers the owner's backup export. */
@@ -361,6 +361,30 @@ export const solutionsDb = {
   async remove(id: string) {
     const all = await solutionsDb.list();
     await setValue(SOL_KEY, all.filter((x) => x.id !== id));
+  },
+};
+
+// ---------- Client / company logos (industries marquee) ----------
+export type ClientLogo = {
+  id: string;
+  name: string;        // company name — used as alt text + tooltip
+  logo: string;        // Cloudinary image URL
+  url?: string;        // optional link to the company's site
+  order: number;       // lower = earlier in the strip
+  createdAt: string;
+};
+const CLIENT_LOGOS_KEY = "client-logos";
+export const clientLogosDb = {
+  list: () => getValue<ClientLogo[]>(CLIENT_LOGOS_KEY, []),
+  async upsert(l: ClientLogo) {
+    const all = await clientLogosDb.list();
+    const i = all.findIndex((x) => x.id === l.id);
+    if (i >= 0) all[i] = l; else all.push(l);
+    await setValue(CLIENT_LOGOS_KEY, all);
+  },
+  async remove(id: string) {
+    const all = await clientLogosDb.list();
+    await setValue(CLIENT_LOGOS_KEY, all.filter((x) => x.id !== id));
   },
 };
 

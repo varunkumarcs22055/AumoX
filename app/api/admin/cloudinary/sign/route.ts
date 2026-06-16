@@ -8,7 +8,7 @@ import { requireAdmin } from "@/lib/admin/guard";
  * Admin-only: the API secret never leaves the server; we only hand out a signed
  * timestamp+folder. Cloudinary rejects anything not covered by the signature.
  */
-const ALLOWED_FOLDERS = ["aumoxo/insights", "aumoxo/solutions", "aumoxo/media", "aumoxo/emp"];
+const ALLOWED_FOLDERS = ["aumoxo/insights", "aumoxo/solutions", "aumoxo/media", "aumoxo/emp", "aumoxo/logos"];
 
 // Turn a label (e.g. an employee or project name) into a safe Cloudinary
 // public_id: lowercase, only [a-z0-9-_], collapsed dashes, capped length.

@@ -29,6 +29,7 @@ import {
   LifeBuoy,
   Clock,
   Megaphone,
+  Building2,
 } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
 
@@ -51,6 +52,7 @@ const links = [
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/careers",    label: "Careers",    icon: Briefcase },
   { href: "/admin/solutions",  label: "Solutions",  icon: LayoutTemplate },
+  { href: "/admin/client-logos", label: "Company Logos", icon: Building2 },
   { href: "/admin/insights",   label: "Insights",   icon: BookOpen },
   { href: "/admin/settings",   label: "Settings",   icon: Settings },
 ];
