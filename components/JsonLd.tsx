@@ -32,7 +32,9 @@ export default function JsonLd() {
         ],
         email: "hello@aumoxo.tech",
         sameAs: [
-          // add real social handles here later
+          "https://www.instagram.com/aumoxo.tech/",
+          "https://x.com/AUMOXOTech",
+          "https://www.linkedin.com/company/aumoxo/",
         ],
         contactPoint: {
           "@type": "ContactPoint",

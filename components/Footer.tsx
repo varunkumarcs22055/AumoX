@@ -3,8 +3,24 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Mail, MapPin, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, MapPin, Loader2, CheckCircle2, Instagram, Linkedin } from "lucide-react";
 import Logo from "./Logo";
+
+// Lucide has no X (formerly Twitter) brand glyph, so render the official mark.
+function XIcon({ size = 16 }: { size?: number | string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+type Social = { label: string; href: string; Icon: React.ComponentType<{ size?: number | string }> };
+const socials: Social[] = [
+  { label: "Instagram", href: "https://www.instagram.com/aumoxo.tech/", Icon: Instagram },
+  { label: "X", href: "https://x.com/AUMOXOTech", Icon: XIcon },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/aumoxo/", Icon: Linkedin },
+];
 
 const cols = [
   {
@@ -154,6 +170,23 @@ export default function Footer() {
             <div className="mt-2 inline-flex items-center gap-2 text-sm text-ink-300">
               <MapPin size={16} className="text-gold-400" />
               Serving businesses worldwide
+            </div>
+
+            {/* Social */}
+            <div className="mt-6 flex items-center gap-3">
+              {socials.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`AUMOXO on ${label}`}
+                  title={label}
+                  className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink-300 hover:text-gold-300 hover:border-gold-400/50 transition-colors"
+                >
+                  <Icon size={16} />
+                </a>
+              ))}
             </div>
           </div>
 
