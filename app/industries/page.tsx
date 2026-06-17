@@ -11,7 +11,7 @@ import {
   Home,
 } from "lucide-react";
 import Reveal from "@/components/anim/Reveal";
-import Marquee from "@/components/Marquee";
+import LogoMarquee from "@/components/LogoMarquee";
 import { clientLogosDb } from "@/lib/admin/db";
 
 // Logos are managed from Admin → Company Logos — always render the latest.
@@ -124,11 +124,7 @@ export default async function IndustriesPage() {
             <p className="text-center text-[11px] uppercase tracking-[0.3em] text-gold-400 mb-10">
               Trusted by businesses we build for
             </p>
-            <Marquee
-              items={logoItems}
-              speedSeconds={Math.max(18, logos.length * 4)}
-              gapRem={4}
-            />
+            <LogoMarquee items={logoItems} gapRem={4} />
           </div>
         </section>
       )}
