@@ -6,6 +6,7 @@ import HeroEntrance, { SplitWords } from "@/components/anim/HeroEntrance";
 import MagneticLink from "@/components/anim/MagneticLink";
 import Tilt3D from "@/components/anim/Tilt3D";
 import FAQ, { type FAQItem } from "@/components/FAQ";
+import { CalendlyButton } from "@/components/Calendly";
 import { insightsDb } from "@/lib/admin/db";
 
 // Shared between the visible accordion and the FAQPage rich-result schema.
@@ -57,6 +58,7 @@ import {
   Handshake,
   Target,
   Shield,
+  CalendarDays,
 } from "lucide-react";
 
 export default async function HomePage() {
@@ -89,8 +91,12 @@ export default async function HomePage() {
               systems, and digital products that help organizations innovate faster,
               operate smarter, and scale confidently.
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <MagneticLink data-anim="cta" href="/contact" className="btn-gold">
+            <div className="mt-10 flex flex-col sm:flex-row sm:flex-wrap gap-4">
+              <CalendlyButton data-anim="cta" className="btn-gold">
+                Book a Discovery Call
+                <CalendarDays size={18} />
+              </CalendlyButton>
+              <MagneticLink data-anim="cta" href="/contact" className="btn-ghost">
                 Start a Conversation
                 <ArrowUpRight size={18} />
               </MagneticLink>

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import BreadcrumbsLd from "@/components/BreadcrumbsLd";
 import ContactForm from "./ContactForm";
 import Reveal from "@/components/anim/Reveal";
+import { CalendlyInline } from "@/components/Calendly";
 import { Mail, MapPin, Phone, Clock, ArrowUpRight } from "lucide-react";
 
 export const metadata = {
@@ -142,6 +143,29 @@ export default async function ContactPage({
           </Reveal>
         </div>
       </section>
+
+      {/* Book a call — full Calendly embed (not shown for job applications) */}
+      {!isApplication && (
+        <section className="pb-24 lg:pb-32">
+          <div className="container-x">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <div className="eyebrow justify-center">
+                <span className="h-px w-8 bg-gold-400" />
+                Book a Call
+                <span className="h-px w-8 bg-gold-400" />
+              </div>
+              <h2 className="section-title mt-5">Prefer to talk? Grab a 30-minute slot.</h2>
+              <p className="section-sub mx-auto text-center">
+                Pick a time that suits you — no back-and-forth emails. We'll discuss your
+                goals and how we can help.
+              </p>
+            </div>
+            <div className="card p-2 sm:p-3 gold-border overflow-hidden">
+              <CalendlyInline className="rounded-xl overflow-hidden" height={760} />
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }
